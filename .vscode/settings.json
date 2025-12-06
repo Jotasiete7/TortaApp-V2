@@ -1,0 +1,20 @@
+﻿{
+  "sqltools.connections": [
+    {
+      "name": "Supabase - TortaApp",
+      "driver": "PostgreSQL",
+      "server": "YOUR_SUPABASE_HOST.supabase.co",
+      "port": 5432,
+      "database": "postgres",
+      "username": "postgres",
+      "password": "YOUR_DATABASE_PASSWORD",
+      "connectionTimeout": 30,
+      "ssl": {
+        "rejectUnauthorized": false
+      },
+      "previewLimit": 50
+    }
+  ],
+  "sqltools.useNodeRuntime": true,
+  "sqltools.autoOpenSessionFiles": false
+}

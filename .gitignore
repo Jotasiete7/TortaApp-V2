@@ -1,0 +1,101 @@
+﻿# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+dist
+dist-ssr
+build
+*.local
+
+# Environment variables (CRITICAL - Never commit!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Data files (large datasets)
+data/
+*.txt
+!README.txt
+!docs/**/*.txt
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.history/
+
+# Python scripts (legacy)
+*.py
+__pycache__/
+*.pyc
+
+# Backups
+*.backup
+*.bak
+*.tmp
+
+# Test files
+*.cjs
+coverage/
+.nyc_output/
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+
+# Package manager
+package-lock.json.bak
+yarn.lock.bak
+
+# Supabase local (if using)
+.supabase/
+
+# Tauri (when we add it)
+src-tauri/target/
+src-tauri/WixTools/
+
+# Sensitive documentation (if any)
+SECRETS.md
+PRIVATE_NOTES.md
+
+# User-specific files
+.user
+*.user
+
+# Large media files (if any)
+*.mp4
+*.mov
+*.avi
+*.mkv
