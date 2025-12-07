@@ -247,7 +247,7 @@ const App: React.FC = () => {
                         <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-md shadow-lg">
                             <div className="text-center mb-8">
                                 <h2 className="text-2xl font-bold text-white mb-2">{t.appSettings}</h2>
-                                <div className="text-sm font-mono text-slate-600">v3.0.0</div>
+                                <div className="text-sm font-mono text-slate-600">v2.0.0-beta Venerable Whale 🐋</div>
                             </div>
                             <div className="space-y-6">
                                 {/* Language Switcher */}
@@ -300,7 +300,7 @@ const App: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span>{t.version}:</span>
-                                        <span className="text-slate-400">3.0.0</span>
+                                        <span className="text-slate-400">2.0.0-beta</span>
                                     </div>
                                 </div>
                             </div>
