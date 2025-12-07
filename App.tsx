@@ -267,7 +267,7 @@ const App: React.FC = () => {
                                             onClick={() => setLanguage('pt')}
                                             className={`py-2 text-sm font-medium rounded-md transition-all ${language === 'pt' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
                                         >
-                                            Português
+                                            Portuguï¿½s
                                         </button>
                                     </div>
                                 </div>
@@ -365,7 +365,7 @@ const App: React.FC = () => {
                                 {/* Email Display - Hidden by default with Toggle */}
                                 <div className="flex items-center gap-2 mt-1 bg-slate-800/50 px-2 py-1 rounded border border-slate-700/50">
                                     <span className="text-xs text-slate-400 font-mono tracking-wide">
-                                        {showEmail ? user.email : '••••••••••••••••'}
+                                        {showEmail ? user.email : 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}
                                     </span>
                                     <button
                                         onClick={(e) => {
