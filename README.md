@@ -1,8 +1,8 @@
-# TortaApp V2 - Beta
+# TortaApp - Wurm Trade Analytics (Beta)
 
 > 🔒 **Private Repository** - Beta Testing Phase
 
-Intelligent market analysis and trading companion for Wurm Online.
+Advanced trade analytics and market intelligence and trading companion for Wurm Online.
 
 ## 🚀 Features
 

@@ -1,4 +1,4 @@
-﻿# 🇧🇷 TortaApp V2 - Guia Completo para Beta Testers
+# 🇧🇷 TortaApp - Wurm Trade Analytics - Guia Completo para Beta Testers
 
 **Versão:** 0.1.0-beta  
 **Última Atualização:** Dezembro 2025
@@ -25,7 +25,7 @@
 
 ## 🎯 Bem-vindo ao Beta
 
-Obrigado por participar do beta do **TortaApp V2**! Esta é uma plataforma de inteligência de mercado para Wurm Online que usa **Machine Learning** para análise de preços e gamificação para tornar o trading mais divertido.
+Obrigado por participar do beta do **TortaApp - Wurm Trade Analytics**! Esta é uma plataforma de inteligência de mercado para Wurm Online que usa **Machine Learning** para análise de preços e gamificação para tornar o trading mais divertido.
 
 ### O que testar:
 
@@ -477,4 +477,4 @@ Obrigado por participar do beta! Seu feedback é essencial para tornar o TortaAp
 
 ---
 
-*TortaApp V2 - Inteligência de Mercado para Wurm Online*
+*TortaApp - Wurm Trade Analytics - Inteligência de Mercado para Wurm Online*

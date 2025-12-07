@@ -1,4 +1,4 @@
-﻿# 🇧🇷 TortaApp V2 - Beta
+# 🇧🇷 TortaApp - Wurm Trade Analytics - Beta
 
 > 🔒 **Repositório Privado** - Fase de Testes Beta
 
@@ -194,4 +194,4 @@ Proprietário - Todos os Direitos Reservados (durante beta)
 
 ---
 
-*TortaApp V2 - Tornando o trading de Wurm mais inteligente!* 🎯
+*TortaApp - Wurm Trade Analytics - Tornando o trading de Wurm mais inteligente!* 🎯
