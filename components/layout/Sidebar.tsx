@@ -97,6 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                     <Settings className="w-5 h-5" />
                     <span className="font-medium">{t.settings}</span>
                 </button>
+                                <a href="https://www.patreon.com/c/tortawurmapp?vanity=user" target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-slate-400 hover:text-[#ff424d] hover:bg-[#ff424d]/10 mb-2"><svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M0 .48v23.04h4.22V.48zm15.385 0c-4.764 0-8.641 3.88-8.641 8.65 0 4.755 3.877 8.623 8.641 8.623 4.75 0 8.615-3.868 8.615-8.623C24 4.36 20.136.48 15.385.48z" /></svg><span className="font-medium">Support (Patreon)</span></a>
                 <div className="mt-4 text-center">
                     <span className="text-[10px] text-slate-600 font-mono">v2.0.0-beta Venerable Whale 🐋</span>
                 </div>
