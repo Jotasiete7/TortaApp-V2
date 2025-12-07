@@ -139,6 +139,14 @@ Proprietary - All Rights Reserved (during beta)
 - **Developer:** Jotasiete7
 - **Beta Testers:** [TBD]
 
+## ❤️ Support the Project
+
+If you like TortaApp and want to support its development, consider becoming a patron!
+
+[![Patreon](https://img.shields.io/badge/Patreon-Support%20Development-orange?style=for-the-badge&logo=patreon)](https://www.patreon.com/c/tortawurmapp?vanity=user)
+
+**[Become a Patron](https://www.patreon.com/c/tortawurmapp?vanity=user)**
+
 ---
 
 **Status:** 🟡 Beta Testing  

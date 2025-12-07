@@ -186,6 +186,14 @@ Proprietário - Todos os Direitos Reservados (durante beta)
 - **Desenvolvedor:** Jotasiete7
 - **Beta Testers:** [A definir]
 
+## ❤️ Apoie o Projeto
+
+Se você gosta do TortaApp e quer apoiar seu desenvolvimento, considere se tornar um patrono!
+
+[![Patreon](https://img.shields.io/badge/Patreon-Apoie%20o%20Desenvolvimento-orange?style=for-the-badge&logo=patreon)](https://www.patreon.com/c/tortawurmapp?vanity=user)
+
+**[Seja um Patrono](https://www.patreon.com/c/tortawurmapp?vanity=user)**
+
 ---
 
 **Status:** 🟡 Testes Beta  
