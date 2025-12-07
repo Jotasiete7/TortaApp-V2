@@ -2,10 +2,12 @@
 
 ## 📋 Versioning Strategy
 
-Each major/minor version gets a Wurm creature codename based on tier:
-- **Major versions (X.0.0):** Tier S+ creatures
-- **Minor versions (X.Y.0):** Tier S/A creatures  
-- **Patches (X.Y.Z):** Tier B creatures
+**Semantic Versioning com Codinomes:**
+- **Major (X.0.0):** Breaking changes, grandes refatorações (Tier S+ creatures)
+- **Minor (X.Y.0):** Novas features/ferramentas significativas (Tier S/A creatures)
+- **Patch (X.Y.Z):** Bug fixes, pequenos ajustes, sem novas features (Tier B creatures)
+
+**Regra:** Versão só muda quando há nova feature ou ferramenta implementada!
 
 ---
 
@@ -14,190 +16,259 @@ Each major/minor version gets a Wurm creature codename based on tier:
 ### Current Version
 **v2.0.0-beta "Venerable Whale" 🐋** (Tier S)
 - Beta release
-- Core features: Auth, Market Intelligence, ML Predictor, Gamification
-- Desktop app (Tauri)
+- Features: Auth, Market Intelligence, ML Predictor, Gamification, Desktop App
 
 ---
 
-### Planned Major Releases (Tier S+)
+## 🚀 Próximas Versões (Quando Features Estiverem Prontas)
 
-#### v3.0.0 "Red Dragon" 🐉
-**Planned Features:**
+### v2.1.0 "Lava Fiend" 🌋
+**Quando implementar:**
+- Enhanced ML algorithms (novos modelos)
+- New chart types (novos gráficos)
+- Advanced data visualization
+
+### v2.2.0 "Rift Beast" 🌌
+**Quando implementar:**
+- Advanced search filters
+- Bulk operations tool
+- CSV/Excel export feature
+
+### v2.3.0 "Troll King" 👑
+**Quando implementar:**
+- Admin dashboard v2
+- User management tools
+- Role-based permissions
+
+### v2.4.0 "Unique Slayer" ⚔️
+**Quando implementar:**
+- Custom badges creator
+- Achievement system expansion
+- Leaderboard filters
+
+### v2.5.0 "Fierce Anaconda" 🐍
+**Quando implementar:**
+- Custom reports builder
+- Advanced analytics tools
+- Data export automation
+
+### v2.6.0 "Hardened Crocodile" 🐊
+**Quando implementar:**
+- PWA (Progressive Web App)
+- Offline mode
+- Mobile optimization
+
+### v2.7.0 "Greenish Goblin" 👺
+**Quando implementar:**
+- Theme customization tool
+- Custom color schemes
+- Layout preferences
+
+### v2.8.0 "Mountain Gorilla" 🦍
+**Quando implementar:**
+- Performance optimization tools
+- Caching system
+- Speed improvements
+
+### v2.9.0 "Scaredy Cat" 🐱
+**Quando implementar:**
+- Security enhancements
+- Privacy tools
+- Data protection features
+
+### v2.10.0 "Wild Cat" 🐆
+**Quando implementar:**
+- Final features before v3.0
+- Polish and refinement
+- Preparation for major update
+
+---
+
+## 🎯 Major Releases (Grandes Features)
+
+### v3.0.0 "Red Dragon" 🐉
+**Quando implementar:**
 - Auto-update system
-- Advanced ML models
-- Real-time price alerts
+- Real-time notifications
 - Mobile app (iOS/Android)
+- Breaking changes in architecture
 
-#### v4.0.0 "Forest Giant" 🌲
-**Planned Features:**
+### v4.0.0 "Forest Giant" ��
+**Quando implementar:**
 - Multi-server support
-- Advanced analytics dashboard
-- API for third-party integrations
-- White-label options
+- API pública
+- White-label system
+- Plugin architecture
 
-#### v5.0.0 "Deathcrawler" 🦂
-**Planned Features:**
-- AI-powered trade recommendations
+### v5.0.0 "Deathcrawler" 🦂
+**Quando implementar:**
+- AI trade recommendations
 - Automated trading bot
-- Advanced market predictions
 - Portfolio management
+- Risk analysis tools
 
-#### v6.0.0 "Dragon Hatchling" 🥚
-**Planned Features:**
-- Social trading features
+### v6.0.0 "Dragon Hatchling" 🥚
+**Quando implementar:**
+- Social trading platform
 - Community marketplace
-- Advanced gamification
-- Tournaments and competitions
+- Tournament system
+- Competitive features
 
-#### v7.0.0 "Goblin Leader" 👹
-**Planned Features:**
+### v7.0.0 "Goblin Leader" 👹
+**Quando implementar:**
 - Cross-game support
-- Blockchain integration
-- NFT marketplace
-- Decentralized features
+- Universal trade analytics
+- Multi-platform integration
 
-#### v8.0.0 "Hell Horse" 🔥
-**Planned Features:**
-- VR/AR integration
+### v8.0.0 "Hell Horse" 🔥
+**Quando implementar:**
 - Advanced AI assistant
 - Predictive analytics 2.0
 - Enterprise features
+- Team collaboration
 
-#### v9.0.0 "Kyklops" 👁️
-**Planned Features:**
-- Quantum computing integration
-- Advanced machine learning
+### v9.0.0 "Kyklops" 👁️
+**Quando implementar:**
+- Next-gen ML models
 - Global market analysis
 - AI-driven insights
+- Revolutionary features
 
 ---
 
-### Minor Releases (Tier S/A)
+## 🐛 Patches (Bug Fixes Apenas)
 
-#### v2.1.0 "Lava Fiend" 🌋
-- Enhanced ML algorithms
-- Performance improvements
-- New chart types
+### v2.0.1 "Rooster" 🐓
+**Quando necessário:**
+- Bug fixes críticos
+- UI tweaks pequenos
+- Performance fixes
 
-#### v2.2.0 "Rift Beast" 🌌
-- Advanced search filters
-- Bulk operations
-- Export features
-
-#### v2.3.0 "Troll King" 👑
-- Admin dashboard improvements
-- User management enhancements
-- Security updates
-
-#### v2.4.0 "Unique Slayer" ⚔️
-- Custom badges system
-- Achievement tracking
-- Leaderboard improvements
-
-#### v2.5.0 "Fierce Anaconda" 🐍
-- Advanced analytics
-- Custom reports
-- Data visualization
-
-#### v2.6.0 "Hardened Crocodile" 🐊
-- Mobile optimization
-- PWA support
-- Offline mode
-
-#### v2.7.0 "Greenish Goblin" 👺
-- Theme customization
-- UI/UX improvements
-- Accessibility features
-
-#### v2.8.0 "Mountain Gorilla" 🦍
-- Performance optimization
-- Caching improvements
-- Speed enhancements
-
-#### v2.9.0 "Scaredy Cat" 🐱
-- Bug fixes
-- Stability improvements
+### v2.0.2 "Pheasant" 🦃
+**Quando necessário:**
 - Security patches
-
-#### v2.10.0 "Wild Cat" 🐆
-- Final polish before v3.0
-- Feature freeze
-- Preparation for Red Dragon
-
----
-
-### Patch Releases (Tier B)
-
-#### v2.0.1 "Rooster" 🐓
-- Minor bug fixes
-- UI tweaks
-- Performance improvements
-
-#### v2.0.2 "Pheasant" 🦃
-- Security patches
-- Bug fixes
-- Documentation updates
-
-#### v2.0.3 "Aged Fat Rabbit" 🐰
-- Small feature additions
-- Bug fixes
-- Optimization
-
-#### v2.0.4 "Starving Hyena" 🐺
 - Critical bug fixes
-- Security updates
 - Hotfixes
 
----
+### v2.0.3 "Aged Fat Rabbit" 🐰
+**Quando necessário:**
+- Bug fixes menores
+- Optimization
+- Stability improvements
 
-## 🎯 Naming Convention
-
-### Format:
-- **Full:** `TortaApp - Wurm Trade Analytics vX.Y.Z "Creature Name" [Emoji]`
-- **Short:** `vX.Y.Z "Creature"`
-- **Marketing:** `Version X.Y - Creature Name`
-- **Internal:** `X.Y.Z`
-
-### Examples:
-- `v2.0.0-beta "Venerable Whale" 🐋`
-- `v3.0.0 "Red Dragon" 🐉`
-- `v2.1.0 "Lava Fiend" 🌋`
+### v2.0.4 "Starving Hyena" 🐺
+**Quando necessário:**
+- Emergency fixes
+- Security updates
+- Critical patches
 
 ---
 
-## 📊 Complete Creature List (Alphabetical)
+## 📊 Criaturas Disponíveis (Por Tier)
 
-### Tier S+ (Major Releases)
-1. Deathcrawler 🦂 (v5.0.0)
-2. Dragon Hatchling 🥚 (v6.0.0)
-3. Forest Giant 🌲 (v4.0.0)
-4. Goblin Leader 👹 (v7.0.0)
-5. Hell Horse 🔥 (v8.0.0)
-6. Kyklops 👁️ (v9.0.0)
-7. Red Dragon 🐉 (v3.0.0)
+### Tier S+ (Major Releases - Breaking Changes)
+1. Red Dragon 🐉 (v3.0.0)
+2. Forest Giant 🌲 (v4.0.0)
+3. Deathcrawler 🦂 (v5.0.0)
+4. Dragon Hatchling 🥚 (v6.0.0)
+5. Goblin Leader 👹 (v7.0.0)
+6. Hell Horse 🔥 (v8.0.0)
+7. Kyklops 👁️ (v9.0.0)
 
 ### Tier S (Major Features)
-1. Lava Fiend 🌋 (v2.1.0)
-2. Rift Beast 🌌 (v2.2.0)
-3. Troll King 👑 (v2.3.0)
-4. Unique Slayer ⚔️ (v2.4.0)
-5. Venerable Whale 🐋 (v2.0.0) ← **CURRENT**
+1. Venerable Whale 🐋 (v2.0.0) ← **ATUAL**
+2. Lava Fiend 🌋 (v2.1.0)
+3. Rift Beast 🌌 (v2.2.0)
+4. Troll King 👑 (v2.3.0)
+5. Unique Slayer ⚔️ (v2.4.0)
 
 ### Tier A (Minor Features)
 1. Fierce Anaconda 🐍 (v2.5.0)
-2. Greenish Goblin 👺 (v2.7.0)
-3. Hardened Crocodile 🐊 (v2.6.0)
+2. Hardened Crocodile 🐊 (v2.6.0)
+3. Greenish Goblin 👺 (v2.7.0)
 4. Mountain Gorilla 🦍 (v2.8.0)
 5. Scaredy Cat 🐱 (v2.9.0)
 6. Wild Cat 🐆 (v2.10.0)
 
-### Tier B (Patches)
-1. Aged Fat Rabbit �� (v2.0.3)
+### Tier B (Patches - Bug Fixes)
+1. Rooster 🐓 (v2.0.1)
 2. Pheasant 🦃 (v2.0.2)
-3. Rooster 🐓 (v2.0.1)
+3. Aged Fat Rabbit 🐰 (v2.0.3)
 4. Starving Hyena 🐺 (v2.0.4)
+
+---
+
+## 🎯 Regras de Versionamento
+
+### Quando mudar versão:
+
+**Minor (X.Y.0):**
+- ✅ Nova feature implementada
+- ✅ Nova ferramenta adicionada
+- ✅ Novo módulo/seção
+- ✅ Funcionalidade significativa
+
+**Patch (X.Y.Z):**
+- ✅ Bug fixes apenas
+- ✅ Ajustes de UI/UX
+- ✅ Performance improvements
+- ✅ Security patches
+- ❌ SEM novas features
+
+**Major (X.0.0):**
+- ✅ Breaking changes
+- ✅ Refatoração completa
+- ✅ Mudança de arquitetura
+- ✅ Incompatibilidade com versão anterior
+
+### Quando NÃO mudar versão:
+- ❌ Apenas correções de bugs
+- ❌ Ajustes de texto/tradução
+- ❌ Mudanças de estilo/CSS
+- ❌ Refatoração interna (sem impacto)
+- ❌ Documentação
+
+---
+
+## 📝 Exemplo de Changelog
+
+\\\markdown
+# v2.1.0 "Lava Fiend" 🌋
+
+**Release Date:** 2025-XX-XX  
+**Type:** Minor Release
+
+## ✨ New Features
+- 🤖 Enhanced ML prediction models with 30% better accuracy
+- 📊 3 new chart types: Heatmap, Scatter Plot, Bubble Chart
+- 📈 Advanced data visualization dashboard
+
+## 🔧 Improvements
+- Performance optimization in chart rendering
+- Better mobile responsiveness
+
+## 🐛 Bug Fixes
+- Fixed chart tooltip positioning
+- Corrected ML prediction edge cases
+
+---
+
+# v2.0.1 "Rooster" 🐓
+
+**Release Date:** 2025-XX-XX  
+**Type:** Patch
+
+## 🐛 Bug Fixes Only
+- Fixed email masking display issue
+- Corrected Settings version display
+- Minor UI tweaks in Sidebar
+
+**No new features in this release.**
+\\\
 
 ---
 
 **Last Updated:** 2025-12-07  
 **Current Version:** v2.0.0-beta "Venerable Whale" 🐋
+
+**Próxima Versão:** Será definida quando a próxima feature estiver pronta!
