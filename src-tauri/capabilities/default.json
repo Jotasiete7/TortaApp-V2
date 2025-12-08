@@ -1,8 +1,10 @@
-﻿{
+{
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     {
@@ -15,7 +17,6 @@
           "href": "https://patreon.com/*"
         }
       ]
-    },
-    "shell:open"
+    }
   ]
 }
