@@ -21,6 +21,7 @@ import { Globe, LogOut, Shield, Eye, EyeOff, User } from 'lucide-react';
 import { IdentityService } from './services/identity';
 import { supabase } from './services/supabase';
 import { sanitizeItemName, sanitizeSeller } from './services/securityUtils';
+import { FeedbackWidget } from './components/FeedbackWidget';
 
 const App: React.FC = () => {
     // Use state to lock the callback view so it doesn't unmount if hash is cleared
@@ -391,9 +392,8 @@ const App: React.FC = () => {
                 </header>
                 {renderContent()}
             </main>
+            <FeedbackWidget />
         </div>
     );
 };
 export default App;
-
-

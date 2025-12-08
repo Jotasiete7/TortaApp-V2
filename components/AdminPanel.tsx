@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { ProtectedAdmin } from './auth/ProtectedAdmin';
-import { Megaphone, Plus, Trash2, Clock, Database, Smile, Gauge, Search, AlertTriangle, Trash, HardDrive, UserCheck, Settings } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Clock, Database, Smile, Gauge, Search, AlertTriangle, Trash, HardDrive, UserCheck, Settings, MessageSquare } from 'lucide-react';
 import { EmojiPicker } from './EmojiPicker';
 import { BulkDataUploader } from '../services/logProcessing';
 import { IntelligenceService, DbUsageStats } from '../services/intelligence';
 import { AdminUserManager } from './AdminUserManager';
 import { AdminSettings } from './AdminSettings';
 import { AdminAnomalyDetective } from './AdminAnomalyDetective';
+import { FeedbackManager } from './FeedbackManager';
 
 // Interface estendida para mensagens
 interface TickerMessageExtended {
@@ -33,7 +34,7 @@ export const AdminPanel: React.FC = () => {
 
 const AdminPanelContent: React.FC = () => {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState<'ticker' | 'upload' | 'users' | 'settings' | 'detective'>('ticker');
+    const [activeTab, setActiveTab] = useState<'ticker' | 'upload' | 'users' | 'settings' | 'detective' | 'feedback'>('ticker');
     const [messages, setMessages] = useState<TickerMessageExtended[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [color, setColor] = useState<'green' | 'red' | 'yellow' | 'cyan' | 'purple'>('green');
@@ -207,6 +208,8 @@ const AdminPanelContent: React.FC = () => {
                 <div className="inline-flex p-4 bg-amber-500/10 rounded-full mb-2">
                     {activeTab === 'ticker' ? (
                         <Megaphone className="w-10 h-10 text-amber-400" />
+                    ) : activeTab === 'feedback' ? (
+                        <MessageSquare className="w-10 h-10 text-amber-400" />
                     ) : (
                         <Database className="w-10 h-10 text-amber-400" />
                     )}
@@ -281,7 +284,7 @@ const AdminPanelContent: React.FC = () => {
             )}
 
             {/* Tab Navigation */}
-            <div className="flex justify-center gap-4 border-b border-slate-700 pb-1 mb-6">
+            <div className="flex justify-center gap-4 border-b border-slate-700 pb-1 mb-6 flex-wrap">
                 <button
                     onClick={() => setActiveTab('ticker')}
                     className={`px-6 py-3 font-medium text-sm transition-all border-b-2 ${activeTab === 'ticker'
@@ -316,6 +319,18 @@ const AdminPanelContent: React.FC = () => {
                     <div className="flex items-center gap-2">
                         <Database className="w-4 h-4" />
                         Bulk Upload
+                    </div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('feedback')}
+                    className={`px-6 py-3 font-medium text-sm transition-all border-b-2 ${activeTab === 'feedback'
+                        ? 'border-amber-500 text-amber-500'
+                        : 'border-transparent text-slate-400 hover:text-slate-200'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4" />
+                        Feedback
                     </div>
                 </button>
                 <button
@@ -359,6 +374,10 @@ const AdminPanelContent: React.FC = () => {
             ) : activeTab === 'upload' ? (
                 <div className="animate-fade-in">
                     <BulkDataUploader />
+                </div>
+            ) : activeTab === 'feedback' ? (
+                <div className="animate-fade-in">
+                   <FeedbackManager />
                 </div>
             ) : (
                 <div className="space-y-8 animate-fade-in">

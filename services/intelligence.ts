@@ -21,6 +21,7 @@ export interface PlayerStatsAdvanced extends PlayerStats {
     rank_position: number;
     xp: number;
     level: number;
+    user_id?: string; // ADDED for Realtime filtering
 }
 
 export interface PlayerLog {
