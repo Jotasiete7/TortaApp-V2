@@ -22,6 +22,9 @@ import { IdentityService } from './services/identity';
 import { supabase } from './services/supabase';
 import { sanitizeItemName, sanitizeSeller } from './services/securityUtils';
 import { FeedbackWidget } from './components/FeedbackWidget';
+import { UserSettings } from './components/UserSettings';
+import { LevelUpOverlay } from './components/gamification/LevelUpOverlay';
+import { SoundService } from './services/SoundService';
 
 const App: React.FC = () => {
     // Use state to lock the callback view so it doesn't unmount if hash is cleared
@@ -44,6 +47,12 @@ const App: React.FC = () => {
     const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
     const [myVerifiedNick, setMyVerifiedNick] = useState<string | null>(null);
     const [showEmail, setShowEmail] = useState(false);
+
+    // LEVEL UP STATE
+    const [showLevelUp, setShowLevelUp] = useState(false);
+    const [newLevel, setNewLevel] = useState(1);
+    const [prevLevel, setPrevLevel] = useState<number | null>(null);
+
     // Fetch verified nick on mount
     useEffect(() => {
         const fetchIdentity = async () => {
@@ -52,10 +61,51 @@ const App: React.FC = () => {
             const verified = nicks.find(n => n.is_verified);
             if (verified) {
                 setMyVerifiedNick(verified.game_nick);
+                // Also initialize SoundService here if needed, but it's lazy loaded
             }
         };
         fetchIdentity();
     }, [user]);
+
+    // Realtime Level Listener
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = supabase
+            .channel('global-level-listener')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'profiles',
+                    filter: `id=eq.${user.id}`
+                },
+                (payload) => {
+                    const freshLevel = (payload.new as any).level;
+                    // Check if level increased
+                    if (prevLevel !== null && freshLevel > prevLevel) {
+                        setNewLevel(freshLevel);
+                        setShowLevelUp(true);
+                        SoundService.play('levelup'); // Play immediately here too
+                    }
+                    setPrevLevel(freshLevel);
+                }
+            )
+            .subscribe();
+
+        // Initial fetch to set prevLevel to avoid false positive on mount
+        supabase.from('profiles').select('level').eq('id', user.id).single()
+            .then(({ data }) => {
+                if (data) setPrevLevel(data.level);
+            });
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user, prevLevel]);
+
+
     const handleHeaderProfileClick = () => {
         if (myVerifiedNick) {
             setSelectedPlayer(myVerifiedNick);
@@ -243,71 +293,7 @@ const App: React.FC = () => {
             case ViewState.ADMIN:
                 return <AdminPanel />;
             case ViewState.SETTINGS:
-                return (
-                    <div className="flex flex-col items-center justify-start h-full text-slate-500 pt-12 animate-fade-in">
-                        <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-md shadow-lg">
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold text-white mb-2">{t.appSettings}</h2>
-                                <div className="text-sm font-mono text-slate-600">v2.0.0-beta Venerable Whale 🐋</div>
-                            </div>
-                            <div className="space-y-6">
-                                {/* Language Switcher */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                                        <Globe className="w-4 h-4 text-amber-500" />
-                                        {t.language}
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                        <button
-                                            onClick={() => setLanguage('en')}
-                                            className={`py-2 text-sm font-medium rounded-md transition-all ${language === 'en' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
-                                        >
-                                            English
-                                        </button>
-                                        <button
-                                            onClick={() => setLanguage('pt')}
-                                            className={`py-2 text-sm font-medium rounded-md transition-all ${language === 'pt' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
-                                        >
-                                            Português
-                                        </button>
-                                    </div>
-                                </div>
-                                {/* Contact Info */}
-                                <div className="space-y-2 pt-4 border-t border-slate-700/50">
-                                    <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                                        <User className="w-4 h-4 text-emerald-500" />
-                                        Developer Contact
-                                    </label>
-                                    <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 space-y-3">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-400">Email:</span>
-                                            <span className="text-white font-mono select-all">tortadev@gmail.com</span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-400">In-game Nick:</span>
-                                            <span className="text-amber-400 font-bold">Jotasiete</span>
-                                        </div>
-                                        <p className="text-xs text-slate-500 mt-2 italic">
-                                            Report bugs or send feedback directly.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="pt-6 border-t border-slate-700 space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span>{t.dataSource}:</span>
-                                        <span className={`font-mono font-bold ${dataSource === 'FILE' ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                            {dataSource}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span>{t.version}:</span>
-                                        <span className="text-slate-400">2.0.0-beta</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
+                return <UserSettings />;
             default:
                 return (
                     <Dashboard
@@ -393,6 +379,8 @@ const App: React.FC = () => {
                 {renderContent()}
             </main>
             <FeedbackWidget />
+            {/* Global Gamification Overlays */}
+            <LevelUpOverlay level={newLevel} show={showLevelUp} onClose={() => setShowLevelUp(false)} />
         </div>
     );
 };
