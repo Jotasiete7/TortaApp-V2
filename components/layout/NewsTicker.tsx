@@ -52,6 +52,7 @@ export const NewsTicker: React.FC = () => {
         emojiService.loadEmojis().then(() => setEmojisLoaded(true));
         fetchMessages();
 
+        // Realtime subscription
         const channel = supabase
             .channel('ticker-updates')
             .on(
@@ -67,8 +68,14 @@ export const NewsTicker: React.FC = () => {
             )
             .subscribe();
 
+        // 🔄 AUTO-REFRESH: Polling a cada 60 segundos (backup + garantia)
+        const refreshInterval = setInterval(() => {
+            fetchMessages();
+        }, 60000); // 60 segundos
+
         return () => {
             supabase.removeChannel(channel);
+            clearInterval(refreshInterval);
         };
     }, []);
 
