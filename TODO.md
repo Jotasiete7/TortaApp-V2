@@ -14,6 +14,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 - **[Fix]**: Correção de bug.
 - **[Doc]**: Documentação.
 - **[Perm]**: Permanente/Recorrente (Melhoria contínua).
+- **[DevOps]**: Infraestrutura e Build.
 
 ---
 
@@ -24,6 +25,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Adicionar dica visual (ao lado ou abaixo do shout) explicando:<br>• Duração dos tickers<br>• Funcionamento do ganho de shouts<br>• Tickers Premium: Investimento vai para **Prêmios** e **Banco de Dados**<br>• Ticker de Admin<br>• Cores do Market Standard | ⬜ Pendente |
 | 002 | 🟡 Média | [Feature] | **Ticker Refresh** | Implementar atualização automática do ticker global ao lançar novos tickers. | ⬜ Pendente |
 | 003 | 🔴 Alta | [Feature] | **Suporte SFI (Southern Freedom Isles)** | Implementação do app para o cluster SFI (Ilhas e servers novos com chat de mercado separado do NFI). | ⬜ Pendente |
+| 004 | 🟢 Baixa | [DevOps] | **Compilação Linux** | Configurar ambiente ou pipeline (GitHub Actions) para gerar executáveis Linux (.deb/.AppImage) oficialmente. | ⬜ Pendente |
 
 ## 🔄 Permanente / Contínuo
 
