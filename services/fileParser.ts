@@ -1,4 +1,4 @@
-﻿
+
 /**
  * fileParser.ts
  * Service responsible for parsing and cleaning raw data from Wurm Online logs.
@@ -13,6 +13,8 @@ export interface TradeRecord {
     price_copper: number;
     item_name: string;
     // Add other fields as necessary
+    quality?: number;
+    rarity?: 'Common' | 'Rare' | 'Supreme' | 'Fantastic';
 }
 
 export class FileParser {
@@ -26,10 +28,10 @@ export class FileParser {
         "Only messages starting with WTB, WTS",
         "You can also use @<name> to",
         "common",
-        "rare",
+        // "rare", // Removed to allow rarity parsing 
         "null",
         "fragment",
-        "casket",
+        // "casket", // Removed to allow caskets
         "clay",
     ];
 
@@ -103,12 +105,28 @@ export class FileParser {
 
             const priceCopper = this.normalizePrice(priceStr);
 
+            // Extract Quality (QL)
+            let quality = 50.0;
+            const qlMatch = rawText.match(/QL:(\d+(\.\d+)?)/i);
+            if (qlMatch) {
+                quality = parseFloat(qlMatch[1]);
+            }
+
+            // Extract Rarity
+            let rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic' = 'Common';
+            const lowerRaw = rawText.toLowerCase();
+            if (lowerRaw.includes('fantastic')) rarity = 'Fantastic';
+            else if (lowerRaw.includes('supreme')) rarity = 'Supreme';
+            else if (lowerRaw.includes('rare')) rarity = 'Rare';
+
             parsedRecords.push({
                 timestamp: record.timestamp,
                 sender: sender,
                 raw_text: rawText,
                 item_name: itemName,
-                price_copper: priceCopper
+                price_copper: priceCopper,
+                quality: quality,
+                rarity: rarity
             });
         }
 
@@ -182,13 +200,13 @@ export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
                     name: (r.item_name || 'Unknown'),
                     price: r.price_copper,
                     quantity: 1, // Default to 1 if not parsed
-                    quality: 50, // Default
+                    quality: r.quality || 50,
                     seller: (r.sender || 'Unknown'),
                     timestamp: (r.timestamp ? new Date(r.timestamp).getTime() : Date.now()),
-                                        orderType: (r.raw_text ? (r.raw_text.toLowerCase().startsWith('wtb') ? 'WTB' : 'WTS') : 'UNKNOWN'),
-                    rarity: 'Common', // Default
+                    orderType: (r.raw_text ? (r.raw_text.toLowerCase().startsWith('wtb') ? 'WTB' : 'WTS') : 'UNKNOWN'),
+                    rarity: r.rarity || 'Common',
                     material: 'Unknown',
-                    searchableText: ((r.item_name || '') + ' ' + (r.sender || '') + ' ' + 'Common' + ' ' + 'Unknown').toLowerCase()
+                    searchableText: ((r.item_name || '') + ' ' + (r.sender || '') + ' ' + (r.rarity || 'Common') + ' ' + 'Unknown').toLowerCase()
                 }));
 
                 resolve(marketItems);
@@ -225,5 +243,3 @@ export const extractNameAndQty = (itemName: string): { cleanName: string, quanti
 
     return { cleanName: itemName, quantity: 1 };
 };
-
-

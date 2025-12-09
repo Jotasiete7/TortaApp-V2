@@ -7,6 +7,7 @@ import { SearchEngine } from '../../services/searchEngine';
 import { parseSearchText, getStructuredFilter } from '../../services/queryParser';
 import { SearchHelp } from '../ui/SearchHelp';
 import { ActiveFilters, ActiveFilter } from '../ui/ActiveFilters';
+import { CasketService } from '../../services/casketService';
 
 interface MarketTableProps {
     data: MarketItem[];
@@ -196,14 +197,14 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
             } else if (textQuery) {
                 // Fallback if search engine not ready
                 const lowerTerm = textQuery.toLowerCase();
-                                result = result.filter(item => 
-                    item.searchableText 
-                    ? item.searchableText.includes(lowerTerm)
-                    : (
-                        item.name.toLowerCase().includes(lowerTerm) ||
-                        item.seller.toLowerCase().includes(lowerTerm) ||
-                        item.material.toLowerCase().includes(lowerTerm)
-                    )
+                result = result.filter(item =>
+                    item.searchableText
+                        ? item.searchableText.includes(lowerTerm)
+                        : (
+                            item.name.toLowerCase().includes(lowerTerm) ||
+                            item.seller.toLowerCase().includes(lowerTerm) ||
+                            item.material.toLowerCase().includes(lowerTerm)
+                        )
                 );
             }
 
@@ -216,15 +217,15 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
         // FALLBACK: Simple text search
         else if (searchTerm && !useAdvancedSearch) {
             const lowerTerm = searchTerm.toLowerCase();
-                            result = result.filter(item => 
-                    item.searchableText 
+            result = result.filter(item =>
+                item.searchableText
                     ? item.searchableText.includes(lowerTerm)
                     : (
                         item.name.toLowerCase().includes(lowerTerm) ||
                         item.seller.toLowerCase().includes(lowerTerm) ||
                         item.material.toLowerCase().includes(lowerTerm)
                     )
-                );
+            );
         }
 
         if (filterRarity !== 'ALL') {
@@ -437,6 +438,17 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
                                                         {item.name}
                                                         {item.rarity === 'Rare' && <span className="px-1.5 py-0.5 text-[10px] uppercase font-bold bg-blue-500/20 text-blue-400 rounded border border-blue-500/30">Rare</span>}
                                                         {item.rarity === 'Supreme' && <span className="px-1.5 py-0.5 text-[10px] uppercase font-bold bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 shadow-[0_0_10px_rgba(34,211,238,0.2)]">Sup</span>}
+                                                        {CasketService.isCasket(item.name) && (() => {
+                                                            const info = CasketService.analyzeCasket(item.quality);
+                                                            return (
+                                                                <span className={`px-1.5 py-0.5 text-[10px] uppercase font-bold rounded border ${info.tier === 3 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                                                                        info.tier === 2 ? 'bg-slate-300/20 text-slate-200 border-slate-300/30' :
+                                                                            'bg-slate-600/20 text-slate-400 border-slate-600/30'
+                                                                    }`}>
+                                                                    Tier {info.tier}
+                                                                </span>
+                                                            )
+                                                        })()}
                                                     </span>
                                                     <span className="text-xs text-slate-500">{item.material !== 'Unknown' ? item.material : ''}</span>
                                                 </div>
@@ -497,6 +509,18 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
                                                 {evaluation.rating === 'FAIR' && evaluation.referencePrice > 0 && (
                                                     <span className="text-slate-500 text-xs">Fair</span>
                                                 )}
+                                                {CasketService.isCasket(item.name) && (() => {
+                                                    const info = CasketService.analyzeCasket(item.quality);
+                                                    const isDeal = item.price < (info.estimatedValueCopper * 0.9);
+                                                    return (
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-[10px] text-slate-400">Fair: {info.formattedValue}</span>
+                                                            {isDeal && (
+                                                                <span className="text-xs font-bold text-emerald-400 animate-pulse">BUY DEAL</span>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })()}
                                             </td>
                                             <td className="p-4 text-amber-500/80 font-medium">{item.seller !== 'Unknown' ? item.seller : '-'}</td>
                                         </tr>
@@ -562,6 +586,3 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
         </div>
     );
 };
-
-
-

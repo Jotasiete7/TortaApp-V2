@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -35,7 +36,24 @@ const App: React.FC = () => {
         }
     }, []);
     const { user, role, loading: authLoading, signOut } = useAuth();
-    const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
+
+    // CHANGED: Persist View State
+    const [currentView, setCurrentView] = useState<ViewState>(() => {
+        const saved = localStorage.getItem('torta_last_view');
+        // Validate if saved view is valid, otherwise default to DASHBOARD
+        if (saved && Object.values(ViewState).includes(saved as ViewState)) {
+            return saved as ViewState;
+        }
+        return ViewState.DASHBOARD;
+    });
+
+    // CHANGED: Save View State on Change
+    useEffect(() => {
+        if (currentView) {
+            localStorage.setItem('torta_last_view', currentView);
+        }
+    }, [currentView]);
+
     const [marketData, setMarketData] = useState<MarketItem[]>([]);
     const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
     const [referencePrices, setReferencePrices] = useState<Record<string, number>>({});

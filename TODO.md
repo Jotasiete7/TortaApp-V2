@@ -23,9 +23,11 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | ID | Prioridade | Tipo | Tarefa | Detalhes | Status |
 |----|------------|------|--------|----------|--------|
 | 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Adicionar dica visual (ao lado ou abaixo do shout) explicando:<br>• Duração dos tickers<br>• Funcionamento do ganho de shouts<br>• Tickers Premium: Investimento vai para **Prêmios** e **Banco de Dados**<br>• Ticker de Admin<br>• Cores do Market Standard | ⬜ Pendente |
-| 002 | 🟡 Média | [Feature] | **Ticker Refresh** | Implementar atualização automática do ticker global ao lançar novos tickers. | ⬜ Pendente |
+| 002 | 🟡 Média | [Feature] | **Ticker Refresh Automático** | Implementar refresh a cada 1 minuto para receber shouts instantaneamente. | ⬜ Pendente |
 | 003 | 🔴 Alta | [Feature] | **Suporte SFI (Southern Freedom Isles)** | Implementação do app para o cluster SFI (Ilhas e servers novos com chat de mercado separado do NFI). | ⬜ Pendente |
 | 004 | 🟢 Baixa | [DevOps] | **Compilação Linux** | Configurar ambiente ou pipeline (GitHub Actions) para gerar executáveis Linux (.deb/.AppImage) oficialmente. | ⬜ Pendente |
+| 005 | 🟡 Média | [Feature] | **Regra de Caskets (Trade)** | Desenvolver lógica para Caskets: Diferença de Tier e Preços no upload/identificação. | ⬜ Pendente |
+| 006 | 🔴 Alta | [Fix] | **Badges Automáticos (Bug)** | Corrigir bug onde usuários (ex: padrejarbas) sobem de nível mas não ganham badges iniciais. | ⬜ Pendente |
 
 ## 🔄 Permanente / Contínuo
 
