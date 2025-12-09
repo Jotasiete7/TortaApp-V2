@@ -1,0 +1,6 @@
+# Criar pasta .github e arquivo FUNDING.yml
+New-Item -Path ".github" -ItemType Directory -Force
+Set-Content -Path ".github\FUNDING.yml" -Value "patreon: tortawurmapp"
+git add .github/FUNDING.yml
+git commit -m "Add Patreon sponsor button"
+git push
