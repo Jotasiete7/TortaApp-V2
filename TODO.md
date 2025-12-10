@@ -31,6 +31,8 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 007 | 🟡 Média | [Feature] | **Login UX em Português** | Interface de login 100% em português com mensagens claras e tooltip para novos usuários. | ✅ Concluído (09/12) |
 | 008 | 🟢 Baixa | [Feature] | **Navegação Persistente** | Manter página atual ao dar F5 (localStorage). | ✅ Concluído (09/12) |
 | 009 | 🟡 Média | [Fix] | **Modal de Confirmação - Delete User** | Adicionar modal visual em português para confirmar deleção de usuários no Admin Panel. | ✅ Concluído (09/12) |
+| 010 | 🔴 Alta | [Fix] | **Activity Heatmap - Date Distribution** | Corrigir bug onde todas as barras aparecem empilhadas em vez de distribuídas no calendário. | ⬜ Pendente (Debug necessário) |
+| 011 | 🟡 Média | [Fix] | **Admin Delete - user_streaks Error** | Remover referência à tabela user_streaks que não existe na função admin_delete_user. | ⬜ Pendente (SQL criado) |
 
 ## 🔄 Permanente / Contínuo
 
@@ -44,8 +46,31 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 9  
-**Concluídas:** 7 (78%)  
-**Pendentes:** 2 (22%)
+**Total de Tarefas:** 11  
+**Concluídas:** 7 (64%)  
+**Pendentes:** 4 (36%)
 
 **Última Atualização:** 09/12/2024 - Versão "Venerable Whale" 🐋
+
+---
+
+## 📝 Notas da Sessão (09/12/2024)
+
+### ✅ Implementado Hoje:
+1. Sistema de Caskets (Parser + Tier badges + Fair Price)
+2. 18 Badges (Seller, Buyer, Treasure, Pioneer, Verdant Vicar, Beta Tester)
+3. Login em Português
+4. Ticker Auto-Refresh (60s)
+5. Navegação Persistente (localStorage)
+6. Admin Delete Fix (Foreign Key cleanup)
+7. Modal Delete Confirmation (português + "DELETAR")
+8. Tooltip Shout Info (modal explicativo)
+
+### ⚠️ Bugs Encontrados (Para Amanhã):
+1. **Activity Heatmap** - Barras empilhadas (fix aplicado mas não funcionou)
+2. **Admin Delete** - Erro "user_streaks does not exist" (SQL corrigido criado)
+
+### 📁 Arquivos Criados:
+- `44_fix_admin_delete_CORRECTED.sql` - Fix do admin delete
+- `CLEANUP_CASKETS_FIXED.sql` - Limpeza de caskets sem QL
+- `HEATMAP_FIX_WITH_DEBUG.md` - Debug do heatmap

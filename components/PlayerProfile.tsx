@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Trophy, TrendingUp, User, Activity, Calendar,
     ShoppingCart, Tag, Hash, Clock, ArrowLeft, Server,
@@ -41,26 +41,26 @@ const BadgeIconMap: Record<string, React.ElementType> = {
 
 // Map Lucide Interface Names -> Emoji Characters for Vivid SVGs
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '🛡️',
-    'Award': '🎖️',
-    'Star': '🌟',
-    'Heart': '💜',
-    'Gift': '🎁',
-    'Beaker': '🧪',
-    'TrendingUp': '📈',
-    'Trophy': '🏆',
-    'Flame': '🔥',
-    'Zap': '⚡',
-    'Crown': '👑',
-    'Diamond': '💎',
-    'Swords': '⚔️',
-    'Scroll': '📜',
-    'Map': '🗺️',
-    'Compass': '🧭',
-    'Anchor': '⚓',
-    'Hammer': '🔨',
-    'Axe': '🪓',
-    'Pickaxe': '⛏️'
+    'Shield': '???',
+    'Award': '???',
+    'Star': '??',
+    'Heart': '??',
+    'Gift': '??',
+    'Beaker': '??',
+    'TrendingUp': '??',
+    'Trophy': '??',
+    'Flame': '??',
+    'Zap': '?',
+    'Crown': '??',
+    'Diamond': '??',
+    'Swords': '??',
+    'Scroll': '??',
+    'Map': '???',
+    'Compass': '??',
+    'Anchor': '?',
+    'Hammer': '??',
+    'Axe': '??',
+    'Pickaxe': '??'
 };
 
 // VIBRANT BADGE STYLES
@@ -316,7 +316,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                             </div>
                             {/* XP Tooltip on Hover */}
                             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 text-xs px-2 py-1 rounded border border-slate-700 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
-                                {currentXP} / {isMaxLevel ? 'âˆž' : nextLevelXP} XP ({Math.round(progressPercent)}%)
+                                {currentXP} / {isMaxLevel ? '∞' : nextLevelXP} XP ({Math.round(progressPercent)}%)
                             </div>
                         </div>
 
@@ -387,10 +387,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                                     return d;
                                 });
                                 const chartData = days.map(day => {
-                                    const point = activity.find(a => {
-                                        const aDate = new Date(a.activity_date);
-                                        return aDate.toISOString().split('T')[0] === day.toISOString().split('T')[0];
-                                    });
+                                    const dayStr = day.toISOString().split('T')[0]; const point = activity.find(a => { const activityDateStr = a.activity_date.split('T')[0]; return activityDateStr === dayStr; });
                                     return { date: day, count: point ? point.trade_count : 0 };
                                 });
                                 const maxCount = Math.max(...chartData.map(d => d.count), 10);
@@ -522,6 +519,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
         </div>
     );
 };
+
 
 
 
