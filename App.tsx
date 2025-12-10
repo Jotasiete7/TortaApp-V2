@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -9,6 +8,7 @@ import { PriceManager } from './components/market/PriceManager';
 import { Login } from './components/auth/Login';
 import { AdminPanel } from './components/AdminPanel';
 import { NewsTicker } from './components/layout/NewsTicker';
+import { LiveTradeTicker } from './components/LiveTradeTicker';
 import { ProtectedAdmin } from './components/auth/ProtectedAdmin';
 import { AuthCallback } from './components/auth/AuthCallback';
 import { ViewState, MarketItem, ChartDataPoint, Language } from './types';
@@ -154,12 +154,12 @@ const App: React.FC = () => {
             // Only load from DB if no file data exists
             if (marketData.length === 0 && dataSource === 'NONE') {
                 try {
-                   // 📊 ENVIRONMENT-BASED LIMIT: Dev (5k) vs Production (50k)
-// Dev: Lighter load for local browser testing  
-// Production: Full data for installed Tauri app
-const limit = import.meta.env.DEV ? 5000 : 50000;
-const { data: logs, error } = await supabase.rpc('get_trade_logs_for_market', {
-    limit_count: limit
+                    // 📊 ENVIRONMENT-BASED LIMIT: Dev (5k) vs Production (50k)
+                    // Dev: Lighter load for local browser testing
+                    // Production: Full data for installed Tauri app
+                    const limit = import.meta.env.DEV ? 5000 : 50000;
+                    const { data: logs, error } = await supabase.rpc('get_trade_logs_for_market', {
+                        limit_count: limit
                     });
 
                     if (error) {
@@ -331,6 +331,9 @@ const { data: logs, error } = await supabase.rpc('get_trade_logs_for_market', {
         <div className="min-h-screen bg-slate-900 text-slate-200 font-sans">
             {/* Global News Ticker */}
             <NewsTicker />
+            {/* Live Market Ticker (Nasdaq Style) */}
+            <LiveTradeTicker />
+
             <Sidebar currentView={currentView} onNavigate={setCurrentView} language={language} />
             <main className="ml-64 p-8 min-h-screen transition-all duration-300 pt-16">
                 <header className="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">

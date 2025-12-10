@@ -2,7 +2,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import localforage from 'localforage';
-import { supabase } from '../supabaseClient';
+import { supabase } from './supabase';
 import { toast } from 'sonner';
 
 export interface Trade {

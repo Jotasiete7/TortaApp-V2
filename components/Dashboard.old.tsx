@@ -5,8 +5,6 @@ import { Leaderboard } from './gamification/Leaderboard';
 import { PlayerProfile } from './PlayerProfile';
 import { NickVerification } from './auth/NickVerification';
 import { ShoutBox } from './gamification/ShoutBox';
-import { LiveTradeSetup } from './LiveTradeSetup';
-import { LiveFeed } from './LiveFeed';
 import { MarketItem, Language } from '../types';
 import { translations } from '../services/i18n';
 import { IntelligenceService, GlobalStats } from '../services/intelligence';
@@ -144,7 +142,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (showIdentity) {
         return (
             <div className="space-y-6 animate-fade-in">
-                <LiveTradeSetup />
                 <button
                     onClick={() => setShowIdentity(false)}
                     className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-2"
@@ -159,9 +156,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Live Monitor Setup - Global Floating Button */}
-            <LiveTradeSetup />
-
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-white">{t.dashboardOverview}</h1>
@@ -211,11 +205,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     icon={Cpu}
                     color="purple"
                 />
-            </div>
-
-            {/* Live Terminal Feed */}
-            <div className="mt-6 mb-6 animate-fade-in">
-                <LiveFeed />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -309,3 +298,5 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
     );
 };
+
+
