@@ -22,7 +22,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 
 | ID | Prioridade | Tipo | Tarefa | Detalhes | Status |
 |----|------------|------|--------|----------|--------|
-| 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Adicionar dica visual (ao lado ou abaixo do shout) explicando:<br>• Duração dos tickers<br>• Funcionamento do ganho de shouts<br>• Tickers Premium: Investimento vai para **Prêmios** e **Banco de Dados**<br>• Ticker de Admin<br>• Cores do Market Standard | ⬜ Pendente |
+| 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Adicionar dica visual (ao lado ou abaixo do shout) explicando:<br>• Duração dos tickers<br>• Funcionamento do ganho de shouts<br>• Tickers Premium: Investimento vai para **Prêmios** e **Banco de Dados**<br>• Ticker de Admin<br>• Cores do Market Standard | ✅ Concluído (09/12) |
 | 002 | 🟡 Média | [Feature] | **Ticker Refresh Automático** | Implementar refresh a cada 1 minuto para receber shouts instantaneamente. | ✅ Concluído (09/12) |
 | 003 | 🔴 Alta | [Feature] | **Suporte SFI (Southern Freedom Isles)** | Implementação do app para o cluster SFI (Ilhas e servers novos com chat de mercado separado do NFI). | ⬜ Pendente |
 | 004 | 🟢 Baixa | [DevOps] | **Compilação Linux** | Configurar ambiente ou pipeline (GitHub Actions) para gerar executáveis Linux (.deb/.AppImage) oficialmente. | ⬜ Pendente |
@@ -45,7 +45,7 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 ## 📊 Resumo
 
 **Total de Tarefas:** 9  
-**Concluídas:** 6 (66%)  
-**Pendentes:** 3 (34%)
+**Concluídas:** 7 (78%)  
+**Pendentes:** 2 (22%)
 
 **Última Atualização:** 09/12/2024 - Versão "Venerable Whale" 🐋
