@@ -393,11 +393,11 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                                 const maxCount = Math.max(...chartData.map(d => d.count), 10);
 
                                 return chartData.map((point, i) => {
-                                    const height = (point.count / maxCount) * 100;
+                                    const height = Math.max(4, (point.count / maxCount) * 100);
                                     const isZero = point.count === 0;
                                     return (
                                         <div key={i} className="flex-1 flex flex-col justify-end group relative h-full">
-                                            <div className={`transition-all rounded-t-sm min-w-[2px] mx-0.5 ${isZero ? 'bg-slate-700/30 hover:bg-slate-700/50' : 'bg-blue-500 hover:bg-blue-400'}`} style={{ height: isZero ? '4px' : `${height}%`, opacity: isZero ? 0.2 : 1 }}></div>
+                                            <div className={`transition-all rounded-t-sm min-w-[2px] mx-0.5 ${isZero ? 'bg-slate-700/30 hover:bg-slate-700/50' : 'bg-blue-500 hover:bg-blue-400'}`} style={{ height: `${isZero ? 100 : height}%`, opacity: isZero ? 0.2 : 1 }}></div>
                                             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900 text-xs text-white p-2 rounded border border-slate-700 whitespace-nowrap z-20 shadow-xl">
                                                 <p className="font-bold">{point.date.toLocaleDateString()}</p>
                                                 <p className="text-slate-400">{point.count} trades</p>

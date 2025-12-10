@@ -24,15 +24,15 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 |----|------------|------|--------|----------|--------|
 | 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Adicionar dica visual (ao lado ou abaixo do shout) explicando:<br>• Duração dos tickers<br>• Funcionamento do ganho de shouts<br>• Tickers Premium: Investimento vai para **Prêmios** e **Banco de Dados**<br>• Ticker de Admin<br>• Cores do Market Standard | ✅ Concluído (09/12) |
 | 002 | 🟡 Média | [Feature] | **Ticker Refresh Automático** | Implementar refresh a cada 1 minuto para receber shouts instantaneamente. | ✅ Concluído (09/12) |
-| 003 | 🟢 Baixa | [Feature] | **Suporte SFI (Southern Freedom Isles)** | Implementação do app para o cluster SFI (Ilhas e servers novos com chat de mercado separado do NFI). | ⬜ Pendente |
+| 003 | 🔴 Alta | [Feature] | **Suporte SFI (Southern Freedom Isles)** | Implementação do app para o cluster SFI (Ilhas e servers novos com chat de mercado separado do NFI). | ⬜ Pendente |
 | 004 | 🟢 Baixa | [DevOps] | **Compilação Linux** | Configurar ambiente ou pipeline (GitHub Actions) para gerar executáveis Linux (.deb/.AppImage) oficialmente. | ⬜ Pendente |
 | 005 | 🟡 Média | [Feature] | **Regra de Caskets (Trade)** | Desenvolver lógica para Caskets: Diferença de Tier e Preços no upload/identificação. | ✅ Concluído (09/12) |
 | 006 | 🔴 Alta | [Fix] | **Badges Automáticos (Bug)** | Corrigir bug onde usuários (ex: padrejarbas) sobem de nível mas não ganham badges iniciais. | ✅ Concluído (09/12) |
 | 007 | 🟡 Média | [Feature] | **Login UX em Português** | Interface de login 100% em português com mensagens claras e tooltip para novos usuários. | ✅ Concluído (09/12) |
 | 008 | 🟢 Baixa | [Feature] | **Navegação Persistente** | Manter página atual ao dar F5 (localStorage). | ✅ Concluído (09/12) |
 | 009 | 🟡 Média | [Fix] | **Modal de Confirmação - Delete User** | Adicionar modal visual em português para confirmar deleção de usuários no Admin Panel. | ✅ Concluído (09/12) |
-| 010 | 🔴 Alta | [Fix] | **Activity Heatmap - Date Distribution** | Corrigir bug onde todas as barras aparecem empilhadas em vez de distribuídas no calendário. | ✅ Concluído (10/12) |
-| 011 | 🟡 Média | [Fix] | **Admin Delete - user_streaks Error** | Remover referência à tabela user_streaks que não existe na função admin_delete_user. | ✅ Concluído |
+| 010 | 🔴 Alta | [Fix] | **Activity Heatmap - Date Distribution** | Corrigir bug onde todas as barras aparecem empilhadas em vez de distribuídas no calendário. | ⬜ Pendente (Debug necessário) |
+| 011 | 🟡 Média | [Fix] | **Admin Delete - user_streaks Error** | Remover referência à tabela user_streaks que não existe na função admin_delete_user. | ⬜ Pendente (SQL criado) |
 
 ## 🔄 Permanente / Contínuo
 
@@ -47,10 +47,10 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 ## 📊 Resumo
 
 **Total de Tarefas:** 11  
-**Concluídas:** 9 (82%)  
-**Pendentes:** 2 (18%)
+**Concluídas:** 7 (64%)  
+**Pendentes:** 4 (36%)
 
-**Última Atualização:** 10/12/2024 - Versão "Venerable Whale" 🐋
+**Última Atualização:** 09/12/2024 - Versão "Venerable Whale" 🐋
 
 ---
 
