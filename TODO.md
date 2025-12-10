@@ -74,3 +74,25 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 - `44_fix_admin_delete_CORRECTED.sql` - Fix do admin delete
 - `CLEANUP_CASKETS_FIXED.sql` - Limpeza de caskets sem QL
 - `HEATMAP_FIX_WITH_DEBUG.md` - Debug do heatmap
+
+
+## 📝 Nota de Performance (10/12/2024)
+
+**IMPORTANTE**: App.tsx foi modificado para usar limite baseado em ambiente:
+- DEV: 5.000 registros (mais leve para testes no navegador)
+- PROD: 50.000 registros (dados completos para app instalado)
+
+Backup salvo em: `App.tsx.backup_before_dev_limit`
+
+Quando compilar nova versão, verificar se o limite está correto.
+
+
+## 📝 Nota de Performance (10/12/2024)
+
+**IMPORTANTE**: App.tsx foi modificado para usar limite baseado em ambiente:
+- DEV: 5.000 registros (mais leve para testes no navegador)
+- PROD: 50.000 registros (dados completos para app instalado)
+
+Backup salvo em: `App.tsx.backup_before_dev_limit`
+
+Quando compilar nova versão, verificar se o limite está correto.

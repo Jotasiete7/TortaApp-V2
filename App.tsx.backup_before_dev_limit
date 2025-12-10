@@ -154,12 +154,10 @@ const App: React.FC = () => {
             // Only load from DB if no file data exists
             if (marketData.length === 0 && dataSource === 'NONE') {
                 try {
-                   // 📊 ENVIRONMENT-BASED LIMIT: Dev (5k) vs Production (50k)
-// Dev: Lighter load for local browser testing  
-// Production: Full data for installed Tauri app
-const limit = import.meta.env.DEV ? 5000 : 50000;
-const { data: logs, error } = await supabase.rpc('get_trade_logs_for_market', {
-    limit_count: limit
+                    // CHAMADA DIRETA AO SUPABASE (bypass IntelligenceService)
+                    // 📊 ENVIRONMENT-BASED LIMIT: Dev (5k) vs Production (50k)\r\n                    // Dev: Lighter load for local browser testing\r\n                    // Production: Full data for installed Tauri app\r\n                    const limit = import.meta.env.DEV ? 5000 : 50000;
+                    const { data: logs, error } = await supabase.rpc('get_trade_logs_for_market', {
+                        limit_count: limit
                     });
 
                     if (error) {
