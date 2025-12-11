@@ -28,7 +28,7 @@ impl StandardLogParser {
     fn new() -> Self {
         // Format: [14:26:05] <PlayerName> Message...
         Self {
-            regex: Regex::new(r"^\[(\d{2}:\d{2}:\d{2})\]\s+<([^>]+)>\s+(.+)").unwrap(),
+            regex: Regex::new(r"^\\[(\\d{2}:\\d{2}:\\d{2})\\]\\s+<([^>]+)>\\s+(.+)").unwrap(),
         }
     }
 }
@@ -68,12 +68,33 @@ impl FileWatcher {
 
         let (tx, rx) = channel();
         
-        // Initial Seek to End
+        // Read last 10 lines for context, then position at end for new data
         match File::open(path) {
             Ok(mut file) => {
+                // Read all lines first
+                let reader = BufReader::new(&file);
+                let all_lines: Vec<String> = reader.lines()
+                    .filter_map(|l| l.ok())
+                    .collect();
+                
+                // Get last 10 lines
+                let recent_lines: Vec<&String> = all_lines.iter()
+                    .rev()
+                    .take(10)
+                    .collect();
+                
+                // Parse and emit recent lines (in correct order)
+                let parser = StandardLogParser::new();
+                for line in recent_lines.iter().rev() {
+                    if let Some(trade) = parser.parse(line) {
+                        let _ = app_handle.emit("trade-event", trade);
+                    }
+                }
+                
+                // Now seek to end for monitoring new lines
                 if let Ok(pos) = file.seek(SeekFrom::End(0)) {
                     self.last_pos = pos;
-                    println!("Watcher started at position: {}", pos);
+                    println!("Watcher started at position: {} (after reading last 10 lines)", pos);
                 }
             }
             Err(e) => return Err(format!("Failed to open file: {}", e)),

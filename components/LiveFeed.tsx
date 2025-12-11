@@ -1,107 +1,129 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { supabase } from '../services/supabase';
-import { Activity, Terminal } from 'lucide-react';
-import { toast } from 'sonner';
+import { listen } from '@tauri-apps/api/event';
+import { Terminal, Trash2 } from 'lucide-react';
 
-interface LiveTrade {
-    id: number;
+interface ParsedTrade {
+    timestamp: string;
     nick: string;
     message: string;
-    server: string;
-    verification_status: 'PENDING' | 'VERIFIED';
-    source_count: number;
-    created_at: string;
-    trade_timestamp_utc: string;
+}
+
+interface DisplayTrade extends ParsedTrade {
+    id: number;
+    is_live_marker?: boolean;
 }
 
 export const LiveFeed = () => {
-    const [trades, setTrades] = useState<LiveTrade[]>([]);
-    const [isConnected, setIsConnected] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const [trades, setTrades] = useState<DisplayTrade[]>([]);
+    const [isMonitoring, setIsMonitoring] = useState(false);
+    const scrollEndRef = useRef<HTMLDivElement>(null);
+    const tradeIdCounter = useRef(0);
 
     useEffect(() => {
-        fetchRecentTrades();
+        // Listen to trade-event from Rust watcher
+        const unlisten = listen<ParsedTrade>('trade-event', (event) => {
+            const newTrade: DisplayTrade = {
+                ...event.payload,
+                id: tradeIdCounter.current++
+            };
 
-        const channel = supabase
-            .channel('live-trades')
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'trade_logs' },
-                (payload) => {
-                    const newTrade = payload.new as LiveTrade;
-                    setTrades(prev => [newTrade, ...prev].slice(0, 50));
+            setTrades(prev => {
+                // Add marker before first live trade
+                if (prev.length > 0 && !prev.some(t => t.is_live_marker)) {
+                    const marker: DisplayTrade = {
+                        id: -1,
+                        timestamp: '',
+                        nick: '',
+                        message: '',
+                        is_live_marker: true
+                    };
+                    return [...prev, marker, newTrade].slice(-50);
                 }
-            )
-            .subscribe((status) => {
-                setIsConnected(status === 'SUBSCRIBED');
+                return [...prev, newTrade].slice(-50);
             });
 
+            setIsMonitoring(true);
+        });
+
         return () => {
-            supabase.removeChannel(channel);
+            unlisten.then(fn => fn());
         };
     }, []);
 
-    const fetchRecentTrades = async () => {
-        const { data } = await supabase
-            .from('trade_logs')
-            .select('*')
-            .order('trade_timestamp_utc', { ascending: false })
-            .limit(20);
-        if (data) setTrades(data as LiveTrade[]);
-    };
+    // Auto-scroll to bottom on new message
+    useEffect(() => {
+        scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [trades]);
 
-    const formatTime = (isoString: string) => {
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const handleClear = () => {
+        setTrades([]);
+        tradeIdCounter.current = 0;
     };
 
     return (
-        <div className="w-full bg-black/90 border-t-2 border-b-2 border-slate-800 font-mono text-sm shadow-xl">
-            {/* Header / Status Bar */}
-            <div className="bg-slate-900/50 px-2 py-1 flex justify-between items-center text-xs text-slate-500 border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                    <Terminal size={12} />
-                    <span>LIVE TRADE MONITOR // {isConnected ? 'ONLINE' : 'OFFLINE'}</span>
+        <div className="w-full bg-[#0a0f14] border-t border-slate-800 shadow-2xl flex flex-col font-mono text-sm h-64 relative overflow-hidden group">
+            {/* Terminal Header */}
+            <div className={`h-8 px-4 flex items-center justify-between border-b border-slate-800 ${isMonitoring ? 'bg-emerald-950/20' : 'bg-slate-800/50'}`}>
+                <div className="flex items-center gap-3">
+                    <Terminal size={14} className="text-slate-500" />
+                    <span className="text-xs font-bold text-slate-400 tracking-wider">
+                        _ LIVE FEED // <span className={isMonitoring ? "text-emerald-400" : "text-slate-500"}>{isMonitoring ? 'MONITORING' : 'WAITING'}</span>
+                    </span>
                 </div>
-                <div className="flex items-center gap-1">
-                    <Activity size={10} className={isConnected ? "text-green-500 animate-pulse" : "text-red-500"} />
+
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleClear}
+                        className="text-[10px] text-slate-500 hover:text-rose-400 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Clear Feed"
+                    >
+                        <Trash2 size={12} /> CLEAR
+                    </button>
+                    <span className="text-[10px] text-slate-600 uppercase tracking-widest hidden sm:block border-l border-slate-800 pl-3 ml-3">
+                        {isMonitoring ? 'READING FILE' : 'CONFIGURE MONITOR'}
+                    </span>
                 </div>
             </div>
 
-            {/* Terminal Window */}
-            <div
-                ref={scrollRef}
-                className="h-48 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent flex flex-col-reverse"
-                style={{ fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace" }}
-            >
+            {/* Matrix Overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10" style={{ backgroundSize: "100% 2px, 3px 100%" }}></div>
+
+            {/* Content - Bottom stacking like game chat */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-1 relative z-0 scrollbar-thin scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-700 flex flex-col justify-end">
                 {trades.length === 0 && (
-                    <div className="text-slate-600 italic px-2">Waiting for trade signals...</div>
+                    <div className="flex-1 flex items-center justify-center text-slate-700 animate-pulse text-xs self-center">
+                        [WAITING FOR DATA STREAM - Configure o monitor no botão inferior direito]
+                    </div>
                 )}
 
-                {trades.map((trade) => (
-                    <div key={trade.id} className="whitespace-pre-wrap leading-tight py-0.5 hover:bg-white/5 transition-colors">
-                        {/* Timestamp: Gold/Orange [19:14:04] */}
-                        <span className="text-amber-500">[{formatTime(trade.trade_timestamp_utc)}]</span>
-                        {' '}
-                        {/* Nick: Light Blue <Nick> */}
-                        <span className="text-cyan-400">&lt;{trade.nick}&gt;</span>
-                        {' '}
-                        {/* Server: Orange (Server) */}
-                        <span className="text-orange-400">({trade.server})</span>
-                        {' '}
-                        {/* Message: Grey/White */}
-                        <span className={`trade-message ${trade.verification_status === 'VERIFIED' ? 'text-white' : 'text-slate-400'}`}>
-                            {trade.message}
-                        </span>
-
-                        {/* Verification Badge (Subtle) */}
-                        {trade.verification_status === 'VERIFIED' && (
-                            <span className="ml-2 text-[10px] bg-emerald-900/50 text-emerald-400 px-1 rounded border border-emerald-800/50">
-                                ✓ VERIFIED
+                {trades.map((trade, i) => (
+                    trade.is_live_marker ? (
+                        <div key="marker" className="py-2 flex items-center gap-4 shrink-0">
+                            <div className="h-px bg-emerald-500/30 flex-1"></div>
+                            <div className="text-[9px] text-emerald-500/80 font-bold uppercase tracking-widest animate-pulse">Live Monitor Started</div>
+                            <div className="h-px bg-emerald-500/30 flex-1"></div>
+                        </div>
+                    ) : (
+                        <div
+                            key={trade.id}
+                            className="flex items-start gap-3 hover:bg-white/5 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in"
+                        >
+                            <span className="text-slate-500 text-xs shrink-0 font-light">
+                                [{trade.timestamp}]
                             </span>
-                        )}
-                    </div>
+
+                            <span className="text-blue-400 font-bold shrink-0 cursor-pointer hover:underline">
+                                {trade.nick}
+                            </span>
+
+                            <span className="text-emerald-300/90 break-all">
+                                {trade.message}
+                            </span>
+                        </div>
+                    )
                 ))}
+                {/* Scroll Anchor */}
+                <div ref={scrollEndRef} className="shrink-0" />
             </div>
         </div>
     );
