@@ -10,10 +10,13 @@ use tauri::{AppHandle, Emitter, Manager};
 
 // --- LOGGING HELPER ---
 fn log_debug(msg: &str) {
-    // Try to write to a file in the current working directory (usually where tauri runs)
-    if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open("C:\\start_trade_debug.txt") {
+    // Write to a safe, known location in the artifacts directory
+    let path = r"C:\Users\Pichau\.gemini\antigravity\brain\866f9c0a-69ae-4634-9410-a60e94a3ea1e\trade_debug.txt";
+    // Using OpenOptions to append
+    if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
         let _ = writeln!(file, "{}", msg);
     } else {
+        // Fallback to println if file write fails, though this often gets swallowed
         println!("RUST LOG FAIL: {}", msg);
     }
 }
@@ -36,7 +39,9 @@ struct StandardLogParser {
 impl StandardLogParser {
     fn new() -> Self {
         Self {
-            regex: Regex::new(r"^\\[(\d{2}:\d{2}:\d{2})\\]\s+<([^>]+)>\s+(.+)").unwrap(),
+            // FIXED REGEX: No double backslash at start.
+            // r"^[" in Rust raw string matches a literal '['.
+            regex: Regex::new(r"^\[(\d{2}:\d{2}:\d{2})\]\s+<([^>]+)>\s+(.+)").unwrap(),
         }
     }
 }
@@ -89,6 +94,9 @@ impl FileWatcher {
                 log_debug(&format!("Found {} total lines, reading last {}", all_lines.len(), recent.len()));
 
                 let parser = StandardLogParser::new();
+                // Iterate normally (oldest to newest among the recent) or reverse?
+                // Logic: prevent spamming old trades.
+                // Reversing 'recent' means we look at the very last line first.
                 for line in recent.iter().rev() {
                     log_debug(&format!("Checking line: '{}'", line)); // LOG RAW LINE
                     if let Some(trade) = parser.parse(line) {
@@ -140,10 +148,13 @@ impl FileWatcher {
                                             if let Ok(l) = line {
                                                 current_pos += l.len() as u64 + 1;
                                                 // +1 is naive, but workable for now
+                                                log_debug(&format!("Checking LIVE line: '{}'", l));
                                                 
                                                 if let Some(trade) = parser.parse(&l) {
                                                     log_debug(&format!("Emitting LIVE trade: {}", trade.message));
                                                     let _ = app_handle.emit("trade-event", trade);
+                                                } else {
+                                                    log_debug("Failed to parse LIVE line!");
                                                 }
                                             }
                                         }

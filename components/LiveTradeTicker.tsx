@@ -1,73 +1,145 @@
-import React, { useEffect, useState } from 'react';
-import { listen } from '@tauri-apps/api/event';
-import { Activity, Radio, ArrowRight } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Activity, Radio } from 'lucide-react';
+import { useTradeEvents } from '../contexts/TradeEventContext';
 
-interface ParsedTrade {
-    timestamp: string;
-    nick: string;
-    message: string;
-}
+// Helper to detect and linkify URLs
+const linkifyMessage = (message: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = message.split(urlRegex);
+    
+    return parts.map((part, idx) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a 
+                    key={idx}
+                    href={part}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 underline"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {part}
+                </a>
+            );
+        }
+        return <span key={idx}>{part}</span>;
+    });
+};
 
 export const LiveTradeTicker = () => {
-    const [latestTrade, setLatestTrade] = useState<ParsedTrade | null>(null);
-    const [isMonitoring, setIsMonitoring] = useState(false);
+    const { trades, isMonitoring } = useTradeEvents();
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
 
-    useEffect(() => {
-        // Listen to trade-event from Rust watcher
-        let unlistenFn: (() => void) | undefined;
-        const setupListener = async () => {
-            try {
-                // @ts-ignore
-                if (!window.__TAURI_INTERNALS__) return;
-                unlistenFn = await listen<ParsedTrade>('trade-event', (event) => {
-                    setLatestTrade(event.payload);
-                    setIsMonitoring(true);
-                });
-            } catch (e) { console.warn(e); }
-        };
-        setupListener();
-        return () => { if (unlistenFn) unlistenFn(); };
-    }, []);
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!scrollRef.current) return;
+        setIsDragging(true);
+        setStartX(e.pageX - scrollRef.current.offsetLeft);
+        setScrollLeft(scrollRef.current.scrollLeft);
+        scrollRef.current.style.cursor = 'grabbing';
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        if (scrollRef.current) {
+            scrollRef.current.style.cursor = 'grab';
+        }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2;
+        scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handleMouseLeave = () => {
+        if (isDragging) {
+            setIsDragging(false);
+            if (scrollRef.current) {
+                scrollRef.current.style.cursor = 'grab';
+            }
+        }
+    };
 
     return (
-        <div className="fixed top-8 left-0 right-0 h-8 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 flex items-center z-[90] shadow-md select-none">
+        <div className="fixed top-8 left-0 right-0 h-8 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 flex items-center z-[90] shadow-md select-none overflow-hidden">
             {/* Label */}
             <div className="bg-emerald-900/40 px-3 h-full flex items-center justify-center gap-2 border-r border-slate-800 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                 <Activity size={14} className={isMonitoring ? "text-emerald-400 animate-pulse" : "text-slate-500"} />
-                <span className="text-[10px] font-bold text-emerald-500 tracking-wider hidden sm:block">LAST TRADE</span>
+                <span className="text-[10px] font-bold text-emerald-500 tracking-wider hidden sm:block">LIVE FEED</span>
             </div>
 
-            {/* Content Container - Static, No Scroll */}
-            <div className="flex-1 flex items-center px-4 overflow-hidden relative h-full">
-                {!latestTrade ? (
-                    <div className="flex items-center gap-2 text-xs font-mono text-slate-500 animate-pulse">
+            {/* Scrolling Content */}
+            <div 
+                ref={scrollRef}
+                className="flex-1 relative h-full overflow-x-auto overflow-y-hidden scrollbar-hide"
+                style={{ cursor: trades.length > 0 ? 'grab' : 'default' }}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+            >
+                {trades.length === 0 ? (
+                    <div className="flex items-center gap-2 px-4 h-full text-xs font-mono text-slate-500 animate-pulse">
                         <Radio size={12} />
                         WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)
                     </div>
                 ) : (
-                    <div className="flex items-center gap-3 w-full animate-in slide-in-from-bottom-2 fade-in">
-                        {/* Time */}
-                        <span className="text-slate-600 font-mono text-[10px]">
-                            [{latestTrade.timestamp}]
-                        </span>
+                    <div className={`flex items-center h-full gap-8 whitespace-nowrap ${!isDragging ? 'animate-scroll-left' : ''}`}>
+                        {/* Duplicate trades for seamless loop */}
+                        {[...trades, ...trades].map((trade, idx) => (
+                            <div key={idx} className="flex items-center gap-3 shrink-0">
+                                {/* Time */}
+                                <span className="text-slate-600 font-mono text-[10px]">
+                                    [{trade.timestamp}]
+                                </span>
 
-                        {/* Nick */}
-                        <span className="text-blue-400 font-bold text-xs">
-                            {latestTrade.nick}
-                        </span>
+                                {/* Nick */}
+                                <span className="text-blue-400 font-bold text-xs">
+                                    {trade.nick}
+                                </span>
 
-                        <ArrowRight size={12} className="text-slate-700" />
+                                {/* Message with clickable links */}
+                                <span className="text-slate-300 text-xs font-medium">
+                                    {linkifyMessage(trade.message)}
+                                </span>
 
-                        {/* Message - Truncated if too long */}
-                        <span className="text-slate-300 text-xs font-medium truncate flex-1 leading-none">
-                            {latestTrade.message}
-                        </span>
+                                {/* Separator */}
+                                <span className="text-slate-700 text-xs">•</span>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
 
             {/* Blinking Cursor Effect */}
             <div className={`w-1.5 h-4 bg-emerald-500/50 mr-4 animate-pulse ${isMonitoring ? 'opacity-100' : 'opacity-0'}`}></div>
+
+            {/* CSS Animation */}
+            <style jsx>{`
+                @keyframes scroll-left {
+                    0% {
+                        transform: translateX(0);
+                    }
+                    100% {
+                        transform: translateX(-50%);
+                    }
+                }
+                .animate-scroll-left {
+                    animation: scroll-left 30s linear infinite;
+                }
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
     );
 };
