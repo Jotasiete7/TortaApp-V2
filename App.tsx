@@ -9,6 +9,7 @@ import { Login } from './components/auth/Login';
 import { AdminPanel } from './components/AdminPanel';
 import { NewsTicker } from './components/layout/NewsTicker';
 import { LiveTradeTicker } from './components/LiveTradeTicker';
+import { LiveTradeSetup } from './components/LiveTradeSetup';
 import { ProtectedAdmin } from './components/auth/ProtectedAdmin';
 import { AuthCallback } from './components/auth/AuthCallback';
 import { ViewState, MarketItem, ChartDataPoint, Language } from './types';
@@ -402,6 +403,8 @@ const App: React.FC = () => {
                 {renderContent()}
             </main>
             <FeedbackWidget />
+            {/* Live Trade Configuration */}
+            <LiveTradeSetup />
             {/* Global Gamification Overlays */}
             <LevelUpOverlay level={newLevel} show={showLevelUp} onClose={() => setShowLevelUp(false)} />
         </div>

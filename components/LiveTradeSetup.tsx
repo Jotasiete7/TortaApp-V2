@@ -23,6 +23,12 @@ export const LiveTradeSetup = () => {
     }, []);
 
     const handleFileSelect = async () => {
+        // Browser Guard
+        // @ts-ignore
+        if (!window.__TAURI_INTERNALS__) {
+            toast.info("No navegador, cole o caminho manualmente abaixo.");
+            return;
+        }
         try {
             const selected = await open({
                 multiple: false,
@@ -70,6 +76,15 @@ export const LiveTradeSetup = () => {
         }
         if (!filePath) {
             toast.error("Selecione o arquivo de log.");
+            return;
+        }
+
+        // Browser Guard
+        // @ts-ignore
+        if (!window.__TAURI_INTERNALS__) {
+            toast.warning("Modo Browser Detectado: O monitoramento só funciona no App Desktop.");
+            setIsWatching(true);
+            setIsOpen(false);
             return;
         }
 

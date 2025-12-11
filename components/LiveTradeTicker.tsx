@@ -14,14 +14,19 @@ export const LiveTradeTicker = () => {
 
     useEffect(() => {
         // Listen to trade-event from Rust watcher
-        const unlisten = listen<ParsedTrade>('trade-event', (event) => {
-            setLatestTrade(event.payload);
-            setIsMonitoring(true);
-        });
-
-        return () => {
-            unlisten.then(fn => fn());
+        let unlistenFn: (() => void) | undefined;
+        const setupListener = async () => {
+            try {
+                // @ts-ignore
+                if (!window.__TAURI_INTERNALS__) return;
+                unlistenFn = await listen<ParsedTrade>('trade-event', (event) => {
+                    setLatestTrade(event.payload);
+                    setIsMonitoring(true);
+                });
+            } catch (e) { console.warn(e); }
         };
+        setupListener();
+        return () => { if (unlistenFn) unlistenFn(); };
     }, []);
 
     return (
