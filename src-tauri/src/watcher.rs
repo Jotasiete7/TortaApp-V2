@@ -171,8 +171,15 @@ pub struct WatcherState(pub Mutex<Option<FileWatcher>>);
 
 #[tauri::command]
 pub fn start_trade_watcher(path: String, state: tauri::State<WatcherState>, app: AppHandle) -> Result<(), String> {
+    println!("🦀 RUST: start_trade_watcher called with path: {}", path);
     let mut watcher = FileWatcher::new(path);
-    watcher.start(app)?;
+    match watcher.start(app) {
+        Ok(_) => println!("🦀 RUST: Watcher started successfully"),
+        Err(e) => {
+            println!("🦀 RUST: Watcher error: {}", e);
+            return Err(e);
+        }
+    };
     
     // Save to state if we want to stop it later (not implemented yet)
     // *state.0.lock().unwrap() = Some(watcher); 

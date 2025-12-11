@@ -160,7 +160,8 @@ class LiveTradeMonitor {
 
         // 2. Start Watcher (Backend)
         try {
-            await invoke('start_trade_watcher', { path: filePath });
+            console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
+            const res = await invoke('start_trade_watcher', { path: filePath }); console.log('✅ Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
             toast.error(`Falha ao iniciar watcher: ${err}`);
