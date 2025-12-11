@@ -128,11 +128,16 @@ class LiveTradeMonitor {
     // --- Public Methods ---
 
     public async startWatching(filePath: string) {
+        console.log("🚀 LiveTradeMonitor: BYPASSING PERMISSION CHECK");
+        /*
+        // 1. Check Permissions (DISABLED)
+        */
+        
         // BYPASS: Permissions check commented out to prevent freeze
         /*
         try {
-            const allowed = await invoke<boolean>('check_file_access', { path: filePath });
-            if (!allowed) {
+            // const allowed = await invoke<boolean>('check_file_access', { path: filePath });
+            // if (!allowed) {
                 toast.error('Sem permissão de leitura no arquivo.');
                 return;
             }

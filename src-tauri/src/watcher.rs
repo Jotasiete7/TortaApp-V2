@@ -90,9 +90,12 @@ impl FileWatcher {
 
                 let parser = StandardLogParser::new();
                 for line in recent.iter().rev() {
+                    log_debug(&format!("Checking line: '{}'", line)); // LOG RAW LINE
                     if let Some(trade) = parser.parse(line) {
                          log_debug(&format!("Emitting initial trade: {}", trade.message));
                          let _ = app_handle.emit("trade-event", trade);
+                    } else {
+                         log_debug("Failed to parse this line!"); // LOG FAILURE
                     }
                 }
                 
