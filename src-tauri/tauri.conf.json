@@ -19,7 +19,13 @@
             "icons/icon.icns",
             "icons/icon.ico"
         ],
-        "windows": {}
+        "windows": {
+            "protocol": {
+                "schemes": [
+                    "torta-app"
+                ]
+            }
+        }
     },
     "app": {
         "windows": [

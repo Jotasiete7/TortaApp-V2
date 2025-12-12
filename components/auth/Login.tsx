@@ -192,6 +192,44 @@ export const Login: React.FC = () => {
                 <div className="mt-6 text-center text-xs text-slate-500">
                     <p>Ao entrar, você concorda com nossos Termos de Serviço</p>
                 </div>
+                {/* Manual Token Fallback */}
+                <div className="mt-4 pt-4 border-t border-slate-700/50">
+                    <button
+                        onClick={() => {
+                            const url = prompt('Cole aqui a URL completa do navegador (ex: torta-app://...#access_token=...):');
+                            if (url) {
+                                try {
+                                    let hash = url.split('#')[1];
+                                    if (!hash && url.includes('?')) hash = url.split('?')[1];
+                                    
+                                    if (hash) {
+                                        const params = new URLSearchParams(hash);
+                                        const access_token = params.get('access_token');
+                                        const refresh_token = params.get('refresh_token');
+                                        
+                                        if (access_token && refresh_token) {
+                                            const { supabase } = require('../../services/supabase');
+                                            supabase.auth.setSession({ access_token, refresh_token })
+                                                .then(({ error }: any) => {
+                                                    if (error) alert('Erro: ' + error.message);
+                                                });
+                                        } else {
+                                            alert('Token nao encontrado na URL.');
+                                        }
+                                    } else {
+                                        alert('URL invalida.');
+                                    }
+                                } catch (e) {
+                                    alert('Erro ao processar URL.');
+                                }
+                            }
+                        }}
+                        className="text-xs text-slate-600 hover:text-slate-400 underline"
+                    >
+                        Problemas no Login? Entrar Manualmente
+                    </button>
+                </div>
+
             </div>
         </div>
     );
