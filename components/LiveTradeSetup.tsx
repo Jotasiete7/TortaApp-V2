@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { liveTradeMonitor } from '../services/LiveTradeMonitor';
-import { useTradeEvents } from '../contexts/TradeEventContext';
-import { Shield, CheckCircle, AlertTriangle, Play, X, FolderSearch, RefreshCw, Trash2, Settings, Gauge, Bell, Plus, MessageSquare } from 'lucide-react';
+import { useTradeEvents, TimerConfig } from '../contexts/TradeEventContext';
+import { Shield, CheckCircle, AlertTriangle, Play, X, FolderSearch, RefreshCw, Trash2, Settings, Gauge, Bell, Plus, MessageSquare, Timer, Copy, Edit2, Volume2, VolumeX, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const LiveTradeSetup = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'monitor' | 'alerts' | 'settings'>('monitor');
+    const [activeTab, setActiveTab] = useState<'monitor' | 'alerts' | 'timer' | 'settings'>('monitor');
     
     // Context
-    const { alerts, addAlert, removeAlert, toggleAlert, quickMsgTemplate, setQuickMsgTemplate } = useTradeEvents();
+    const { 
+        alerts, addAlert, removeAlert, toggleAlert, 
+        quickMsgTemplate, setQuickMsgTemplate,
+        timerConfig, setTimerConfig, startTimer, stopTimer, timerEndTime,
+        adTemplates, addTemplate, removeTemplate, updateTemplate
+    } = useTradeEvents();
     
     // Monitor State
     const [consent, setConsent] = useState(false);
@@ -23,6 +28,11 @@ export const LiveTradeSetup = () => {
 
     // Alert Input
     const [newAlertTerm, setNewAlertTerm] = useState('');
+
+    // Ads Input
+    const [newAdLabel, setNewAdLabel] = useState('');
+    const [newAdContent, setNewAdContent] = useState('');
+    const [editingAdId, setEditingAdId] = useState<string | null>(null);
 
     useEffect(() => {
         const storedConsent = localStorage.getItem('live_monitor_consent') === 'true';
@@ -131,6 +141,35 @@ export const LiveTradeSetup = () => {
         toast.success(`Alerta "${newAlertTerm}" adicionado!`);
     };
 
+    // --- ADS Handlers ---
+    const handleSaveAd = () => {
+        if (!newAdLabel.trim() || !newAdContent.trim()) return;
+        
+        if (editingAdId) {
+            updateTemplate(editingAdId, { label: newAdLabel, content: newAdContent });
+            toast.success("Anúncio atualizado!");
+            setEditingAdId(null);
+        } else {
+            addTemplate(newAdLabel, newAdContent);
+            toast.success("Novo anúncio salvo!");
+        }
+        
+        setNewAdLabel('');
+        setNewAdContent('');
+    };
+
+    const handleEditAd = (ad: any) => { // Type loose for simplicity here
+        setNewAdLabel(ad.label);
+        setNewAdContent(ad.content);
+        setEditingAdId(ad.id);
+        // Switch to input focus theoretically
+    };
+
+    const handleCopyAd = (content: string) => {
+        navigator.clipboard.writeText(content);
+        toast.success("Copiado para o clipboard!");
+    };
+
     if (!isOpen) {
         return (
             <button
@@ -158,7 +197,7 @@ export const LiveTradeSetup = () => {
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-0 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col h-[600px] max-h-[90vh]">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-0 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col h-[650px] max-h-[90vh]">
                 
                 {/* Header */}
                 <div className="p-6 pb-4 border-b border-slate-800 flex justify-between items-center bg-slate-900 sticky top-0 z-10">
@@ -177,19 +216,25 @@ export const LiveTradeSetup = () => {
                 <div className="flex border-b border-slate-800 bg-slate-900/50">
                     <button 
                         onClick={() => setActiveTab('monitor')}
-                        className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'monitor' ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+                        className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'monitor' ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
                     >
                         <Play size={14} /> Monitor
                     </button>
                     <button 
                         onClick={() => setActiveTab('alerts')}
-                        className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'alerts' ? 'text-amber-400 border-b-2 border-amber-500 bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+                        className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'alerts' ? 'text-amber-400 border-b-2 border-amber-500 bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
                     >
                         <Bell size={14} /> Alertas
                     </button>
                     <button 
+                        onClick={() => setActiveTab('timer')}
+                        className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'timer' ? 'text-rose-400 border-b-2 border-rose-500 bg-rose-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+                    >
+                        <Timer size={14} /> Ads & Timer
+                    </button>
+                    <button 
                         onClick={() => setActiveTab('settings')}
-                        className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'settings' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+                        className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'settings' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
                     >
                         <Settings size={14} /> Config
                     </button>
@@ -339,7 +384,7 @@ export const LiveTradeSetup = () => {
                                 </button>
                             </div>
 
-                            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
                                 {alerts.length === 0 ? (
                                     <div className="text-center py-8 text-slate-600 flex flex-col items-center">
                                         <Bell size={32} className="mb-2 opacity-20" />
@@ -371,6 +416,138 @@ export const LiveTradeSetup = () => {
                                         </div>
                                     ))
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- TAB: ADS & TIMER --- */}
+                    {activeTab === 'timer' && (
+                        <div className="space-y-8">
+                            {/* WTS Timer Config */}
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-2">
+                                    <Timer size={16} className="text-rose-400" /> WTS Cooldown Timer
+                                </h3>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Rótulo</label>
+                                        <input 
+                                            type="text" 
+                                            value={timerConfig.label}
+                                            onChange={(e) => setTimerConfig({...timerConfig, label: e.target.value})}
+                                            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm outline-none focus:border-rose-500"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Duração (Min)</label>
+                                        <input 
+                                            type="number" 
+                                            value={timerConfig.duration}
+                                            onChange={(e) => setTimerConfig({...timerConfig, duration: Number(e.target.value)})}
+                                            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm outline-none focus:border-rose-500"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Cor do Tema</label>
+                                        <select 
+                                            value={timerConfig.color}
+                                            // @ts-ignore
+                                            onChange={(e) => setTimerConfig({...timerConfig, color: e.target.value})}
+                                            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm outline-none focus:border-rose-500"
+                                        >
+                                            <option value="emerald">Emerald</option>
+                                            <option value="amber">Amber</option>
+                                            <option value="rose">Rose</option>
+                                            <option value="blue">Blue</option>
+                                            <option value="purple">Purple</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end pb-1">
+                                         <button
+                                            onClick={() => setTimerConfig({...timerConfig, soundEnabled: !timerConfig.soundEnabled})}
+                                            className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded w-full justify-center transition-colors ${timerConfig.soundEnabled ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}
+                                         >
+                                             {timerConfig.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />} Som
+                                         </button>
+                                    </div>
+                                </div>
+                                
+                                <button 
+                                    onClick={startTimer}
+                                    className="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-slate-300 font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Play size={14} /> Ativar Widget na Tela
+                                </button>
+                            </div>
+
+                            {/* Ad Templates Manager */}
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 border-b border-slate-800 pb-2">
+                                    <Copy size={16} className="text-blue-400" /> Salvar Mensagens (Ads)
+                                </h3>
+                                
+                                {/* Edit Form */}
+                                <div className="bg-slate-800/30 p-3 rounded-lg border border-slate-700 space-y-3">
+                                    <input 
+                                        type="text" 
+                                        value={newAdLabel}
+                                        onChange={(e) => setNewAdLabel(e.target.value)}
+                                        placeholder="Nome do Anúncio (Ex: Vendo Rares)"
+                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    />
+                                    <textarea 
+                                        value={newAdContent}
+                                        onChange={(e) => setNewAdContent(e.target.value)}
+                                        placeholder="Cole seu texto de propaganda aqui..."
+                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm h-20 resize-none outline-none focus:border-blue-500 font-mono text-xs"
+                                    />
+                                    <button 
+                                        onClick={handleSaveAd}
+                                        disabled={!newAdLabel || !newAdContent}
+                                        className={`w-full py-1.5 rounded text-xs font-bold flex items-center justify-center gap-2 ${newAdLabel && newAdContent ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-800 text-slate-500'}`}
+                                    >
+                                        <Save size={14} /> {editingAdId ? 'Atualizar' : 'Salvar Novo Template'}
+                                    </button>
+                                </div>
+
+                                {/* List */}
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                    {adTemplates.length === 0 ? (
+                                        <p className="text-center text-xs text-slate-600 py-4">Nenhum anúncio salvo.</p>
+                                    ) : (
+                                        adTemplates.map(ad => (
+                                            <div key={ad.id} className="bg-slate-800 p-2 rounded border border-slate-700 flex items-center justify-between group">
+                                                <div className="overflow-hidden">
+                                                    <p className="font-bold text-xs text-slate-300 truncate">{ad.label}</p>
+                                                    <p className="text-[10px] text-slate-500 truncate font-mono">{ad.content}</p>
+                                                </div>
+                                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => handleCopyAd(ad.content)}
+                                                        className="p-1.5 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white rounded"
+                                                        title="Copiar"
+                                                    >
+                                                        <Copy size={14} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleEditAd(ad)}
+                                                        className="p-1.5 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded"
+                                                        title="Editar"
+                                                    >
+                                                        <Edit2 size={14} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => removeTemplate(ad.id)}
+                                                        className="p-1.5 hover:bg-rose-900/50 text-slate-500 hover:text-rose-400 rounded"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}

@@ -10,6 +10,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { NewsTicker } from './components/layout/NewsTicker';
 import { LiveTradeTicker } from './components/LiveTradeTicker';
 import { LiveTradeSetup } from './components/LiveTradeSetup';
+import { AdCooldownWidget } from './components/AdCooldownWidget';
 import { ProtectedAdmin } from './components/auth/ProtectedAdmin';
 import { AuthCallback } from './components/auth/AuthCallback';
 import { ViewState, MarketItem, ChartDataPoint, Language } from './types';
@@ -405,6 +406,7 @@ const App: React.FC = () => {
             <FeedbackWidget />
             {/* Live Trade Configuration */}
             <LiveTradeSetup />
+            <AdCooldownWidget />
             {/* Global Gamification Overlays */}
             <LevelUpOverlay level={newLevel} show={showLevelUp} onClose={() => setShowLevelUp(false)} />
         </div>

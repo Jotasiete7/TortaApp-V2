@@ -15,6 +15,20 @@ export interface TradeAlert {
     enabled: boolean;
 }
 
+// Timer & Ads Types
+export interface TimerConfig {
+    duration: number; // minutes
+    label: string;
+    color: 'emerald' | 'amber' | 'rose' | 'blue' | 'purple';
+    soundEnabled: boolean;
+}
+
+export interface AdTemplate {
+    id: string;
+    label: string;
+    content: string;
+}
+
 interface TradeEventContextType {
     trades: ParsedTrade[];
     isMonitoring: boolean;
@@ -30,7 +44,27 @@ interface TradeEventContextType {
     // Settings
     quickMsgTemplate: string;
     setQuickMsgTemplate: (template: string) => void;
+
+    // Timer
+    timerConfig: TimerConfig;
+    setTimerConfig: (config: TimerConfig) => void;
+    timerEndTime: number | null; // Timestamp
+    startTimer: () => void;
+    stopTimer: () => void; // Actually resets/nulls it
+    
+    // Ads
+    adTemplates: AdTemplate[];
+    addTemplate: (label: string, content: string) => void;
+    removeTemplate: (id: string) => void;
+    updateTemplate: (id: string, updates: Partial<AdTemplate>) => void;
 }
+
+const defaultTimerConfig: TimerConfig = {
+    duration: 30,
+    label: 'WTS Cooldown',
+    color: 'emerald',
+    soundEnabled: true
+};
 
 const TradeEventContext = createContext<TradeEventContextType>({
     trades: [],
@@ -41,8 +75,19 @@ const TradeEventContext = createContext<TradeEventContextType>({
     addAlert: () => {},
     removeAlert: () => {},
     toggleAlert: () => {},
-    quickMsgTemplate: '/t {nick} Hello, cod me this',
-    setQuickMsgTemplate: () => {}
+    quickMsgTemplate: '',
+    setQuickMsgTemplate: () => {},
+    
+    timerConfig: defaultTimerConfig,
+    setTimerConfig: () => {},
+    timerEndTime: null,
+    startTimer: () => {},
+    stopTimer: () => {},
+    
+    adTemplates: [],
+    addTemplate: () => {},
+    removeTemplate: () => {},
+    updateTemplate: () => {}
 });
 
 export const useTradeEvents = () => useContext(TradeEventContext);
@@ -50,9 +95,11 @@ export const useTradeEvents = () => useContext(TradeEventContext);
 const STORAGE_KEY = 'live_trade_monitor_state';
 const ALERTS_KEY = 'live_trade_alerts';
 const TEMPLATE_KEY = 'live_trade_quick_msg';
+const TIMER_CONFIG_KEY = 'live_trade_timer_config';
+const ADS_KEY = 'live_trade_ads';
 
 export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // Initialize state from localStorage immediately
+    // --- Existing State ---
     const [trades, setTrades] = useState<ParsedTrade[]>([]);
     const [isMonitoring, setIsMonitoring] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -65,50 +112,87 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return false;
     });
     const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
-
-    // Alerts State
     const [alerts, setAlerts] = useState<TradeAlert[]>(() => {
         const saved = localStorage.getItem(ALERTS_KEY);
         return saved ? JSON.parse(saved) : [];
     });
-
-    // Template State
     const [quickMsgTemplate, setQuickMsgTemplateState] = useState(() => {
         return localStorage.getItem(TEMPLATE_KEY) || '/t {nick} Hello, cod me this';
     });
 
+    // --- NEW: Timer State ---
+    const [timerConfig, setTimerConfigState] = useState<TimerConfig>(() => {
+        const saved = localStorage.getItem(TIMER_CONFIG_KEY);
+        return saved ? JSON.parse(saved) : defaultTimerConfig;
+    });
+    const [timerEndTime, setTimerEndTime] = useState<number | null>(null);
+
+    // --- NEW: Ads State ---
+    const [adTemplates, setAdTemplates] = useState<AdTemplate[]>(() => {
+        const saved = localStorage.getItem(ADS_KEY);
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    // --- Actions ---
+
+    // Settings
     const setQuickMsgTemplate = (template: string) => {
         setQuickMsgTemplateState(template);
         localStorage.setItem(TEMPLATE_KEY, template);
     };
 
-    // Alert Actions
+    // Alerts
     const addAlert = (term: string) => {
-        const newAlert: TradeAlert = {
-            id: crypto.randomUUID(),
-            term,
-            enabled: true
-        };
+        const newAlert: TradeAlert = { id: crypto.randomUUID(), term, enabled: true };
         const updated = [...alerts, newAlert];
         setAlerts(updated);
         localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
     };
-
     const removeAlert = (id: string) => {
         const updated = alerts.filter(a => a.id !== id);
         setAlerts(updated);
         localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
     };
-
     const toggleAlert = (id: string) => {
-        const updated = alerts.map(a => 
-            a.id === id ? { ...a, enabled: !a.enabled } : a
-        );
+        const updated = alerts.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);
         setAlerts(updated);
         localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
     };
 
-    // Check Notifications Permission
+    // Timer
+    const setTimerConfig = (config: TimerConfig) => {
+        setTimerConfigState(config);
+        localStorage.setItem(TIMER_CONFIG_KEY, JSON.stringify(config));
+    };
+    const startTimer = () => {
+        const end = Date.now() + (timerConfig.duration * 60 * 1000);
+        setTimerEndTime(end);
+    };
+    const stopTimer = () => {
+        setTimerEndTime(null);
+    };
+
+    // Ads
+    const addTemplate = (label: string, content: string) => {
+        const newAd: AdTemplate = { id: crypto.randomUUID(), label, content };
+        const updated = [...adTemplates, newAd];
+        setAdTemplates(updated);
+        localStorage.setItem(ADS_KEY, JSON.stringify(updated));
+    };
+    const removeTemplate = (id: string) => {
+        const updated = adTemplates.filter(a => a.id !== id);
+        setAdTemplates(updated);
+        localStorage.setItem(ADS_KEY, JSON.stringify(updated));
+    };
+    const updateTemplate = (id: string, updates: Partial<AdTemplate>) => {
+        const updated = adTemplates.map(a => a.id === id ? { ...a, ...updates } : a);
+        setAdTemplates(updated);
+        localStorage.setItem(ADS_KEY, JSON.stringify(updated));
+    };
+
+    // --- Effects ---
+
+    // Permission Check
     useEffect(() => {
         const checkPerms = async () => {
              // @ts-ignore
@@ -123,7 +207,7 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         checkPerms();
     }, []);
 
-    // Setup global listener - runs once on mount
+    // Listener
     useEffect(() => {
         let unlistenFn: (() => void) | undefined;
         
@@ -137,14 +221,10 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     
                     setTrades(prev => {
                         const newTrades = [...prev, newTrade];
-                        return newTrades.slice(-20); // Keep last 20 for freer scrolling
+                        return newTrades.slice(-20);
                     });
 
                     // Check Alerts
-                    // IMPORTANT: We need to use the CURRENT alerts value. 
-                    // Since this is inside a closer, we can't depend on 'alerts' state directly unless we include it in deps,
-                    // which would re-subscribe every time alerts change. 
-                    // Strategy: Read from localStorage or ref for the check to avoid re-subscribing.
                     const currentAlertsStr = localStorage.getItem(ALERTS_KEY);
                     if (currentAlertsStr) {
                         try {
@@ -157,47 +237,34 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                         title: `TortaApp: Match Found!`,
                                         body: `${newTrade.nick}: ${newTrade.message}`,
                                     });
-                                    break; // Notify once per trade even if multiple matches
+                                    break;
                                 }
                             }
-                        } catch (e) {
-                            console.error('Error checking alerts', e);
-                        }
+                        } catch (e) { console.error('Error checking alerts', e); }
                     }
                 });
-            } catch (e) { 
-                console.error('TradeEventProvider setup failed:', e); 
-            }
+            } catch (e) { console.error('setup failed', e); }
         };
         
         setupListener();
-        
-        return () => { 
-            if (unlistenFn) unlistenFn();
-        };
+        return () => { if (unlistenFn) unlistenFn(); };
     }, []);
 
-    // Auto-restore monitoring on mount
+    // Restore Monitoring
     useEffect(() => {
         const savedState = localStorage.getItem(STORAGE_KEY);
-        
         if (savedState) {
             try {
                 const { filePath, wasMonitoring } = JSON.parse(savedState);
-                
                 if (wasMonitoring && filePath) {
                     setCurrentFilePath(filePath);
-                    
-                    // Re-invoke backend watcher
                     // @ts-ignore
                     if (window.__TAURI_INTERNALS__) {
                         invoke('start_trade_watcher', { path: filePath })
                             .catch(err => console.error('Failed to restore monitoring:', err));
                     }
                 }
-            } catch (e) {
-                console.warn('Failed to restore monitoring state:', e);
-            }
+            } catch (e) { console.warn('Failed to restore monitoring state:', e); }
         }
     }, []);
 
@@ -205,16 +272,10 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         try {
             // @ts-ignore
             if (!window.__TAURI_INTERNALS__) return;
-
             await invoke('start_trade_watcher', { path: filePath });
-            
             setCurrentFilePath(filePath);
             setIsMonitoring(true);
-            
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                filePath,
-                wasMonitoring: true
-            }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ filePath, wasMonitoring: true }));
         } catch (error) {
             console.error('Failed to start monitoring:', error);
             throw error;
@@ -239,7 +300,18 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             removeAlert,
             toggleAlert,
             quickMsgTemplate,
-            setQuickMsgTemplate
+            setQuickMsgTemplate,
+            // Timer
+            timerConfig,
+            setTimerConfig,
+            timerEndTime,
+            startTimer,
+            stopTimer,
+            // Ads
+            adTemplates,
+            addTemplate,
+            removeTemplate,
+            updateTemplate
         }}>
             {children}
         </TradeEventContext.Provider>
