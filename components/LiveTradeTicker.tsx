@@ -15,14 +15,14 @@ const linkifyMessage = (message: string) => {
                     href={part}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline ticker-link"
+                    className="text-blue-400 hover:text-blue-300 underline"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {part}
                 </a>
             );
         }
-        return <span key={idx} className="ticker-text">{part}</span>;
+        return <span key={idx}>{part}</span>;
     });
 };
 
@@ -68,44 +68,36 @@ export const LiveTradeTicker = () => {
     return (
         <>
             <style>{`
-                .ticker-text,
-                .ticker-link,
-                .ticker-time,
-                .ticker-nick,
-                .ticker-message {
+                .ticker-reset * {
                     letter-spacing: 0 !important;
                 }
-                .ticker-scroll-left {
+                @keyframes ticker-scroll {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .ticker-scroll-anim {
                     animation: ticker-scroll 30s linear infinite;
                 }
-                @keyframes ticker-scroll {
-                    0% {
-                        transform: translateX(0);
-                    }
-                    100% {
-                        transform: translateX(-50%);
-                    }
-                }
-                .ticker-scrollbar-hide::-webkit-scrollbar {
+                .ticker-hide-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
-                .ticker-scrollbar-hide {
+                .ticker-hide-scrollbar {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
             `}</style>
             
-            <div className="fixed top-8 left-0 right-0 h-8 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 flex items-center z-[90] shadow-md select-none overflow-hidden">
+            <div className="ticker-reset fixed top-8 left-0 right-0 h-8 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 flex items-center z-[90] shadow-md select-none overflow-hidden">
                 {/* Label */}
                 <div className="bg-emerald-900/40 px-3 h-full flex items-center justify-center gap-2 border-r border-slate-800 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                     <Activity size={14} className={isMonitoring ? "text-emerald-400 animate-pulse" : "text-slate-500"} />
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase hidden sm:block tracking-wider">Live Feed</span>
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase hidden sm:block" style={{ letterSpacing: '0.1em' }}>Live Feed</span>
                 </div>
 
                 {/* Scrolling Content */}
                 <div 
                     ref={scrollRef}
-                    className="flex-1 relative h-full overflow-x-auto overflow-y-hidden ticker-scrollbar-hide"
+                    className="flex-1 relative h-full overflow-x-auto overflow-y-hidden ticker-hide-scrollbar"
                     style={{ cursor: trades.length > 0 ? 'grab' : 'default' }}
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
@@ -115,25 +107,25 @@ export const LiveTradeTicker = () => {
                     {trades.length === 0 ? (
                         <div className="flex items-center gap-2 px-4 h-full text-xs font-mono text-slate-500 animate-pulse">
                             <Radio size={12} />
-                            WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)
+                            <span>WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)</span>
                         </div>
                     ) : (
-                        <div className={`flex items-center h-full gap-8 whitespace-nowrap ${!isDragging ? 'ticker-scroll-left' : ''}`}>
+                        <div className={`flex items-center h-full gap-4 whitespace-nowrap ${!isDragging ? 'ticker-scroll-anim' : ''}`}>
                             {/* Duplicate trades for seamless loop */}
                             {[...trades, ...trades].map((trade, idx) => (
-                                <div key={idx} className="flex items-center gap-3 shrink-0">
+                                <div key={idx} className="flex items-center gap-2 shrink-0">
                                     {/* Time */}
-                                    <span className="text-slate-600 font-mono text-[10px] ticker-time">
+                                    <span className="text-slate-600 font-mono text-[10px]">
                                         [{trade.timestamp}]
                                     </span>
 
                                     {/* Nick */}
-                                    <span className="text-blue-400 font-bold text-xs ticker-nick">
+                                    <span className="text-blue-400 font-bold text-xs">
                                         {trade.nick}
                                     </span>
 
                                     {/* Message with clickable links */}
-                                    <span className="text-slate-300 text-xs font-medium ticker-message">
+                                    <span className="text-slate-300 text-xs font-medium">
                                         {linkifyMessage(trade.message)}
                                     </span>
 

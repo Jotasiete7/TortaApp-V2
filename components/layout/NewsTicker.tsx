@@ -40,6 +40,24 @@ const renderMessageWithLinks = (text: string): React.ReactNode[] => {
     });
 };
 
+// Helper to merge adjacent strings from emoji service
+// This prevents digits like '1', '0', '0' from being split into separate flex items
+const parseAndMerge = (text: string) => {
+    const rawParts = emojiService.parseText(text);
+    const mergedParts: (string | { type: 'emoji', path: string, alt: string })[] = [];
+
+    rawParts.forEach(part => {
+        const last = mergedParts[mergedParts.length - 1];
+        if (typeof part === 'string' && typeof last === 'string') {
+            mergedParts[mergedParts.length - 1] = last + part;
+        } else {
+            mergedParts.push(part);
+        }
+    });
+
+    return mergedParts;
+};
+
 export const NewsTicker: React.FC = () => {
     const [messages, setMessages] = useState<TickerMessageExtended[]>([]);
     const [emojisLoaded, setEmojisLoaded] = useState(false);
@@ -152,10 +170,10 @@ export const NewsTicker: React.FC = () => {
                                 )}
 
                                 {/* Mensagem */}
-                                <div className={`${colorMap[msg.color]} font-medium text-sm flex items-center gap-1.5 h-full`}>
-                                    {emojiService.parseText(msg.text).map((part, i) => (
+                                <div className={`${colorMap[msg.color]} font-medium text-sm flex items-center h-full`}>
+                                    {parseAndMerge(msg.text).map((part, i) => (
                                         typeof part === 'string' ? (
-                                            <span key={i} className="flex items-center">
+                                            <span key={i}>
                                                 {renderMessageWithLinks(part)}
                                             </span>
                                         ) : (
@@ -163,7 +181,7 @@ export const NewsTicker: React.FC = () => {
                                                 key={i}
                                                 src={part.path}
                                                 alt={part.alt}
-                                                className="w-5 h-5 object-contain"
+                                                className="w-5 h-5 object-contain mx-1.5"
                                                 loading="eager"
                                             />
                                         )
