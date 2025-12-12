@@ -11,6 +11,7 @@ export const UserSettings: React.FC = () => {
     useEffect(() => {
         // Init state check
         setIsMuted(SoundService.isMuted());
+        setVolume(SoundService.getVolume());
     }, []);
 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +39,7 @@ export const UserSettings: React.FC = () => {
                 </div>
 
                 <div className="space-y-8">
-                    
+
                     {/* AUDIO SECTION */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -46,21 +47,21 @@ export const UserSettings: React.FC = () => {
                                 {isMuted ? <VolumeX className="w-5 h-5 text-slate-500" /> : <Volume2 className="w-5 h-5 text-emerald-500" />}
                                 Audio & Sounds
                             </h3>
-                            <button 
+                            <button
                                 onClick={toggleMute}
                                 className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${isMuted ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}
                             >
                                 {isMuted ? 'MUTED' : 'ACTIVE'}
                             </button>
                         </div>
-                        
+
                         <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
                             <div className="mb-2 flex justify-between text-sm text-slate-300">
                                 <span>Master Volume</span>
                                 <span>{Math.round(volume * 100)}%</span>
                             </div>
-                            <input 
-                                type="range" 
+                            <input
+                                type="range"
                                 min="0" max="1" step="0.05"
                                 value={volume}
                                 onChange={handleVolumeChange}
@@ -79,16 +80,16 @@ export const UserSettings: React.FC = () => {
                             <Sparkles className="w-5 h-5 text-purple-500" />
                             Visual Effects
                         </h3>
-                        
+
                         <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 flex items-center justify-between">
                             <div>
                                 <h4 className="text-white font-medium">Level Up Celebrations</h4>
                                 <p className="text-xs text-slate-500">Show full-screen confetti and animations when you gain a level.</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    className="sr-only peer" 
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
                                     checked={enableAnimations}
                                     onChange={(e) => setEnableAnimations(e.target.checked)}
                                 />
@@ -104,13 +105,13 @@ export const UserSettings: React.FC = () => {
                             Alerts (Experimental)
                         </h3>
                         <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 opacity-50 cursor-not-allowed">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <div>
                                     <h4 className="text-white font-medium">High Price Alerts</h4>
                                     <p className="text-xs text-slate-500">Notify when rare items appear (Coming Soon).</p>
                                 </div>
                                 <div className="w-8 h-4 bg-slate-700 rounded-full"></div>
-                             </div>
+                            </div>
                         </div>
                     </div>
 

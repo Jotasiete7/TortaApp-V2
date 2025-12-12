@@ -37,6 +37,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 013 | 🟡 Média | [Feature] | **Live Trade Alerts** | Notificações do Windows para palavras-chave (ex: "casket"). | ✅ Concluído (12/12) |
 | 014 | 🟡 Média | [Feature] | **WTS Timer & Widget** | Widget flutuante de cooldown (30min) e gerenciador de anúncios. | ✅ Concluído (12/12) |
 | 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas (docs, secrets, resources) e limpeza da raiz. | ✅ Concluído (12/12) |
+| 016 | 🟡 Média | [Feature] | **Controle de Volume** | Persistência de volume e mute para alertas e sons do app. | ✅ Concluído (12/12) |
 
 ---
 
@@ -52,9 +53,9 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 15  
-**Concluídas:** 13 (87%)  
-**Pendentes:** 2 (13%)
+**Total de Tarefas:** 16
+**Concluídas:** 14 (87.5%)
+**Pendentes:** 2 (12.5%)
 
 **Última Atualização:** 12/12/2024 - Versão "Venerable Whale" 🐋 + Live Trade Premium
 
@@ -64,14 +65,18 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ### ✅ Realizado Hoje:
 1.  **Google OAuth Fix**: Implementado Deep Linking (`torta-app://`) para permitir login Google no app desktop.
-2.  **Activity Heatmap Fix**: Corrigido bug de visualização de datas (barras empilhadas).
-3.  **Live Trade Premium**:
+    *   *Correção*: Adicionado plugin `deep-link` no `tauri.conf.json`.
+2.  **Controle de Volume**:
+    *   Adicionado controle de volume persistente (LocalStorage).
+    *   Sincronização entre `SoundService` e `UserSettings`.
+3.  **Activity Heatmap Fix**: Corrigido bug de visualização de datas (barras empilhadas).
+4.  **Live Trade Premium**:
     *   **Alertas**: Notificações de sistema para palavras-chave.
     *   **Quick Copy**: Double-click no ticker copia mensagem formatada.
     *   **Interface**: Nova UI com abas (Monitor, Alertas, Ads & Timer).
     *   **WTS Widget**: Timer flutuante de 30min com som e temas.
     *   **Ad Manager**: Gerenciador de templates de anúncios com 1-click copy.
-4.  **Organização do Projeto**:
+5.  **Organização do Projeto**:
     *   Criada estrutura profissional: `docs/notes`, `resources/data`, `secrets`.
     *   Script `smart_organize.py` limpou a raiz do projeto.
     *   Segurança reforçada no `.gitignore`.
@@ -80,6 +85,7 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 ### ⚠️ Próximos Passos:
 -   Reiniciar PC para validar Deep Linking e Atalhos.
 -   Testar login Google no executável final.
+-   Validar alertas sonoros com o novo controle de volume.
 
 ## 📝 Nota de Performance
 **IMPORTANTE**: App.tsx ajustado para limite variável:
