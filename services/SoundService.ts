@@ -7,10 +7,14 @@ export class SoundService {
     private static sounds: Record<string, string> = {
         // Simple "Pop" sound
         click: 'data:audio/wav;base64,UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAsDsAAND/AAD//wAA',
-        // 8-bit Level Up (Placeholder - ideally replace with real file)
-        levelup: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
-        // Notification
-        notification: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA'
+        // Default Notification
+        notification: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
+        // Retro Coin
+        coin: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
+        // Magical chime
+        magic: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
+        // Alarm/Alert
+        alarm: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA'
     };
 
     // Actual file paths (prioritized if they exist)
@@ -18,7 +22,10 @@ export class SoundService {
         click: '/sounds/click.mp3',
         levelup: '/sounds/levelup.mp3',
         notification: '/sounds/notification.mp3',
-        confetti: '/sounds/confetti.mp3'
+        confetti: '/sounds/confetti.mp3',
+        coin: '/sounds/coin.mp3',
+        magic: '/sounds/magic.mp3',
+        alarm: '/sounds/alarm.mp3'
     };
 
     static async play(soundName: keyof typeof SoundService.filePaths | string) {
@@ -33,7 +40,7 @@ export class SoundService {
             const path = this.filePaths[soundName as string];
             let sourceToPlay = path;
 
-            // Check if we should use fallback (logic simplifies to: try fetch, if fail, use base64 if available)
+            // Check if we should use fallback
             // For now, simpler: Create Audio object
             const audio = new Audio(sourceToPlay);
 
@@ -67,5 +74,9 @@ export class SoundService {
 
     static isMuted() {
         return this.muted;
+    }
+
+    static getAvailableSounds() {
+        return Object.keys(this.sounds);
     }
 }

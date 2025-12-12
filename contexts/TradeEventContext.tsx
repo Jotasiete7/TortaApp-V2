@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
+import { SoundService } from '../services/SoundService';
 
 interface ParsedTrade {
     timestamp: string;
@@ -13,6 +14,7 @@ export interface TradeAlert {
     id: string;
     term: string;
     enabled: boolean;
+    sound?: string; // New field
 }
 
 // Timer & Ads Types
@@ -34,13 +36,13 @@ interface TradeEventContextType {
     isMonitoring: boolean;
     startMonitoring: (filePath: string) => Promise<void>;
     stopMonitoring: () => void;
-    
+
     // Alerts
     alerts: TradeAlert[];
-    addAlert: (term: string) => void;
+    addAlert: (term: string, sound?: string) => void;
     removeAlert: (id: string) => void;
     toggleAlert: (id: string) => void;
-    
+
     // Settings
     quickMsgTemplate: string;
     setQuickMsgTemplate: (template: string) => void;
@@ -51,7 +53,7 @@ interface TradeEventContextType {
     timerEndTime: number | null; // Timestamp
     startTimer: () => void;
     stopTimer: () => void; // Actually resets/nulls it
-    
+
     // Ads
     adTemplates: AdTemplate[];
     addTemplate: (label: string, content: string) => void;
@@ -69,25 +71,25 @@ const defaultTimerConfig: TimerConfig = {
 const TradeEventContext = createContext<TradeEventContextType>({
     trades: [],
     isMonitoring: false,
-    startMonitoring: async () => {},
-    stopMonitoring: () => {},
+    startMonitoring: async () => { },
+    stopMonitoring: () => { },
     alerts: [],
-    addAlert: () => {},
-    removeAlert: () => {},
-    toggleAlert: () => {},
+    addAlert: () => { },
+    removeAlert: () => { },
+    toggleAlert: () => { },
     quickMsgTemplate: '',
-    setQuickMsgTemplate: () => {},
-    
+    setQuickMsgTemplate: () => { },
+
     timerConfig: defaultTimerConfig,
-    setTimerConfig: () => {},
+    setTimerConfig: () => { },
     timerEndTime: null,
-    startTimer: () => {},
-    stopTimer: () => {},
-    
+    startTimer: () => { },
+    stopTimer: () => { },
+
     adTemplates: [],
-    addTemplate: () => {},
-    removeTemplate: () => {},
-    updateTemplate: () => {}
+    addTemplate: () => { },
+    removeTemplate: () => { },
+    updateTemplate: () => { }
 });
 
 export const useTradeEvents = () => useContext(TradeEventContext);
@@ -142,8 +144,8 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
     // Alerts
-    const addAlert = (term: string) => {
-        const newAlert: TradeAlert = { id: crypto.randomUUID(), term, enabled: true };
+    const addAlert = (term: string, sound: string = 'notification') => {
+        const newAlert: TradeAlert = { id: crypto.randomUUID(), term, enabled: true, sound };
         const updated = [...alerts, newAlert];
         setAlerts(updated);
         localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
@@ -195,7 +197,7 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Permission Check
     useEffect(() => {
         const checkPerms = async () => {
-             // @ts-ignore
+            // @ts-ignore
             if (window.__TAURI_INTERNALS__) {
                 let permissionGranted = await isPermissionGranted();
                 if (!permissionGranted) {
@@ -210,15 +212,15 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Listener
     useEffect(() => {
         let unlistenFn: (() => void) | undefined;
-        
+
         const setupListener = async () => {
             try {
                 // @ts-ignore
                 if (!window.__TAURI_INTERNALS__) return;
-                
+
                 unlistenFn = await listen<ParsedTrade>('trade-event', (event) => {
                     const newTrade = event.payload;
-                    
+
                     setTrades(prev => {
                         const newTrades = [...prev, newTrade];
                         return newTrades.slice(-20);
@@ -230,13 +232,21 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         try {
                             const currentAlerts: TradeAlert[] = JSON.parse(currentAlertsStr);
                             const activeAlerts = currentAlerts.filter(a => a.enabled);
-                            
+
+                            const lowerMsg = newTrade.message.toLowerCase();
+
                             for (const alert of activeAlerts) {
-                                if (newTrade.message.toLowerCase().includes(alert.term.toLowerCase())) {
+                                // KEYWORD MATCHING LOGIC
+                                const keywords = alert.term.toLowerCase().split(/\s+/).filter(k => k.length > 0);
+                                const isMatch = keywords.every(k => lowerMsg.includes(k));
+
+                                if (isMatch) {
                                     sendNotification({
-                                        title: `TortaApp: Match Found!`,
+                                        title: `TortaApp: ${alert.term}`,
                                         body: `${newTrade.nick}: ${newTrade.message}`,
                                     });
+                                    // Play sound
+                                    SoundService.play(alert.sound || 'notification');
                                     break;
                                 }
                             }
@@ -245,7 +255,7 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 });
             } catch (e) { console.error('setup failed', e); }
         };
-        
+
         setupListener();
         return () => { if (unlistenFn) unlistenFn(); };
     }, []);
@@ -290,10 +300,10 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, []);
 
     return (
-        <TradeEventContext.Provider value={{ 
-            trades, 
-            isMonitoring, 
-            startMonitoring, 
+        <TradeEventContext.Provider value={{
+            trades,
+            isMonitoring,
+            startMonitoring,
             stopMonitoring,
             alerts,
             addAlert,
