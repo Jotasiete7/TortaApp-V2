@@ -22,77 +22,66 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 
 | ID | Prioridade | Tipo | Tarefa | Detalhes | Status |
 |----|------------|------|--------|----------|--------|
-| 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Adicionar dica visual (ao lado ou abaixo do shout) explicando:<br>• Duração dos tickers<br>• Funcionamento do ganho de shouts<br>• Tickers Premium: Investimento vai para **Prêmios** e **Banco de Dados**<br>• Ticker de Admin<br>• Cores do Market Standard | ✅ Concluído (09/12) |
-| 002 | 🟡 Média | [Feature] | **Ticker Refresh Automático** | Implementar refresh a cada 1 minuto para receber shouts instantaneamente. | ✅ Concluído (09/12) |
-| 003 | 🟢 Baixa | [Feature] | **Suporte SFI (Southern Freedom Isles)** | Implementação do app para o cluster SFI (Ilhas e servers novos com chat de mercado separado do NFI). | ⬜ Pendente |
-| 004 | 🟢 Baixa | [DevOps] | **Compilação Linux** | Configurar ambiente ou pipeline (GitHub Actions) para gerar executáveis Linux (.deb/.AppImage) oficialmente. | ⬜ Pendente |
-| 005 | 🟡 Média | [Feature] | **Regra de Caskets (Trade)** | Desenvolver lógica para Caskets: Diferença de Tier e Preços no upload/identificação. | ✅ Concluído (09/12) |
-| 006 | 🔴 Alta | [Fix] | **Badges Automáticos (Bug)** | Corrigir bug onde usuários (ex: padrejarbas) sobem de nível mas não ganham badges iniciais. | ✅ Concluído (09/12) |
-| 007 | 🟡 Média | [Feature] | **Login UX em Português** | Interface de login 100% em português com mensagens claras e tooltip para novos usuários. | ✅ Concluído (09/12) |
-| 008 | 🟢 Baixa | [Feature] | **Navegação Persistente** | Manter página atual ao dar F5 (localStorage). | ✅ Concluído (09/12) |
-| 009 | 🟡 Média | [Fix] | **Modal de Confirmação - Delete User** | Adicionar modal visual em português para confirmar deleção de usuários no Admin Panel. | ✅ Concluído (09/12) |
-| 010 | 🔴 Alta | [Fix] | **Activity Heatmap - Date Distribution** | Corrigir bug onde todas as barras aparecem empilhadas em vez de distribuídas no calendário. | ✅ Concluído (10/12) |
-| 011 | 🟡 Média | [Fix] | **Admin Delete - user_streaks Error** | Remover referência à tabela user_streaks que não existe na função admin_delete_user. | ✅ Concluído |
+| 001 | 🟡 Média | [Feature] | **Tooltip/Info do Shout** | Dica visual explicando shouts, tickers e investimentos. | ✅ Concluído (09/12) |
+| 002 | 🟡 Média | [Feature] | **Ticker Refresh Automático** | Implementar refresh a cada 1 minuto. | ✅ Concluído (09/12) |
+| 003 | 🟢 Baixa | [Feature] | **Suporte SFI** | Suporte para Southern Freedom Isles (novos servidores). | ⬜ Pendente |
+| 004 | 🟢 Baixa | [DevOps] | **Compilação Linux** | Configurar pipeline para .deb/.AppImage. | ⬜ Pendente |
+| 005 | 🟡 Média | [Feature] | **Regra de Caskets** | Lógica de Tier e Preços para Caskets. | ✅ Concluído (09/12) |
+| 006 | 🔴 Alta | [Fix] | **Badges Automáticos** | Corrigir bug de distribuição de badges no level up. | ✅ Concluído (09/12) |
+| 007 | 🟡 Média | [Feature] | **Login UX em Português** | Interface traduzida e intuitiva. | ✅ Concluído (09/12) |
+| 008 | 🟢 Baixa | [Feature] | **Navegação Persistente** | Manter página ao recarregar. | ✅ Concluído (09/12) |
+| 009 | 🟡 Média | [Fix] | **Modal Delete User** | Confirmação visual para deleção de usuários. | ✅ Concluído (09/12) |
+| 010 | 🔴 Alta | [Fix] | **Activity Heatmap** | Corrigir barras empilhadas no gráfico de atividade. | ✅ Concluído (12/12) |
+| 011 | 🟡 Média | [Fix] | **Admin Delete Error** | Corrigir referência à tabela inexistente user_streaks. | ✅ Concluído (10/12) |
+| 012 | 🔴 Alta | [Fix] | **Google OAuth (Tauri)** | Implementar Deep Linking para login Google funcionar no .exe. | ✅ Concluído (12/12) |
+| 013 | 🟡 Média | [Feature] | **Live Trade Alerts** | Notificações do Windows para palavras-chave (ex: "casket"). | ✅ Concluído (12/12) |
+| 014 | 🟡 Média | [Feature] | **WTS Timer & Widget** | Widget flutuante de cooldown (30min) e gerenciador de anúncios. | ✅ Concluído (12/12) |
+| 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas (docs, secrets, resources) e limpeza da raiz. | ✅ Concluído (12/12) |
+
+---
 
 ## 🔄 Permanente / Contínuo
 
 Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
-- [Perm] **Otimização de Performance**: Monitorar e melhorar tempo de carregamento e uso de memória.
-- [Perm] **Tradução PT-BR**: Manter `README_PT.md` e interfaces sincronizadas com novas features.
-- [Perm] **Segurança**: Revisar RLS policies no Supabase regularmente.
+- [Perm] **Otimização de Performance**: Monitorar e melhorar tempo de carregamento.
+- [Perm] **Tradução PT-BR**: Manter interfaces sincronizadas.
+- [Perm] **Segurança**: Revisar RLS policies no Supabase.
 
 ---
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 11  
-**Concluídas:** 9 (82%)  
-**Pendentes:** 2 (18%)
+**Total de Tarefas:** 15  
+**Concluídas:** 13 (87%)  
+**Pendentes:** 2 (13%)
 
-**Última Atualização:** 10/12/2024 - Versão "Venerable Whale" 🐋
+**Última Atualização:** 12/12/2024 - Versão "Venerable Whale" 🐋 + Live Trade Premium
 
 ---
 
-## 📝 Notas da Sessão (09/12/2024)
+## 📝 Notas da Sessão (12/12/2024)
 
-### ✅ Implementado Hoje:
-1. Sistema de Caskets (Parser + Tier badges + Fair Price)
-2. 18 Badges (Seller, Buyer, Treasure, Pioneer, Verdant Vicar, Beta Tester)
-3. Login em Português
-4. Ticker Auto-Refresh (60s)
-5. Navegação Persistente (localStorage)
-6. Admin Delete Fix (Foreign Key cleanup)
-7. Modal Delete Confirmation (português + "DELETAR")
-8. Tooltip Shout Info (modal explicativo)
+### ✅ Realizado Hoje:
+1.  **Google OAuth Fix**: Implementado Deep Linking (`torta-app://`) para permitir login Google no app desktop.
+2.  **Activity Heatmap Fix**: Corrigido bug de visualização de datas (barras empilhadas).
+3.  **Live Trade Premium**:
+    *   **Alertas**: Notificações de sistema para palavras-chave.
+    *   **Quick Copy**: Double-click no ticker copia mensagem formatada.
+    *   **Interface**: Nova UI com abas (Monitor, Alertas, Ads & Timer).
+    *   **WTS Widget**: Timer flutuante de 30min com som e temas.
+    *   **Ad Manager**: Gerenciador de templates de anúncios com 1-click copy.
+4.  **Organização do Projeto**:
+    *   Criada estrutura profissional: `docs/notes`, `resources/data`, `secrets`.
+    *   Script `smart_organize.py` limpou a raiz do projeto.
+    *   Segurança reforçada no `.gitignore`.
+    *   Criado atalho na Área de Trabalho.
 
-### ⚠️ Bugs Encontrados (Para Amanhã):
-1. **Activity Heatmap** - Barras empilhadas (fix aplicado mas não funcionou)
-2. **Admin Delete** - Erro "user_streaks does not exist" (SQL corrigido criado)
+### ⚠️ Próximos Passos:
+-   Reiniciar PC para validar Deep Linking e Atalhos.
+-   Testar login Google no executável final.
 
-### 📁 Arquivos Criados:
-- `44_fix_admin_delete_CORRECTED.sql` - Fix do admin delete
-- `CLEANUP_CASKETS_FIXED.sql` - Limpeza de caskets sem QL
-- `HEATMAP_FIX_WITH_DEBUG.md` - Debug do heatmap
-
-
-## 📝 Nota de Performance (10/12/2024)
-
-**IMPORTANTE**: App.tsx foi modificado para usar limite baseado em ambiente:
-- DEV: 5.000 registros (mais leve para testes no navegador)
-- PROD: 50.000 registros (dados completos para app instalado)
-
-Backup salvo em: `App.tsx.backup_before_dev_limit`
-
-Quando compilar nova versão, verificar se o limite está correto.
-
-
-## 📝 Nota de Performance (10/12/2024)
-
-**IMPORTANTE**: App.tsx foi modificado para usar limite baseado em ambiente:
-- DEV: 5.000 registros (mais leve para testes no navegador)
-- PROD: 50.000 registros (dados completos para app instalado)
-
-Backup salvo em: `App.tsx.backup_before_dev_limit`
-
-Quando compilar nova versão, verificar se o limite está correto.
+## 📝 Nota de Performance
+**IMPORTANTE**: App.tsx ajustado para limite variável:
+- DEV: 5.000 registros (rápido)
+- PROD: 50.000 registros (completo)
