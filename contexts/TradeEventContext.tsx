@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
 
 interface ParsedTrade {
     timestamp: string;
@@ -8,23 +9,47 @@ interface ParsedTrade {
     message: string;
 }
 
+export interface TradeAlert {
+    id: string;
+    term: string;
+    enabled: boolean;
+}
+
 interface TradeEventContextType {
     trades: ParsedTrade[];
     isMonitoring: boolean;
     startMonitoring: (filePath: string) => Promise<void>;
     stopMonitoring: () => void;
+    
+    // Alerts
+    alerts: TradeAlert[];
+    addAlert: (term: string) => void;
+    removeAlert: (id: string) => void;
+    toggleAlert: (id: string) => void;
+    
+    // Settings
+    quickMsgTemplate: string;
+    setQuickMsgTemplate: (template: string) => void;
 }
 
 const TradeEventContext = createContext<TradeEventContextType>({
     trades: [],
     isMonitoring: false,
     startMonitoring: async () => {},
-    stopMonitoring: () => {}
+    stopMonitoring: () => {},
+    alerts: [],
+    addAlert: () => {},
+    removeAlert: () => {},
+    toggleAlert: () => {},
+    quickMsgTemplate: '/t {nick} Hello, cod me this',
+    setQuickMsgTemplate: () => {}
 });
 
 export const useTradeEvents = () => useContext(TradeEventContext);
 
 const STORAGE_KEY = 'live_trade_monitor_state';
+const ALERTS_KEY = 'live_trade_alerts';
+const TEMPLATE_KEY = 'live_trade_quick_msg';
 
 export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Initialize state from localStorage immediately
@@ -41,6 +66,63 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     });
     const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
 
+    // Alerts State
+    const [alerts, setAlerts] = useState<TradeAlert[]>(() => {
+        const saved = localStorage.getItem(ALERTS_KEY);
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    // Template State
+    const [quickMsgTemplate, setQuickMsgTemplateState] = useState(() => {
+        return localStorage.getItem(TEMPLATE_KEY) || '/t {nick} Hello, cod me this';
+    });
+
+    const setQuickMsgTemplate = (template: string) => {
+        setQuickMsgTemplateState(template);
+        localStorage.setItem(TEMPLATE_KEY, template);
+    };
+
+    // Alert Actions
+    const addAlert = (term: string) => {
+        const newAlert: TradeAlert = {
+            id: crypto.randomUUID(),
+            term,
+            enabled: true
+        };
+        const updated = [...alerts, newAlert];
+        setAlerts(updated);
+        localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
+    };
+
+    const removeAlert = (id: string) => {
+        const updated = alerts.filter(a => a.id !== id);
+        setAlerts(updated);
+        localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
+    };
+
+    const toggleAlert = (id: string) => {
+        const updated = alerts.map(a => 
+            a.id === id ? { ...a, enabled: !a.enabled } : a
+        );
+        setAlerts(updated);
+        localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
+    };
+
+    // Check Notifications Permission
+    useEffect(() => {
+        const checkPerms = async () => {
+             // @ts-ignore
+            if (window.__TAURI_INTERNALS__) {
+                let permissionGranted = await isPermissionGranted();
+                if (!permissionGranted) {
+                    const permission = await requestPermission();
+                    permissionGranted = permission === 'granted';
+                }
+            }
+        };
+        checkPerms();
+    }, []);
+
     // Setup global listener - runs once on mount
     useEffect(() => {
         let unlistenFn: (() => void) | undefined;
@@ -51,10 +133,37 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 if (!window.__TAURI_INTERNALS__) return;
                 
                 unlistenFn = await listen<ParsedTrade>('trade-event', (event) => {
+                    const newTrade = event.payload;
+                    
                     setTrades(prev => {
-                        const newTrades = [...prev, event.payload];
-                        return newTrades.slice(-10);
+                        const newTrades = [...prev, newTrade];
+                        return newTrades.slice(-20); // Keep last 20 for freer scrolling
                     });
+
+                    // Check Alerts
+                    // IMPORTANT: We need to use the CURRENT alerts value. 
+                    // Since this is inside a closer, we can't depend on 'alerts' state directly unless we include it in deps,
+                    // which would re-subscribe every time alerts change. 
+                    // Strategy: Read from localStorage or ref for the check to avoid re-subscribing.
+                    const currentAlertsStr = localStorage.getItem(ALERTS_KEY);
+                    if (currentAlertsStr) {
+                        try {
+                            const currentAlerts: TradeAlert[] = JSON.parse(currentAlertsStr);
+                            const activeAlerts = currentAlerts.filter(a => a.enabled);
+                            
+                            for (const alert of activeAlerts) {
+                                if (newTrade.message.toLowerCase().includes(alert.term.toLowerCase())) {
+                                    sendNotification({
+                                        title: `TortaApp: Match Found!`,
+                                        body: `${newTrade.nick}: ${newTrade.message}`,
+                                    });
+                                    break; // Notify once per trade even if multiple matches
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Error checking alerts', e);
+                        }
+                    }
                 });
             } catch (e) { 
                 console.error('TradeEventProvider setup failed:', e); 
@@ -120,7 +229,18 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, []);
 
     return (
-        <TradeEventContext.Provider value={{ trades, isMonitoring, startMonitoring, stopMonitoring }}>
+        <TradeEventContext.Provider value={{ 
+            trades, 
+            isMonitoring, 
+            startMonitoring, 
+            stopMonitoring,
+            alerts,
+            addAlert,
+            removeAlert,
+            toggleAlert,
+            quickMsgTemplate,
+            setQuickMsgTemplate
+        }}>
             {children}
         </TradeEventContext.Provider>
     );

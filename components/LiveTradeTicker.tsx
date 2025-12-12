@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Activity, Radio } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
+import { toast } from 'sonner';
 
 // Helper to detect and linkify URLs
 const linkifyMessage = (message: string) => {
@@ -27,7 +28,7 @@ const linkifyMessage = (message: string) => {
 };
 
 export const LiveTradeTicker = () => {
-    const { trades, isMonitoring } = useTradeEvents();
+    const { trades, isMonitoring, quickMsgTemplate } = useTradeEvents();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
@@ -62,6 +63,21 @@ export const LiveTradeTicker = () => {
             if (scrollRef.current) {
                 scrollRef.current.style.cursor = 'grab';
             }
+        }
+    };
+
+    // Quick Action Handler
+    const handleTradeDoubleClick = (nick: string) => {
+        try {
+            const msg = quickMsgTemplate.replace('{nick}', nick);
+            navigator.clipboard.writeText(msg);
+            toast.success('Mensagem copiada para o clipboard!', {
+                description: msg,
+                duration: 2000
+            });
+        } catch (err) {
+            console.error('Failed to copy', err);
+            toast.error('Falha ao copiar mensagem');
         }
     };
 
@@ -113,19 +129,24 @@ export const LiveTradeTicker = () => {
                         <div className={`flex items-center h-full gap-4 whitespace-nowrap ${!isDragging ? 'ticker-scroll-anim' : ''}`}>
                             {/* Duplicate trades for seamless loop */}
                             {[...trades, ...trades].map((trade, idx) => (
-                                <div key={idx} className="flex items-center gap-2 shrink-0">
+                                <div 
+                                    key={idx} 
+                                    className="flex items-center gap-2 shrink-0 group hover:bg-white/5 px-2 py-1 rounded cursor-pointer transition-colors"
+                                    onDoubleClick={() => handleTradeDoubleClick(trade.nick)}
+                                    title="Double-click para copiar mensagem rápida"
+                                >
                                     {/* Time */}
                                     <span className="text-slate-600 font-mono text-[10px]">
                                         [{trade.timestamp}]
                                     </span>
 
                                     {/* Nick */}
-                                    <span className="text-blue-400 font-bold text-xs">
+                                    <span className="text-blue-400 font-bold text-xs group-hover:text-blue-300">
                                         {trade.nick}
                                     </span>
 
                                     {/* Message with clickable links */}
-                                    <span className="text-slate-300 text-xs font-medium">
+                                    <span className="text-slate-300 text-xs font-medium group-hover:text-white">
                                         {linkifyMessage(trade.message)}
                                     </span>
 
