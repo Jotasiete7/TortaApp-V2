@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../services/supabase';
 import { LogIn, Mail, Lock, AlertCircle, Info, KeyRound } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -208,10 +209,13 @@ export const Login: React.FC = () => {
                                         const refresh_token = params.get('refresh_token');
                                         
                                         if (access_token && refresh_token) {
-                                            const { supabase } = require('../../services/supabase');
                                             supabase.auth.setSession({ access_token, refresh_token })
                                                 .then(({ error }: any) => {
-                                                    if (error) alert('Erro: ' + error.message);
+                                                    if (error) {
+                                                        alert('Erro: ' + error.message);
+                                                    } else {
+                                                        alert('Token recebido! Atualizando...');
+                                                    }
                                                 });
                                         } else {
                                             alert('Token nao encontrado na URL.');

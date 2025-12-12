@@ -2,6 +2,8 @@ export class SoundService {
     private static audioContext: AudioContext | null = null;
     private static volume: number = 0.5;
     private static muted: boolean = false;
+    private static STORAGE_KEY = 'app_volume';
+    private static MUTED_KEY = 'app_muted';
 
     // Embedded short sounds (Base64) to ensure it works OOTB without external files
     private static sounds: Record<string, string> = {
@@ -28,6 +30,20 @@ export class SoundService {
         alarm: '/sounds/alarm.mp3'
     };
 
+    static initialize() {
+        if (typeof window !== 'undefined') {
+            const savedVol = localStorage.getItem(this.STORAGE_KEY);
+            const savedMute = localStorage.getItem(this.MUTED_KEY);
+
+            if (savedVol !== null) {
+                this.volume = parseFloat(savedVol);
+            }
+            if (savedMute !== null) {
+                this.muted = savedMute === 'true';
+            }
+        }
+    }
+
     static async play(soundName: keyof typeof SoundService.filePaths | string) {
         if (this.muted) return;
 
@@ -40,13 +56,9 @@ export class SoundService {
             const path = this.filePaths[soundName as string];
             let sourceToPlay = path;
 
-            // Check if we should use fallback
-            // For now, simpler: Create Audio object
             const audio = new Audio(sourceToPlay);
-
             audio.volume = this.volume;
 
-            // Error handling: if file doesn't exist, try base64 fallback for basics
             audio.onerror = () => {
                 const fallback = this.sounds[soundName as string];
                 if (fallback) {
@@ -65,10 +77,20 @@ export class SoundService {
 
     static setVolume(vol: number) {
         this.volume = Math.max(0, Math.min(1, vol));
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(this.STORAGE_KEY, this.volume.toString());
+        }
+    }
+    
+    static getVolume() {
+        return this.volume;
     }
 
     static toggleMute() {
         this.muted = !this.muted;
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(this.MUTED_KEY, this.muted.toString());
+        }
         return this.muted;
     }
 
@@ -80,3 +102,7 @@ export class SoundService {
         return Object.keys(this.sounds);
     }
 }
+
+// Auto-initialize
+SoundService.initialize();
+
