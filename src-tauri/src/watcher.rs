@@ -1,4 +1,4 @@
-use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+﻿use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
@@ -10,13 +10,10 @@ use tauri::{AppHandle, Emitter, Manager};
 
 // --- LOGGING HELPER ---
 fn log_debug(msg: &str) {
-    // Write to a safe, known location in the artifacts directory
     let path = r"C:\Users\Pichau\.gemini\antigravity\brain\866f9c0a-69ae-4634-9410-a60e94a3ea1e\trade_debug.txt";
-    // Using OpenOptions to append
     if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
         let _ = writeln!(file, "{}", msg);
     } else {
-        // Fallback to println if file write fails, though this often gets swallowed
         println!("RUST LOG FAIL: {}", msg);
     }
 }
@@ -39,8 +36,6 @@ struct StandardLogParser {
 impl StandardLogParser {
     fn new() -> Self {
         Self {
-            // FIXED REGEX: No double backslash at start.
-            // r"^[" in Rust raw string matches a literal '['.
             regex: Regex::new(r"^\[(\d{2}:\d{2}:\d{2})\]\s+<([^>]+)>\s+(.+)").unwrap(),
         }
     }
@@ -86,31 +81,39 @@ impl FileWatcher {
         
         match File::open(path) {
             Ok(mut file) => {
-                let reader = BufReader::new(&file);
-                let all_lines: Vec<String> = reader.lines().filter_map(|l| l.ok()).collect();
+                let metadata = file.metadata().map_err(|e| format!("Failed to get metadata: {}", e))?;
+                let len = metadata.len();
+                let chunk_size = 5000; 
                 
-                // Read last 10 lines
-                let recent: Vec<&String> = all_lines.iter().rev().take(10).collect();
-                log_debug(&format!("Found {} total lines, reading last {}", all_lines.len(), recent.len()));
+                let start_pos = if len > chunk_size { len - chunk_size } else { 0 };
+                
+                if let Err(e) = file.seek(SeekFrom::Start(start_pos)) {
+                    log_debug(&format!("Seek error: {}", e));
+                    return Err(format!("Seek error: {}", e));
+                }
+
+                let reader = BufReader::new(&file);
+                let mut lines: Vec<String> = reader.lines().filter_map(|l| l.ok()).collect();
+                
+                if start_pos > 0 && lines.len() > 1 {
+                    lines.remove(0);
+                }
+
+                let recent: Vec<&String> = lines.iter().rev().take(10).collect();
+                
+                log_debug(&format!("File len: {}, Start pos: {}, Lines read: {}, Init output: {}", len, start_pos, lines.len(), recent.len()));
 
                 let parser = StandardLogParser::new();
-                // Iterate normally (oldest to newest among the recent) or reverse?
-                // Logic: prevent spamming old trades.
-                // Reversing 'recent' means we look at the very last line first.
                 for line in recent.iter().rev() {
-                    log_debug(&format!("Checking line: '{}'", line)); // LOG RAW LINE
+                    log_debug(&format!("Checking line: '{}'", line)); 
                     if let Some(trade) = parser.parse(line) {
                          log_debug(&format!("Emitting initial trade: {}", trade.message));
                          let _ = app_handle.emit("trade-event", trade);
-                    } else {
-                         log_debug("Failed to parse this line!"); // LOG FAILURE
                     }
                 }
                 
-                if let Ok(pos) = file.seek(SeekFrom::End(0)) {
-                    self.last_pos = pos;
-                    log_debug(&format!("Seeked to end: {}", pos));
-                }
+                self.last_pos = len; 
+                log_debug(&format!("Initial scan done. last_pos set to: {}", self.last_pos));
             }
             Err(e) => {
                 log_debug(&format!("File open error: {}", e));
@@ -147,14 +150,11 @@ impl FileWatcher {
                                         for line in reader.lines() {
                                             if let Ok(l) = line {
                                                 current_pos += l.len() as u64 + 1;
-                                                // +1 is naive, but workable for now
                                                 log_debug(&format!("Checking LIVE line: '{}'", l));
                                                 
                                                 if let Some(trade) = parser.parse(&l) {
                                                     log_debug(&format!("Emitting LIVE trade: {}", trade.message));
                                                     let _ = app_handle.emit("trade-event", trade);
-                                                } else {
-                                                    log_debug("Failed to parse LIVE line!");
                                                 }
                                             }
                                         }
@@ -177,7 +177,6 @@ pub struct WatcherState(pub Mutex<Option<FileWatcher>>);
 
 #[tauri::command]
 pub fn start_trade_watcher(path: String, _state: tauri::State<WatcherState>, app: AppHandle) -> Result<(), String> {
-    // Strip quotes just in case
     let clean = path.replace("\"", "");
     log_debug(&format!("COMMAND: start_trade_watcher called with '{}'", clean));
     
