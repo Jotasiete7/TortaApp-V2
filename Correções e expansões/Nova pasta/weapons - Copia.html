@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Armas - Wurm Online 2025</title>
+    <style>
+        @media print {
+            .page-break { page-break-before: always; }
+            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .no-print { display: none; }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+        }
+        
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .cover {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .cover h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .cover .subtitle {
+            font-size: 24px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .cover .year {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 40px 0;
+        }
+        
+        .cover .meta {
+            margin-top: 60px;
+            font-size: 14px;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 20px;
+            margin: 25px 0 15px 0;
+        }
+        
+        h4 {
+            color: #555;
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box {
+            background: #fff4e6;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 11px;
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        th {
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .tier-s { background: #ffd700; font-weight: bold; }
+        .tier-a { background: #c0c0c0; }
+        .tier-b { background: #cd7f32; }
+        .tier-c { background: #f0f0f0; }
+        
+        .footer {
+            position: absolute;
+            bottom: 15mm;
+            right: 20mm;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .toc {
+            margin: 30px 0;
+        }
+        
+        .toc-item {
+            padding: 10px 0;
+            border-bottom: 1px dotted #ccc;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- PÁGINA 1: CAPA -->
+    <div class="page cover">
+        <h1>WURM ONLINE</h1>
+        <div class="subtitle">Análise Completa de Armas</div>
+        <div class="year">2025</div>
+        <p style="font-size: 18px; max-width: 600px;">
+            Guia definitivo com estatísticas, tier lists e recomendações para PvE e PvP
+        </p>
+        <div class="meta">
+            Baseado em dados da Wurmpedia e discussões da comunidade<br>
+            Atualizado em Outubro de 2025
+        </div>
+    </div>
+
+    <!-- PÁGINA 2: ÍNDICE -->
+    <div class="page page-break">
+        <h2>Índice</h2>
+        <div class="toc">
+            <div class="toc-item">
+                <span>1. Introdução</span>
+                <span>3</span>
+            </div>
+            <div class="toc-item">
+                <span>2. Metodologia de Análise</span>
+                <span>3</span>
+            </div>
+            <div class="toc-item">
+                <span>3. Tabela Completa de Armas</span>
+                <span>4</span>
+            </div>
+            <div class="toc-item">
+                <span>4. Materiais e Moon Metals</span>
+                <span>7</span>
+            </div>
+            <div class="toc-item">
+                <span>5. Sistema de Enchants</span>
+                <span>8</span>
+            </div>
+            <div class="toc-item">
+                <span>6. Combinações com Shields</span>
+                <span>9</span>
+            </div>
+            <div class="toc-item">
+                <span>7. Tier Lists (PvE e PvP)</span>
+                <span>10</span>
+            </div>
+            <div class="toc-item">
+                <span>8. Recomendações por Cenário</span>
+                <span>11</span>
+            </div>
+            <div class="toc-item">
+                <span>9. Atualizações de 2025</span>
+                <span>12</span>
+            </div>
+            <div class="toc-item">
+                <span>Apêndice A: Fórmulas e Cálculos</span>
+                <span>13</span>
+            </div>
+            <div class="toc-item">
+                <span>Apêndice B: Referências Rápidas</span>
+                <span>14</span>
+            </div>
+        </div>
+        <div class="footer">Página 2</div>
+    </div>
+
+    <!-- PÁGINA 3: INTRODUÇÃO -->
+    <div class="page page-break">
+        <h2>1. Introdução</h2>
+        <p>
+            Esta análise compila dados sobre as armas principais do Wurm Online, com base na tabela oficial da Wurmpedia e discussões ativas da comunidade em fóruns, Reddit e Steam até outubro de 2025. O objetivo é fornecer informações práticas para otimizar sua escolha de armamento em diferentes contextos de combate.
+        </p>
+
+        <h3>Escopo da Análise</h3>
+        <p>
+            Este guia prioriza a eficiência em combate, considerando tanto cenários de PvE (Player vs Environment) quanto PvP (Player vs Player). Todas as recomendações são baseadas em métricas verificáveis e feedback da comunidade veterana.
+        </p>
+
+        <h2>2. Metodologia de Análise</h2>
+        <p>As armas foram avaliadas com base nos seguintes critérios principais:</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <strong>DPS (Strength/Second)</strong>
+                Dano por segundo, métrica primária de eficiência ofensiva. Calculado dividindo o Strength pelo Attack Speed.
+            </div>
+            <div class="stat-card">
+                <strong>Alcance (Reach)</strong>
+                Controla a distância de combate. Valores maiores permitem atacar antes do inimigo, especialmente útil em PvE.
+            </div>
+            <div class="stat-card">
+                <strong>Parry %</strong>
+                Capacidade de defesa ativa. 100% é ideal para PvP, permitindo bloqueios efetivos.
+            </div>
+            <div class="stat-card">
+                <strong>Crit %</strong>
+                Chance de dano crítico. Importante para builds de burst damage.
+            </div>
+            <div class="stat-card">
+                <strong>Skill Penalty</strong>
+                Reduz o Combat Rating (CR). Valor 0 é ideal, penalidades afetam negativamente a eficácia.
+            </div>
+            <div class="stat-card">
+                <strong>Mãos (1H/2H)</strong>
+                1H permite uso de escudo (crucial em PvP). 2H maximiza dano em PvE.
+            </div>
+        </div>
+
+        <h3>Tipos de Dano</h3>
+        <ul>
+            <li><strong>Crushing:</strong> Efetivo contra armaduras pesadas, esmaga defesas</li>
+            <li><strong>Piercing:</strong> Excelente contra alvos desarmados ou levemente armados</li>
+            <li><strong>Slashing:</strong> Equilibrado, versátil na maioria das situações</li>
+        </ul>
+
+        <div class="footer">Página 3</div>
+    </div>
+
+    <!-- PÁGINA 4: TABELA PARTE 1 -->
+    <div class="page page-break">
+        <h2>3. Tabela Completa de Armas</h2>
+        <p style="margin-bottom: 10px;"><em>Parte 1: Armas Two-Handed (Alto DPS)</em></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Arma</th>
+                    <th>Tipo</th>
+                    <th>Mãos</th>
+                    <th>Str</th>
+                    <th>Speed</th>
+                    <th>DPS</th>
+                    <th>Crit</th>
+                    <th>Reach</th>
+                    <th>Parry</th>
+                    <th>Pen.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Huge Axe</strong></td>
+                    <td>Slashing</td>
+                    <td>2H</td>
+                    <td>12.0</td>
+                    <td>6.0s</td>
+                    <td><strong>2.000</strong></td>
+                    <td>5%</td>
+                    <td>5</td>
+                    <td>20%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Staff (Metal)</strong></td>
+                    <td>Crushing</td>
+                    <td>2H</td>
+                    <td>8.0</td>
+                    <td>4.0s</td>
+                    <td><strong>2.000</strong></td>
+                    <td>0%</td>
+                    <td>3</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Large Maul</strong></td>
+                    <td>Crushing</td>
+                    <td>2H</td>
+                    <td>11.0</td>
+                    <td>6.0s</td>
+                    <td>1.833</td>
+                    <td>3%</td>
+                    <td>4</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Two Handed Sword</strong></td>
+                    <td>Slash/Pierce</td>
+                    <td>2H</td>
+                    <td>9.0</td>
+                    <td>5.0s</td>
+                    <td>1.800</td>
+                    <td>5%</td>
+                    <td>4</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Spear</strong></td>
+                    <td>Piercing</td>
+                    <td>2H</td>
+                    <td>9.0</td>
+                    <td>5.0s</td>
+                    <td>1.800</td>
+                    <td>6%</td>
+                    <td>7</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Halberd</strong></td>
+                    <td>Slashing</td>
+                    <td>2H</td>
+                    <td>9.0</td>
+                    <td>5.0s</td>
+                    <td>1.800</td>
+                    <td>6%</td>
+                    <td>6</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Long Spear</strong></td>
+                    <td>Piercing</td>
+                    <td>2H</td>
+                    <td>8.0</td>
+                    <td>5.0s</td>
+                    <td>1.600</td>
+                    <td>6%</td>
+                    <td>7</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight-box">
+            <strong>Destaque PvE:</strong> Huge Axe e Staff (Metal) lideram em DPS puro (2.000). Spear e Long Spear oferecem o maior alcance (7), ideal para kiting.
+        </div>
+
+        <p style="margin-top: 30px;"><em>Parte 2: Armas One-Handed (Versatilidade)</em></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Arma</th>
+                    <th>Tipo</th>
+                    <th>Mãos</th>
+                    <th>Str</th>
+                    <th>Speed</th>
+                    <th>DPS</th>
+                    <th>Crit</th>
+                    <th>Reach</th>
+                    <th>Parry</th>
+                    <th>Pen.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Small Axe</strong></td>
+                    <td>Slashing</td>
+                    <td>1H</td>
+                    <td>5.0</td>
+                    <td>3.0s</td>
+                    <td>1.667</td>
+                    <td>0%</td>
+                    <td>2</td>
+                    <td>30%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Large Axe</strong></td>
+                    <td>Slashing</td>
+                    <td>1H</td>
+                    <td>6.5</td>
+                    <td>4.0s</td>
+                    <td>1.625</td>
+                    <td>3%</td>
+                    <td>4</td>
+                    <td>30%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Medium Maul</strong></td>
+                    <td>Crushing</td>
+                    <td>1H</td>
+                    <td>8.0</td>
+                    <td>5.0s</td>
+                    <td>1.600</td>
+                    <td>3%</td>
+                    <td>3</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Small Maul</strong></td>
+                    <td>Crushing</td>
+                    <td>1H</td>
+                    <td>4.5</td>
+                    <td>3.0s</td>
+                    <td>1.500</td>
+                    <td>1%</td>
+                    <td>2</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Long Sword</strong></td>
+                    <td>Slash/Pierce</td>
+                    <td>1H</td>
+                    <td>5.5</td>
+                    <td>4.0s</td>
+                    <td>1.375</td>
+                    <td>1%</td>
+                    <td>3</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Short Sword</strong></td>
+                    <td>Slash/Pierce</td>
+                    <td>1H</td>
+                    <td>4.0</td>
+                    <td>3.0s</td>
+                    <td>1.333</td>
+                    <td>10%</td>
+                    <td>2</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><strong>Crowbar</strong></td>
+                    <td>Crushing</td>
+                    <td>1H</td>
+                    <td>4.5</td>
+                    <td>3.0s</td>
+                    <td>1.500</td>
+                    <td>1%</td>
+                    <td>2</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight-box">
+            <strong>Destaque PvP:</strong> Medium Maul e Long Sword combinam Parry 100% com DPS respeitável, perfeitos para uso com shield.
+        </div>
+
+        <div class="footer">Página 4</div>
+    </div>
+
+    <!-- PÁGINA 5: TABELA PARTE 2 -->
+    <div class="page page-break">
+        <h3>Armas Especiais e Utilitárias</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Arma</th>
+                    <th>Tipo</th>
+                    <th>Mãos</th>
+                    <th>Str</th>
+                    <th>Speed</th>
+                    <th>DPS</th>
+                    <th>Crit</th>
+                    <th>Reach</th>
+                    <th>Parry</th>
+                    <th>Pen.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Sickle</strong></td>
+                    <td>Slashing</td>
+                    <td>1H</td>
+                    <td>6.0</td>
+                    <td>3.0s (4s PvP)</td>
+                    <td>2.000</td>
+                    <td>2%</td>
+                    <td>2</td>
+                    <td>20%</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td><strong>Scythe</strong></td>
+                    <td>Slashing</td>
+                    <td>2H</td>
+                    <td>9.0</td>
+                    <td>5.0s (6s PvP)</td>
+                    <td>1.800</td>
+                    <td>8%</td>
+                    <td>5</td>
+                    <td>20%</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td><strong>Butchering Knife</strong></td>
+                    <td>Piercing</td>
+                    <td>1H</td>
+                    <td>1.5</td>
+                    <td>2.0s</td>
+                    <td>0.750</td>
+                    <td>0%</td>
+                    <td>1</td>
+                    <td>100%</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td><strong>Carving Knife</strong></td>
+                    <td>Piercing</td>
+                    <td>1H</td>
+                    <td>1.0</td>
+                    <td>2.0s</td>
+                    <td>0.500</td>
+                    <td>0%</td>
+                    <td>1</td>
+                    <td>100%</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td><strong>Staff (Wooden)</strong></td>
+                    <td>Crushing</td>
+                    <td>2H</td>
+                    <td>2.0</td>
+                    <td>3.0s</td>
+                    <td>0.667</td>
+                    <td>0%</td>
+                    <td>2</td>
+                    <td>100%</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warning-box">
+            <strong>⚠️ Atenção:</strong> Sickle e Scythe possuem Skill Penalty de 2, reduzindo Combat Rating. O DPS mostrado para Sickle é para PvE (3.0s); em PvP é 4.0s (DPS 1.500).
+        </div>
+
+        <h3>Notas sobre a Tabela</h3>
+        <ul>
+            <li><strong>Melhor Material:</strong> Indica o Moon Metal recomendado para maximizar a performance da arma</li>
+            <li><strong>Enchants Recomendados:</strong> Combinações ótimas para diferentes situações</li>
+            <li><strong>PvE/PvP Tier:</strong> Classificação de eficácia em cada modo de jogo (S = melhor, C = pior)</li>
+        </ul>
+
+        <h3>Recomendações de Materiais por Arma</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <strong>Adamantine</strong>
+                Huge Axe, Large Maul, Two Handed Sword, Large Axe, Long Sword
+            </div>
+            <div class="stat-card">
+                <strong>Glimmersteel</strong>
+                Staff (Metal), Spear, Halberd, Long Spear, Small Axe, Crowbar
+            </div>
+            <div class="stat-card">
+                <strong>Seryll</strong>
+                Sickle, Scythe, Short Sword, Small Maul
+            </div>
+            <div class="stat-card">
+                <strong>Nenhum Especial</strong>
+                Knives, Staff (Wooden) - não se beneficiam significativamente
+            </div>
+        </div>
+
+        <h3>Enchants Recomendados (Top 3)</h3>
+        <ol>
+            <li><strong>Nimbleness:</strong> Reduz attack time significativamente (essencial para armas lentas)</li>
+            <li><strong>Life Transfer:</strong> Roubo de vida, crucial para sustentação em combate prolongado</li>
+            <li><strong>Bloodthirst:</strong> Dano over time + heal, excelente para PvE grinding</li>
+        </ol>
+
+        <div class="footer">Página 5</div>
+    </div>
+
+    <!-- PÁGINA 6: MATERIAIS (continuação da página 5) -->
+    <div class="page page-break">
+        <h2>4. Materiais e Moon Metals</h2>
+        <p>
+            Os Moon Metals são materiais raros que concedem bônus significativos às armas. A escolha correta do material pode aumentar o DPS efetivo em 20-30%.
+        </p>
+
+        <h3>Adamantine</h3>
+        <div class="highlight-box">
+            <strong>Bônus:</strong> +10% dano base, +15% velocidade de ataque<br>
+            <strong>Melhor Para:</strong> Armas de alto dano base e ataque lento<br>
+            <strong>Exemplos:</strong> Huge Axe (12.0 → 13.2 str, 6.0s → 5.1s ≈ DPS 2.59), Large Maul, Two Handed Sword
+        </div>
+        <p><strong>Uso Recomendado:</strong> Priorize Adamantine em armas 2H para PvE quando buscar maximizar dano bruto. Ideal para farming de mobs com alta HP.</p>
+
+        <h3>Glimmersteel</h3>
+        <div class="highlight-box">
+            <strong>Bônus:</strong> +15% velocidade de ataque, +10% chance de parry<br>
+            <strong>Melhor Para:</strong> Armas de alcance e versatilidade<br>
+            <strong>Exemplos:</strong> Spear (5.0s → 4.25s), Halberd, Long Spear, Staff (Metal)
+        </div>
+        <p><strong>Uso Recomendado:</strong> Excelente para armas que dependem de controle de distância (Reach alto) ou precisam de melhor defesa. O bônus de parry é útil em PvP mesmo com armas 2H.</p>
+
+        <h3>Seryll</h3>
+        <div class="highlight-box">
+            <strong>Bônus:</strong> +10% dano base, +10% chance de crítico<br>
+            <strong>Melhor Para:</strong> Builds focadas em burst damage<br>
+            <strong>Exemplos:</strong> Short Sword (10% → 20% crit), Scythe (8% → 18% crit), Sickle
+        </div>
+        <p><strong>Uso Recomendado:</strong> Perfeito para armas que já possuem crit natural. Em PvP, Short Sword Seryll com 20% crit oferece alto potencial de burst. Scythe Seryll é devastadora em PvE contra mobs grandes.</p>
+
+        <h3>Comparação de Custo-Benefício</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Raridade</th>
+                    <th>Investimento</th>
+                    <th>Retorno PvE</th>
+                    <th>Retorno PvP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Adamantine</td>
+                    <td>Alta</td>
+                    <td>Alto</td>
+                    <td>⭐⭐⭐⭐⭐</td>
+                    <td>⭐⭐⭐</td>
+                    <td>⭐⭐</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warning-box">
+            <strong>💡 Dica para Iniciantes:</strong> Comece com armas de Steel/Iron de boa qualidade (70+ QL). Moon Metals são investimentos de longo prazo - só considere após estabelecer sua base e grinding inicial.
+        </div>
+
+        <div class="footer">Página 6</div>
+    </div>
+
+    <!-- PÁGINA 7: ENCHANTS -->
+    <div class="page page-break">
+        <h2>5. Sistema de Enchants</h2>
+        <p>
+            Enchants (encantamentos) são buffs mágicos que podem transformar completamente a eficácia de uma arma. Abaixo, uma análise dos enchants mais relevantes para combate.
+        </p>
+
+        <h3>Tier S - Enchants Essenciais</h3>
+        
+        <h4>Nimbleness (Agilidade)</h4>
+        <div class="highlight-box">
+            <strong>Efeito:</strong> Reduz o Attack Speed em até ~20% (power 104)<br>
+            <strong>Impacto no DPS:</strong> Huge Axe 6.0s → ~4.8s (DPS 2.0 → 2.5)<br>
+            <strong>Melhor Para:</strong> Todas as armas lentas (6.0s+), especialmente Huge Axe e Large Maul
+        </div>
+        <p><strong>Por que usar:</strong> O aumento de DPS é direto e mensurável. Em PvE, significa matar mobs 20% mais rápido. Em PvP, permite mais ataques em janelas de oportunidade.</p>
+
+        <h4>Life Transfer (Transferência de Vida)</h4>
+        <div class="highlight-box">
+            <strong>Efeito:</strong> Rouba HP do alvo a cada hit<br>
+            <strong>Impacto:</strong> Sustentação infinita em combate prolongado<br>
+            <strong>Melhor Para:</strong> Long Sword, Medium Maul (PvP com shield), Two Handed Sword (PvE)
+        </div>
+        <p><strong>Por que usar:</strong> Elimina necessidade de healing externo em 90% dos combates PvE. Em PvP, permite trocas mais agressivas sem risco de burst down.</p>
+
+        <h4>Bloodthirst (Sede de Sangue)</h4>
+        <div class="highlight-box">
+            <strong>Efeito:</strong> Dano over time (DoT) + pequeno heal por tick<br>
+            <strong>Impacto:</strong> 15-25% de dano adicional total contra mobs grandes<br>
+            <strong>Melhor Para:</strong> Large Maul, Halberd, Large Axe (farming extensivo)
+        </div>
+        <p><strong>Por que usar:</strong> O DoT continua trabalhando enquanto você se move para o próximo alvo. Excelente para chain grinding em áreas com múltiplos mobs.</p>
+
+        <h3>Tier A - Enchants Situacionais</h3>
+
+        <h4>Frostbrand / Flaming Aura</h4>
+        <div class="stat-card">
+            <strong>Efeito:</strong> Dano elemental adicional (Frost ou Fire)<br>
+            <strong>Melhor Para:</strong> PvP especializado, bosses com resistências conhecidas
+        </div>
+
+        <h4>Demise (Animals/Humans/Monsters)</h4>
+        <div class="stat-card">
+            <strong>Efeito:</strong> +Dano contra tipo específico de criatura<br>
+            <strong>Melhor Para:</strong> Farming focado (ex: Demise Animals em Spear para hunting)
+        </div>
+
+        <h4>Circle of Cunning</h4>
+        <div class="stat-card">
+            <strong>Efeito:</strong> Aumenta skill gain rate<br>
+            <strong>Melhor Para:</strong> Armas de treino, grinding de skills (Small Axe, Crowbar)
+        </div>
+
+        <div class="footer">Página 7</div>
+    </div>
+
+    <!-- PÁGINA 8: ENCHANTS (continuação) -->
+    <div class="page page-break">
+        <h3>Combinações Recomendadas</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cenário</th>
+                    <th>Arma</th>
+                    <th>Enchant 1</th>
+                    <th>Enchant 2</th>
+                    <th>Resultado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PvE Farming</td>
+                    <td>Huge Axe (Adam.)</td>
+                    <td>Nimbleness</td>
+                    <td>Bloodthirst</td>
+                    <td>DPS máximo + sustain</td>
+                </tr>
+                <tr>
+                    <td>PvP Tank</td>
+                    <td>Long Sword (Glim.)</td>
+                    <td>Life Transfer</td>
+                    <td>Frostbrand</td>
+                    <td>Sobrevivência + burst</td>
+                </tr>
+                <tr>
+                    <td>PvP Burst</td>
+                    <td>Short Sword (Ser.)</td>
+                    <td>Demise (Humans)</td>
+                    <td>Bloodthirst</td>
+                    <td>20% crit + DoT assassino</td>
+                </tr>
+                <tr>
+                    <td>Boss Fighting</td>
+                    <td>Spear (Glim.)</td>
+                    <td>Life Transfer</td>
+                    <td>Nimbleness</td>
+                    <td>Kiting seguro + DPS</td>
+                </tr>
+                <tr>
+                    <td>Skill Grinding</td>
+                    <td>Small Axe</td>
+                    <td>Circle of Cunning</td>
+                    <td>Nimbleness</td>
+                    <td>Gain rate acelerado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warning-box">
+            <strong>⚠️ Nota sobre Custos:</strong> Enchants de power alto (90+) requerem priests especializados e materiais caros. Planeje seus investimentos - priorize armas que você usará por meses.
+        </div>
+
+        <h2>6. Combinações com Shields</h2>
+        <p>
+            Em PvP, o uso de shield com armas 1H é frequentemente superior a armas 2H, mesmo com DPS menor. A capacidade de bloquear ataques e reduzir dano recebido compensa a perda de poder ofensivo.
+        </p>
+
+        <h3>Tipos de Shields</h3>
+
+        <h4>Large Metal Shield</h4>
+        <div class="highlight-box">
+            <strong>Block Chance:</strong> ~60-70% (com skill alto)<br>
+            <strong>Damage Reduction:</strong> 40-50% quando bloqueia<br>
+            <strong>Melhor Com:</strong> Long Sword, Medium Maul<br>
+            <strong>Trade-off:</strong> -15% movimento speed
+        </div>
+        <p><strong>Quando usar:</strong> PvP competitivo, defesa de settlements, situações 1vX. A combinação Long Sword + Large Shield é considerada S-Tier PvP.</p>
+
+        <h4>Medium Metal Shield</h4>
+        <div class="highlight-box">
+            <strong>Block Chance:</strong> ~50-60%<br>
+            <strong>Damage Reduction:</strong> 30-40%<br>
+            <strong>Melhor Com:</strong> Short Sword, Small Maul, Large Axe<br>
+            <strong>Trade-off:</strong> -10% movimento speed
+        </div>
+        <p><strong>Quando usar:</strong> Equilíbrio entre mobilidade e defesa. Bom para roaming PvP e skirmishes.</p>
+
+        <h4>Small Wooden/Metal Shield</h4>
+        <div class="highlight-box">
+            <strong>Block Chance:</strong> ~35-45%<br>
+            <strong>Damage Reduction:</strong> 20-30%<br>
+            <strong>Melhor Com:</strong> Small Axe, Sickle<br>
+            <strong>Trade-off:</strong> -5% movimento speed
+        </div>
+        <p><strong>Quando usar:</strong> Builds de mobilidade, hit-and-run, iniciantes em PvP.</p>
+
+        <div class="footer">Página 8</div>
+    </div>
+
+    <!-- PÁGINA 9: SHIELDS E TIER LISTS -->
+    <div class="page page-break">
+        <h3>Melhores Combinações (Meta 2025)</h3>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <strong>S-Tier: Long Sword + Large Shield</strong>
+                DPS 1.375, Parry 100%, Block ~65%. Combinação mais equilibrada para PvP sério. Life Transfer torna esta build quase unkillable em 1v1.
+            </div>
+            <div class="stat-card">
+                <strong>S-Tier: Medium Maul + Large Shield</strong>
+                DPS 1.600, Parry 100%, Crushing damage. Melhor contra heavy armor. Bloodthirst para sustain.
+            </div>
+            <div class="stat-card">
+                <strong>A-Tier: Large Axe + Medium Shield</strong>
+                DPS 1.625, Parry 30%, Reach 4. Bom alcance + damage razoável. Mais ofensivo que as opções S-Tier.
+            </div>
+            <div class="stat-card">
+                <strong>A-Tier: Short Sword + Medium Shield</strong>
+                DPS 1.333, Parry 100%, Crit 10%. Build de burst. Seryll eleva crit para 20% - devastating em aberturas.
+            </div>
+        </div>
+
+        <h3>Comparação: 1H+Shield vs 2H</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Aspecto</th>
+                    <th>1H + Shield</th>
+                    <th>2H</th>
+                    <th>Vencedor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>DPS Bruto</td>
+                    <td>1.3-1.6</td>
+                    <td>1.8-2.0</td>
+                    <td class="tier-b">2H</td>
+                </tr>
+                <tr>
+                    <td>Survivability PvP</td>
+                    <td>Muito Alta</td>
+                    <td>Baixa</td>
+                    <td class="tier-s">1H+Shield</td>
+                </tr>
+                <tr>
+                    <td>Versatilidade</td>
+                    <td>Alta</td>
+                    <td>Média</td>
+                    <td class="tier-s">1H+Shield</td>
+                </tr>
+                <tr>
+                    <td>Velocidade Farming</td>
+                    <td>Média</td>
+                    <td>Alta</td>
+                    <td class="tier-b">2H</td>
+                </tr>
+                <tr>
+                    <td>Custo (materiais)</td>
+                    <td>Alto (arma+shield)</td>
+                    <td>Médio</td>
+                    <td class="tier-b">2H</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight-box">
+            <strong>Recomendação Geral:</strong> Tenha ambas as opções. Use 2H para PvE farming eficiente, troque para 1H+Shield ao entrar em território contestado ou durante raids/defesas.
+        </div>
+
+        <h2>7. Tier Lists (PvE e PvP)</h2>
+        <p>
+            As tier lists abaixo consideram armas com materiais e enchants otimizados. Armas de materiais básicos (Iron/Steel) caem aproximadamente um tier.
+        </p>
+
+        <h3>PvE Tier List</h3>
+        <p><em>Critérios: DPS, Reach, eficiência em farming prolongado</em></p>
+
+        <h4 class="tier-s">S-Tier - Dominância PvE</h4>
+        <div class="highlight-box">
+            <strong>Huge Axe (Adamantine + Nimbleness):</strong> DPS ~2.5 após enchants. Rei do farming. Ideal para docks, trolls, mobs grandes.<br><br>
+            <strong>Large Maul (Adamantine + Bloodthirst):</strong> Crushing damage + DoT. Melhor contra armored mobs. Sustain excelente.<br><br>
+            <strong>Two Handed Sword (Adamantine + Life Transfer):</strong> Equilibrado, versátil. Life transfer permite grinding infinito.<br><br>
+            <strong>Spear (Glimmersteel + Nimbleness):</strong> Reach 7 permite kiting seguro. Perfeito para bosses e mobs perigosos.<br><br>
+            <strong>Halberd (Adamantine + Bloodthirst):</strong> Reach 6, DPS sólido, DoT. Excelente all-rounder.
+        </div>
+
+        <div class="footer">Página 9</div>
+    </div>
+
+    <!-- PÁGINA 10: TIER LISTS (continuação) -->
+    <div class="page page-break">
+        <h4 class="tier-a">A-Tier - Forte Performance</h4>
+        <div class="stat-card">
+            <strong>Staff (Metal), Scythe, Large Axe, Medium Maul:</strong> DPS competitivo (1.6-2.0). Staff destaca-se por Parry 100% + DPS 2.0. Scythe oferece 8% crit. Medium Maul é opção 1H viável para farming com alguma defesa.
+        </div>
+
+        <h4 class="tier-b">B-Tier - Funcional</h4>
+        <div class="stat-card">
+            <strong>Small Axe, Long Spear, Small Maul, Long Sword, Short Sword:</strong> DPS menor (1.3-1.67) mas usáveis. Long/Short Sword são híbridos PvE/PvP. Small Axe é bom early-game.
+        </div>
+
+        <h4 class="tier-c">C-Tier - Não Recomendado para PvE</h4>
+        <div class="warning-box">
+            <strong>Sickle, Knives, Staff (Wooden):</strong> DPS inadequado ou skill penalty alto. Sickle/Scythe são tools primariamente. Knives são para butchering.
+        </div>
+
+        <h3>PvP Tier List</h3>
+        <p><em>Critérios: Parry %, compatibilidade com shield, burst potential</em></p>
+
+        <h4 class="tier-s">S-Tier - Meta PvP</h4>
+        <div class="highlight-box">
+            <strong>Long Sword + Large Shield:</strong> A combinação definitiva. Parry 100%, block ~65%, Life Transfer para sustain. Vence maioria dos matchups 1v1.<br><br>
+            <strong>Medium Maul + Large Shield:</strong> DPS superior (1.6), Crushing penetra armor. Bloodthirst permite trocas prolongadas. Ligeiramente mais ofensivo que Long Sword.
+        </div>
+
+        <h4 class="tier-a">A-Tier - Competitivo</h4>
+        <div class="stat-card">
+            <strong>Large Axe, Small Maul, Short Sword, Small Axe (todos com shields):</strong> Builds viáveis com características únicas. Short Sword (Seryll) oferece burst com 20% crit. Large Axe tem reach 4 para poke.
+        </div>
+
+        <h4 class="tier-b">B-Tier - Nicho/Situacional</h4>
+        <div class="stat-card">
+            <strong>Armas 2H (Huge Axe, Staff, Spear, Halberd, Long Spear), Crowbar:</strong> Viáveis em group fights onde você tem frontline. Huge Axe pode deletar alvos desprotegidos. Spear/Long Spear úteis para poke em sieges.
+        </div>
+
+        <h4 class="tier-c">C-Tier - Evite em PvP</h4>
+        <div class="warning-box">
+            <strong>Sickle, Scythe, Knives, Staff (Wooden):</strong> Skill penalty, baixo parry ou DPS insuficiente. Você morrerá para qualquer build S/A-Tier.
+        </div>
+
+        <h2>8. Recomendações por Cenário</h2>
+
+        <h3>Early Game (Primeiras Semanas)</h3>
+        <div class="highlight-box">
+            <strong>Objetivo:</strong> Armas acessíveis para farming básico e defesa<br><br>
+            <strong>PvE:</strong> Small Axe (Iron, 60+ QL) - barato, fácil de fazer, DPS 1.667 razoável<br>
+            <strong>PvP:</strong> Long Sword (Iron) + Medium Shield - defesa decente, aprenda mecânicas<br>
+            <strong>Alternativa:</strong> Sickle (ferramenta + arma, economia de inventário)
+        </div>
+
+        <div class="footer">Página 10</div>
+    </div>
+
+    <!-- PÁGINA 11: RECOMENDAÇÕES -->
+    <div class="page page-break">
+        <h3>Mid Game (1-3 Meses)</h3>
+        <div class="highlight-box">
+            <strong>Objetivo:</strong> Especialização, primeiros Moon Metals<br><br>
+            <strong>PvE Main:</strong> Large Maul (Steel 80+ QL, depois Adamantine) + Bloodthirst<br>
+            <strong>PvP Main:</strong> Long Sword (Glimmersteel) + Large Shield (Steel) + Life Transfer<br>
+            <strong>Farming Alt:</strong> Large Axe (Steel) + Nimbleness para grinding secundário
+        </div>
+
+        <h3>Late Game (3+ Meses, Estabelecido)</h3>
+        <div class="highlight-box">
+            <strong>Objetivo:</strong> Máxima eficiência, múltiplas builds especializadas<br><br>
+            <strong>PvE Primary:</strong> Huge Axe (Adamantine 90+ QL) + Nimbleness 104 + Bloodthirst<br>
+            <strong>Boss Killer:</strong> Spear (Glimmersteel 90+) + Life Transfer + Frostbrand<br>
+            <strong>PvP Defensive:</strong> Medium Maul (Glimmersteel) + Large Shield (Adam.) + Life Transfer<br>
+            <strong>PvP Offensive:</strong> Short Sword (Seryll 95+) + Medium Shield + Demise (Humans)
+        </div>
+
+        <h3>Cenários Específicos</h3>
+
+        <h4>Naval Combat (Docks/Boats)</h4>
+        <div class="stat-card">
+            <strong>Melhor Escolha:</strong> Huge Axe ou Halberd<br>
+            <strong>Razão:</strong> Alto reach (5-6) permite atingir inimigos em diferentes níveis de altura. DPS alto finaliza combates antes de reforços chegarem.<br>
+            <strong>Setup:</strong> Adamantine + Nimbleness + Bloodthirst
+        </div>
+
+        <h4>Siege Warfare</h4>
+        <div class="stat-card">
+            <strong>Atacante:</strong> Long Spear / Spear (reach 7 para poke sobre walls)<br>
+            <strong>Defensor:</strong> Medium Maul + Large Shield (hold chokepoints)<br>
+            <strong>Setup:</strong> Glimmersteel + Life Transfer para sustentação prolongada
+        </div>
+
+        <h4>Hunting (Animals Selvagens)</h4>
+        <div class="stat-card">
+            <strong>Melhor Escolha:</strong> Spear (Glimmersteel) + Demise (Animals)<br>
+            <strong>Razão:</strong> Reach 7 permite manter distância de predadores. Piercing damage é efetivo contra hide armor natural.<br>
+            <strong>Alternativa:</strong> Huge Axe para one-shots em animais menores
+        </div>
+
+        <h4>Dungeon Crawling / Rifts</h4>
+        <div class="stat-card">
+            <strong>Tank:</strong> Long Sword + Large Shield + Life Transfer<br>
+            <strong>DPS:</strong> Large Maul (Adamantine) + Bloodthirst + Frostbrand<br>
+            <strong>Razão:</strong> Composição equilibrada permite survivability do grupo
+        </div>
+
+        <h3>Progressão Recomendada de Investimento</h3>
+        <ol>
+            <li><strong>Semana 1-2:</strong> Iron Long Sword 60 QL + Medium Shield (500-1000 irons total)</li>
+            <li><strong>Mês 1:</strong> Steel Long Sword 80 QL + Large Shield + primeiro enchant básico (Life Transfer 70)</li>
+            <li><strong>Mês 2:</strong> Steel Large Maul 85 QL + Bloodthirst 80 para farming eficiente</li>
+            <li><strong>Mês 3:</strong> Glimmersteel Long Sword 90 QL + Life Transfer 100 (investimento PvP)</li>
+            <li><strong>Mês 4+:</strong> Adamantine Huge Axe 95 QL + Nimbleness 104 + Bloodthirst 95 (endgame PvE)</li>
+        </ol>
+
+        <div class="warning-box">
+            <strong>💰 Gestão de Recursos:</strong> Moon Metals são extremamente raros. Priorize uma arma PvP primeiro (Long Sword Glimmer) pois perder equipamento de Iron/Steel é recuperável. Perder Moon Metal é devastador.
+        </div>
+
+        <div class="footer">Página 11</div>
+    </div>
+
+    <!-- PÁGINA 12: ATUALIZAÇÕES 2025 -->
+    <div class="page page-break">
+        <h2>9. Atualizações de 2025</h2>
+        <p>
+            Esta seção documenta todas as mudanças relevantes ao sistema de combate implementadas em 2025, com base nos patch notes oficiais e discussões da comunidade.
+        </p>
+
+        <h3>Mudanças Confirmadas</h3>
+
+        <h4>Small Axe - Reclassificação</h4>
+        <div class="highlight-box">
+            <strong>Antes:</strong> Skill gain primário em Axes (tool skill)<br>
+            <strong>Agora:</strong> Skill gain via weapon skills system<br>
+            <strong>Impacto:</strong> Mais consistente para uso em combate. Ideal para treinar weapon skills sem desperdiçar Moon Metals em armas maiores.
+        </div>
+
+        <h4>Quality of Life - Stamina Regen</h4>
+        <div class="highlight-box">
+            <strong>Mudança:</strong> Stamina regeneration melhorada em veículos (carts, boats)<br>
+            <strong>Impacto:</strong> Armas pesadas (Huge Axe, Large Maul) beneficiadas. Anteriormente, o peso de 2.5-5kg drenava stamina excessivamente durante viagens. Agora é viável transportar e usar essas armas sem penalidades severas.
+        </div>
+
+        <h4>Ações em Mounts</h4>
+        <div class="highlight-box">
+            <strong>Mudança:</strong> Ação "Take" facilitada para equipar armas enquanto montado<br>
+            <strong>Impacto:</strong> Armas como Sickle e Crowbar (que possuem ação "Take" em criaturas/objetos) são mais práticas. PvP hit-and-run melhorado - você pode equipar rapidamente ao desmontar.
+        </div>
+
+        <h4>Alchemy Imbues</h4>
+        <div class="highlight-box">
+            <strong>Mudança:</strong> Sistema de imbues temporários via alchemy expandido<br>
+            <strong>Impacto:</strong> Armas como Two Handed Sword e Halberd que já têm enchants permanentes fortes podem receber buffs temporários adicionais para boss fights (ex: +damage vs specific creature type por 1 hora).
+        </div>
+
+        <h4>Performance em Áreas Densas</h4>
+        <div class="highlight-box">
+            <strong>Mudança:</strong> Otimizações de server tick para combate em settlements populosos<br>
+            <strong>Impacto:</strong> Armas de attack speed rápido (Staff Metal 4.0s, Small Axe 3.0s) beneficiadas. Anteriormente, em áreas com 50+ players, ataques rápidos sofriam delay. Agora são mais consistentes.
+        </div>
+
+        <h3>Mudanças NÃO Implementadas</h3>
+        <p>Apesar de discussões na comunidade, os seguintes reworks foram descartados ou adiados:</p>
+        <ul>
+            <li><strong>Sickle/Scythe Penalty Removal:</strong> Mantém skill penalty de 2</li>
+            <li><strong>Butchering Knife Combat Viability:</strong> Continua sendo tool primariamente</li>
+            <li><strong>Staff (Wooden) Buff:</strong> Sem mudanças em stats, permanece roleplay only</li>
+            <li><strong>Shield Blocking Formula:</strong> Sem alterações no cálculo de block chance</li>
+        </ul>
+
+        <h3>Meta Shifts em 2025</h3>
+
+        <h4>PvE Meta</h4>
+        <div class="stat-card">
+            <strong>Antes 2025:</strong> Large Maul dominava devido a Crushing + sustain<br>
+            <strong>Agora:</strong> Huge Axe + Nimbleness tornou-se meta devido a stamina fixes e DPS superior (~2.5). Large Maul ainda forte mas caiu para tier-S compartilhado.
+        </div>
+
+        <h4>PvP Meta</h4>
+        <div class="stat-card">
+            <strong>Estável:</strong> Long Sword + Large Shield mantém domínio S-Tier. Nenhuma mudança de balance afetou esta combinação. Short Sword (Seryll) ganhou popularidade como counter-pick contra shields (burst através de gaps).
+        </div>
+
+        <div class="footer">Página 12</div>
+    </div>
+
+    <!-- PÁGINA 13: CONCLUSÃO -->
+    <div class="page page-break">
+        <h2>Conclusão e Checklist Rápido</h2>
+
+        <h3>Melhores Escolhas Absolutas (TL;DR)</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <strong>🏆 PvE King</strong>
+                Huge Axe (Adamantine 90+)<br>
+                Nimbleness 104 + Bloodthirst 95<br>
+                DPS ~2.5, sustain infinito
+            </div>
+            <div class="stat-card">
+                <strong>🛡️ PvP King</strong>
+                Long Sword (Glimmersteel 90+)<br>
+                Life Transfer 100 + Large Shield<br>
+                Unkillable em 1v1
+            </div>
+            <div class="stat-card">
+                <strong>💰 Budget Start</strong>
+                Small Axe (Iron 60+)<br>
+                Sem enchants necessários<br>
+                Versátil early-game
+            </div>
+            <div class="stat-card">
+                <strong>🎯 Specialist</strong>
+                Spear (Glimmersteel 90+)<br>
+                Life Transfer + Demise<br>
+                Boss killer / Hunter
+            </div>
+        </div>
+
+        <h3>Checklist de Progressão</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>✓</th>
+                    <th>Milestone</th>
+                    <th>Timeframe</th>
+                    <th>Investimento</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>☐</td>
+                    <td>Primeira arma Iron 60+ QL</td>
+                    <td>Semana 1</td>
+                    <td>500 iron</td>
+                </tr>
+                <tr>
+                    <td>☐</td>
+                    <td>Steel weapon 70+ QL + basic shield</td>
+                    <td>Semana 2-3</td>
+                    <td>2000 iron</td>
+                </tr>
+                <tr>
+                    <td>☐</td>
+                    <td>Primeiro enchant (Life Transfer 70+)</td>
+                    <td>Mês 1</td>
+                    <td>Priest favor</td>
+                </tr>
+                <tr>
+                    <td>☐</td>
+                    <td>Steel 80+ QL weapon + Large Shield</td>
+                    <td>Mês 1-2</td>
+                    <td>5000 iron</td>
+                </tr>
+                <tr>
+                    <td>☐</td>
+                    <td>Enchants 90+ (Nimbleness/Bloodthirst)</td>
+                    <td>Mês 3</td>
+                    <td>High priest</td>
+                </tr>
+                <tr>
+                    <td>☐</td>
+                    <td>Segunda Moon Metal (Adamantine PvE)</td>
+                    <td>Mês 4+</td>
+                    <td>2-3 lumps</td>
+                </tr>
+                <tr>
+                    <td>☐</td>
+                    <td>Endgame setup (95+ QL, dual enchants)</td>
+                    <td>Mês 6+</td>
+                    <td>Múltiplos lumps</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Erros Comuns a Evitar</h3>
+        <div class="warning-box">
+            <strong>❌ NÃO faça isso:</strong>
+            <ul style="margin-top: 10px;">
+                <li>Investir Moon Metal em Sickle/Scythe (skill penalty destrói eficácia)</li>
+                <li>Usar armas 2H em PvP sem grupo de suporte (você vai morrer)</li>
+                <li>Enchantar armas de baixa QL (&lt;80) - desperdício de favor</li>
+                <li>Ignorar shields em PvP achando que DPS compensa</li>
+                <li>Fazer Butchering/Carving Knife para combate (são tools!)</li>
+                <li>Usar Wooden Staff esperando ser viável (é roleplay only)</li>
+            </ul>
+        </div>
+
+        <h3>Perguntas Frequentes</h3>
+
+        <h4>P: Vale a pena fazer Seryll weapon logo de início?</h4>
+        <p><strong>R:</strong> Não. Seryll é o Moon Metal mais raro (3-5x mais caro que outros). Comece com Glimmersteel ou Adamantine. Seryll é para min-maxers com múltiplas weapons já estabelecidas.</p>
+
+        <h4>P: Huge Axe ou Large Maul para PvE main?</h4>
+        <p><strong>R:</strong> Huge Axe com Nimbleness tem DPS ligeiramente superior (~2.5 vs 2.3). Large Maul tem melhor sustain com Bloodthirst. Escolha baseado em preferência: velocidade (Huge) ou conforto (Maul).</p>
+
+        <h4>P: Posso usar Spear em PvP competitivo?</h4>
+        <p><strong>R:</strong> Spear 2H é tier-B em PvP (viável em group fights para poke). Para solo PvP, você precisa shield, então Long Sword é superior.</p>
+
+        <div class="footer">Página 13</div>
+    </div>
+
+    <!-- PÁGINA 14: APÊNDICE A -->
+    <div class="page page-break">
+        <h2>Apêndice A: Fórmulas e Cálculos</h2>
+
+        <h3>Cálculo de DPS</h3>
+        <div class="highlight-box">
+            <strong>Fórmula Base:</strong><br>
+            DPS = Strength / Attack Speed<br><br>
+            <strong>Exemplo:</strong> Huge Axe = 12.0 / 6.0s = 2.000 DPS
+        </div>
+
+        <h3>Impacto de Nimbleness</h3>
+        <div class="highlight-box">
+            <strong>Fórmula Aproximada:</strong><br>
+            Novo Attack Speed = Base Speed × (1 - 0.20)<br>
+            Novo DPS = Strength / Novo Speed<br><br>
+            <strong>Exemplo:</strong> Huge Axe + Nimbleness 104<br>
+            6.0s × 0.80 = 4.8s<br>
+            12.0 / 4.8s = 2.5 DPS (+25% increase)
+        </div>
+
+        <h3>Moon Metal Bonuses (Valores Exatos)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Damage Bonus</th>
+                    <th>Speed Bonus</th>
+                    <th>Parry Bonus</th>
+                    <th>Crit Bonus</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Adamantine</td>
+                    <td>+10%</td>
+                    <td>+15%</td>
+                    <td>0%</td>
+                    <td>0%</td>
+                </tr>
+                <tr>
+                    <td>Glimmersteel</td>
+                    <td>0%</td>
+                    <td>+15%</td>
+                    <td>+10%</td>
+                    <td>0%</td>
+                </tr>
+                <tr>
+                    <td>Seryll</td>
+                    <td>+10%</td>
+                    <td>0%</td>
+                    <td>0%</td>
+                    <td>+10%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Shield Block Chance</h3>
+        <div class="highlight-box">
+            <strong>Fórmula Estimada:</strong><br>
+            Block Chance = (Shield Skill × 0.5) + (Shield Size Modifier) - (Enemy Weapon Speed Penalty)<br><br>
+            <strong>Shield Size Modifiers:</strong><br>
+            Large: +15%<br>
+            Medium: +10%<br>
+            Small: +5%<br><br>
+            <strong>Nota:</strong> Fórmula exata não é pública. Valores baseados em testes da comunidade.
+        </div>
+
+        <h3>Skill Penalty Impact</h3>
+        <div class="warning-box">
+            <strong>Penalty de 1:</strong> -5% effective Combat Rating<br>
+            <strong>Penalty de 2:</strong> -10% effective Combat Rating<br><br>
+            <strong>Impacto Real:</strong> CR reduzido significa:<br>
+            • -5-10% hit chance<br>
+            • -5-10% parry/dodge chance<br>
+            • Menor damage em hits que conectam<br><br>
+            <strong>Por isso Sickle/Scythe são tier-C mesmo com DPS aparentemente bom.</strong>
+        </div>
+
+        <h3>Critical Hit Damage</h3>
+        <div class="highlight-box">
+            <strong>Multiplier:</strong> Critical hits fazem 1.5x damage base<br>
+            <strong>Chance Base:</strong> Varia por arma (0-10%)<br>
+            <strong>Com Seryll:</strong> +10% à chance (ex: 10% → 20%)<br><br>
+            <strong>DPS Efetivo com Crit:</strong><br>
+            Effective DPS = Base DPS × (1 + (Crit Chance × 0.5))<br><br>
+            <strong>Exemplo:</strong> Short Sword Seryll (20% crit)<br>
+            1.333 × (1 + 0.20 × 0.5) = 1.333 × 1.10 = 1.466 DPS efetivo
+        </div>
+
+        <div class="footer">Página 14</div>
+    </div>
+
+    <!-- PÁGINA 15: APÊNDICE B -->
+    <div class="page page-break">
+        <h2>Apêndice B: Tabelas de Referência Rápida</h2>
+
+        <h3>Top 5 DPS (Base, Sem Enchants)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Arma</th>
+                    <th>DPS</th>
+                    <th>Mãos</th>
+                    <th>Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="tier-s">
+                    <td>1</td>
+                    <td>Huge Axe</td>
+                    <td>2.000</td>
+                    <td>2H</td>
+                    <td>Rei PvE</td>
+                </tr>
+                <tr class="tier-s">
+                    <td>1</td>
+                    <td>Staff (Metal)</td>
+                    <td>2.000</td>
+                    <td>2H</td>
+                    <td>Parry 100%</td>
+                </tr>
+                <tr class="tier-a">
+                    <td>3</td>
+                    <td>Large Maul</td>
+                    <td>1.833</td>
+                    <td>2H</td>
+                    <td>Crushing</td>
+                </tr>
+                <tr class="tier-a">
+                    <td>4</td>
+                    <td>Two Handed Sword</td>
+                    <td>1.800</td>
+                    <td>2H</td>
+                    <td>Versátil</td>
+                </tr>
+                <tr class="tier-a">
+                    <td>4</td>
+                    <td>Spear</td>
+                    <td>1.800</td>
+                    <td>2H</td>
+                    <td>Reach 7</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Top 5 Armas 1H (Para Uso com Shield)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Arma</th>
+                    <th>DPS</th>
+                    <th>Parry</th>
+                    <th>Por quê</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="tier-s">
+                    <td>1</td>
+                    <td>Small Axe</td>
+                    <td>1.667</td>
+                    <td>30%</td>
+                    <td>Melhor DPS 1H, rápido</td>
+                </tr>
+                <tr class="tier-s">
+                    <td>2</td>
+                    <td>Large Axe</td>
+                    <td>1.625</td>
+                    <td>30%</td>
+                    <td>Reach 4, sólido</td>
+                </tr>
+                <tr class="tier-a">
+                    <td>3</td>
+                    <td>Medium Maul</td>
+                    <td>1.600</td>
+                    <td>100%</td>
+                    <td>Parry perfeito + Crushing</td>
+                </tr>
+                <tr class="tier-a">
+                    <td>4</td>
+                    <td>Small Maul</td>
+                    <td>1.500</td>
+                    <td>100%</td>
+                    <td>Rápido, Parry 100%</td>
+                </tr>
+                <tr class="tier-b">
+                    <td>5</td>
+                    <td>Long Sword</td>
+                    <td>1.375</td>
+                    <td>100%</td>
+                    <td>Meta PvP absoluto</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Alcance (Reach) por Categoria</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Reach</th>
+                    <th>Armas</th>
+                    <th>Uso Ideal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>7</td>
+                    <td>Spear, Long Spear</td>
+                    <td>Kiting, bosses, sieges</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Halberd</td>
+                    <td>Controle de área</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Huge Axe, Scythe</td>
+                    <td>PvE geral, docks</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Large Maul, 2H Sword, Large Axe</td>
+                    <td>Balanced</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Staff (Metal), Medium Maul, Long Sword</td>
+                    <td>PvP, close combat</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Small Axe, Short Sword, Small Maul, Sickle</td>
+                    <td>DPS rápido</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Knives</td>
+                    <td>Tools, não combat</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Recursos Adicionais</h3>
+        <ul>
+            <li><strong>Wurmpedia:</strong> https://www.wurmpedia.com/index.php/Weapons</li>
+            <li><strong>Fórum Oficial:</strong> Patch notes e discussões de balance</li>
+            <li><strong>Reddit r/wurmonline:</strong> Builds da comunidade</li>
+            <li><strong>Discord Wurm Online:</strong> Canais #combat e #pvp</li>
+        </ul>
+
+        <div class="highlight-box" style="margin-top: 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <strong style="font-size: 18px; display: block; margin-bottom: 10px;">
+                🎮 Boa sorte em suas aventuras em Wurm!
+            </strong>
+            <p style="margin: 0; opacity: 0.95;">
+                Lembre-se: a melhor arma é aquela que você domina.<br>
+                Skill &gt; Equipment, sempre.
+            </p>
+        </div>
+
+        <div class="footer">Página 15</div>
+    </div>
+
+    <!-- BOTÃO DE IMPRESSÃO -->
+    <div class="no-print" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.2); border-radius: 8px;">
+        <button onclick="window.print()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;">
+            🖨️ Imprimir / Salvar PDF
+        </button>
+        <p style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+            Ctrl/Cmd + P
+        </p>
+    </div>
+
+    <script>
+        window.onbeforeprint = function() {
+            document.querySelector('.no-print').style.display = 'none';
+        };
+        window.onafterprint = function() {
+            document.querySelector('.no-print').style.display = 'block';
+        };
+    </script>
+</body>
+</html>
+                </tr>
+                <tr>
+                    <td>Glimmersteel</td>
+                    <td>Alta</td>
+                    <td>Alto</td>
+                    <td>⭐⭐⭐⭐</td>
+                    <td>⭐⭐⭐⭐</td>
+                </tr>
+                <tr>
+                    <td>Seryll</td>
+                    <td>Muito Alta</td>
+                    <td>Muito Alto</td>
+                    <td>⭐⭐⭐⭐</td>
+                    <td>⭐⭐⭐⭐⭐</td>
+                </tr>
+                <tr>
+                    <td>Steel/Iron</td>
+                    <td>Comum</td>
+                    <td>Baixo</td>
+                    <td>⭐⭐⭐</td>

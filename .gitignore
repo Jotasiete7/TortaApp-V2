@@ -99,3 +99,21 @@ PRIVATE_NOTES.md
 *.mov
 *.avi
 *.mkv
+
+# Secrets & Security
+secrets/
+app.key
+*.key
+.env
+
+# Organized Personal Files (Ignored)
+docs/notes/
+resources/data/
+scripts/python_legacy/
+scripts/trade_scripts/
+*.log
+*.docx
+*.xlsx
+*.csv
+*.zip
+*.rar

@@ -1,0 +1,9 @@
+guilda_trade/
+├── engine/
+│   ├── cleaner.py
+│   ├── analyzer.py
+│   └── visualizer.py
+├── data_raw/
+├── data_clean/
+├── insights/
+└── main.py

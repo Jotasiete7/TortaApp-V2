@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Páginas Amarelas - Cadastro</title>
+  <style>
+    body { font-family: 'Georgia', serif; background: #f2e8cf; color: #3d2b1f; }
+    .form-container { max-width: 600px; margin: 40px auto; padding: 20px; background: #fff8e7; border: 2px solid #d4a017; border-radius: 10px; }
+    label { display: block; margin: 15px 0 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #d4a017; border-radius: 5px; }
+    button { background: #d4a017; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #b58900; }
+    .service { border: 1px dashed #d4a017; padding: 15px; margin: 20px 0; border-radius: 8px; background: #fffdf7; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h1>Cadastro no Páginas Amarelas</h1>
+  <p>Preencha para aparecer no diretório oficial!</p>
+
+  <form name="paginas-amarelas" netlify netlify-honeypot="bot-field">
+    
+    <!-- HONEYPOT (anti-spam) -->
+    <div class="hidden">
+      <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
+    </div>
+
+    <!-- DADOS BÁSICOS -->
+    <label>Nick no jogo *</label>
+    <input type="text" name="nick" required />
+
+    <label>Servidor *</label>
+    <select name="servidor" required>
+      <option value="">Selecione...</option>
+      <option>Xanadu</option>
+      <option>Celebration</option>
+      <option>Independence</option>
+      <option>Exodus</option>
+      <option>Freedom</option>
+      <option>Chaos</option>
+      <option>Outros</option>
+    </select>
+
+    <label>Contato (Discord ou /w) *</label>
+    <input type="text" name="contato" required placeholder="ex: joao#1234" />
+
+    <!-- PLANO PREMIUM -->
+    <label>Plano desejado</label>
+    <select name="plano" onchange="toggleServices(this.value)">
+      <option value="gratis">Grátis (1 serviço)</option>
+      <option value="light">Light (3 serviços)</option>
+      <option value="star">Star (ilimitado)</option>
+    </select>
+
+    <!-- SERVIÇO 1 -->
+    <div class="service">
+      <h3>Serviço 1 *</h3>
+      <label>Categoria</label>
+      <select name="servico1_categoria" required>
+        <option value="Wood">Wood</option>
+        <option value="Metal">Metal</option>
+        <option value="Leather">Leather</option>
+        <option value="Cloth">Cloth</option>
+        <option value="Services">Services</option>
+      </select>
+
+      <label>Skill / Serviço</label>
+      <input type="text" name="servico1_skill" required placeholder="ex: Blades smithing" />
+
+      <label>QL Máximo</label>
+      <input type="number" name="servico1_ql" min="1" max="100" required />
+
+      <label>Preço</label>
+      <input type="text" name="servico1_preco" required placeholder="ex: 2.5s" />
+    </div>
+
+    <!-- SERVIÇO 2 (Light/Star) -->
+    <div class="service hidden" id="servico2">
+      <h3>Serviço 2</h3>
+      <label>Categoria</label>
+      <select name="servico2_categoria">
+        <option value="Wood">Wood</option>
+        <option value="Metal">Metal</option>
+        <option value="Leather">Leather</option>
+        <option value="Cloth">Cloth</option>
+        <option value="Services">Services</option>
+      </select>
+
+      <label>Skill / Serviço</label>
+      <input type="text" name="servico2_skill" placeholder="ex: Ship building" />
+
+      <label>QL Máximo</label>
+      <input type="number" name="servico2_ql" min="1" max="100" />
+
+      <label>Preço</label>
+      <input type="text" name="servico2_preco" placeholder="ex: 5s" />
+    </div>
+
+    <!-- SERVIÇO 3 (Star) -->
+    <div class="service hidden" id="servico3">
+      <h3>Serviço 3</h3>
+      <label>Categoria</label>
+      <select name="servico3_categoria">
+        <option value="Wood">Wood</option>
+        <option value="Metal">Metal</option>
+        <option value="Leather">Leather</option>
+        <option value="Cloth">Cloth</option>
+        <option value="Services">Services</option>
+      </select>
+
+      <label>Skill / Serviço</label>
+      <input type="text" name="servico3_skill" />
+
+      <label>QL Máximo</label>
+      <input type="number" name="servico3_ql" min="1" max="100" />
+
+      <label>Preço</label>
+      <input type="text" name="servico3_preco" />
+    </div>
+
+    <!-- DESCRIÇÃO -->
+    <label>Descrição (opcional)</label>
+    <textarea name="descricao" rows="3" placeholder="Imping 24h, aceito troca..."></textarea>
+
+    <label>Entrega cross-server?</label>
+    <select name="cross_server">
+      <option>Não</option>
+      <option>Sim (grátis)</option>
+      <option>Sim (cobra frete)</option>
+    </select>
+
+    <p><button type="submit">CADASTRAR ANÚNCIO</button></p>
+  </form>
+</div>
+
+<script>
+  function toggleServices(plano) {
+    document.getElementById('servico2').classList.toggle('hidden', plano === 'gratis');
+    document.getElementById('servico3').classList.toggle('hidden', plano !== 'star');
+  }
+</script>
+
+</body>
+</html>

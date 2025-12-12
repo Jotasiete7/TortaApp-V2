@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Guilda - Recipes Guide NFI 2025</title>
+  <style>
+    :root {
+      --bg: #f4f6f9; --text: #1a1a1a; --card: #fff;
+      --accent: #27ae60; --dark: #2c3e50; --purple: #667eea; --indigo: #764ba2;
+      --border: #e0e0e0; --hover: #f0f7ff;
+    }
+    .dark {
+      --bg: #1a1a1a; --text: #f4f6f9; --card: #2c3e50;
+      --border: #333; --hover: #2a3b4d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+    header {
+      background: var(--dark); color: white; padding: 1rem; text-align: center;
+      display: flex; align-items: center; justify-content: center; gap: 1rem;
+      position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    header img { height: 50px; border-radius: 50%; }
+    .toggle {
+      position: absolute; top: 1rem; right: 1rem;
+      background: #fff; color: #000; border: none; padding: 0.5rem 1rem;
+      border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
+    }
+    .dark .toggle { background: #333; color: #fff; }
+    .container { max-width: 1000px; margin: auto; padding: 1.5rem; }
+    .recado {
+      background: var(--card); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;
+      text-align: center; font-style: italic; color: var(--accent); font-weight: bold;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1); font-size: 1rem;
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem;
+      background: var(--card); padding: 0.8rem; border-radius: 12px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center;
+    }
+    input, select, button {
+      padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 0.95rem; transition: 0.2s;
+    }
+    input { flex: 1; min-width: 220px; }
+    button {
+      background: var(--accent); color: white; border: none; cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #219653; }
+    .recipe-list {
+      background: var(--card); border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .recipe-item {
+      padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem; cursor: pointer;
+      transition: 0.2s; font-size: 0.95rem;
+    }
+    .recipe-item:hover {
+      background: var(--hover); transform: translateX(4px);
+    }
+    .recipe-item:last-child { border-bottom: none; }
+    .recipe-emoji { font-size: 1.4rem; width: 32px; text-align: center; }
+    .recipe-name { flex: 1; font-weight: 600; }
+    .recipe-tags {
+      display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem;
+    }
+    .tag {
+      background: rgba(102,126,234,0.15); color: var(--purple); padding: 0.2rem 0.6rem;
+      border-radius: 12px; font-weight: 500;
+    }
+    .dark .tag { background: rgba(102,126,234,0.3); }
+    .verified { color: var(--accent); font-weight: bold; }
+    .no-results {
+      text-align: center; padding: 2rem; color: #999; font-style: italic;
+    }
+    .back-btn {
+      display: block; text-align: center; margin: 1.5rem auto;
+      padding: 0.7rem 1.5rem; background: var(--accent); color: white;
+      text-decoration: none; border-radius: 8px; font-weight: bold; width: fit-content;
+    }
+    .back-btn:hover { background: #219653; }
+
+    /* MODAL */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 1000; padding: 1rem; overflow-y: auto;
+    }
+    .modal-content {
+      background: var(--card); max-width: 700px; margin: auto;
+      border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      background: linear-gradient(135deg, var(--purple), var(--indigo));
+      color: white; padding: 1.2rem 1.5rem; position: relative;
+    }
+    .close-btn {
+      position: absolute; top: 0.8rem; right: 1rem; font-size: 1.8rem;
+      cursor: pointer; background: rgba(255,255,255,0.2); width: 36px; height: 36px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-body { padding: 1.5rem; line-height: 1.7; }
+    .detail-title {
+      font-weight: bold; color: var(--accent); margin: 1rem 0 0.5rem;
+      font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .ingredient-list {
+      padding-left: 1.5rem; margin: 0.5rem 0;
+    }
+    .ingredient-list li {
+      margin: 0.3rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="A Guilda Logo" onerror="this.style.display='none'">
+    <h1>A GUILDA - RECIPES GUIDE</h1>
+    <button class="toggle" onclick="document.body.classList.toggle('dark')">Modo Escuro</button>
+  </header>
+
+  <div class="container">
+    <div class="recado">
+      A Guilda reuniu todas as receitas de Wurm Online em uma lista prática, rápida e atualizada. Clique para ver detalhes!
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Buscar receita, ingrediente...">
+      <select id="skillFilter"><option value="">Todas Habilidades</option></select>
+      <select id="containerFilter"><option value="">Todos Recipientes</option></select>
+      <select id="cookerFilter"><option value="">Todos Fornos</option></select>
+      <button onclick="resetFilters()">Limpar</button>
+    </div>
+
+    <div id="recipeList" class="recipe-list"></div>
+    <div id="noResults" class="no-results" style="display:none;">Nenhuma receita encontrada.</div>
+
+    <a href="index.html" class="back-btn">← Voltar ao Dashboard</a>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal" id="recipeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close-btn" onclick="closeModal()">×</span>
+        <h2 id="modalTitle"></h2>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // === TODAS AS RECEITAS DO CSV (COMPLETO) ===
+    const csvData = `name,aquired,skill,cookers *1,container *2,active item,target item,mandatory *3,"one or more from each [group]","zero or one from each [group]","one of from each [group]","any zero one or many from each","optional zero or one from each",verified,affinity possibilities
+apple juice,known,beverages,,,fruit press,raw green apple,,,,,,,x,
+applesauce,learn,HFC,"O, C",C,,,green apple (x2); water (100% of solids); sugar; ground ginger; ground nutmeg,,,,,,x,
+bacon,learn,cooking,,,salt,raw meat fillet (pork),,,,,,,x,
+bacon butty,learn,baking,,WP,,,raw slice of bread (x2); any bacon,,,,,any butter; tomato ketchup; mayonnaise (20%),x,
+bacon stuffed mushroom,learn,HFC,"O, C",M,hand,,any bacon,,,,chopped any herb; chopped garlic; any cheese; salt,x,
+"bacon, lettuce and tomato sandwich",learn,baking,,WP,hand,,raw slice of bread (x2); cooked bacon; lettuce; tomato,,,,,any butter; salt; tomato katchup; mayonnaise (20%),x,
+baked apple,learn,,"O, C",B,,,apple; honey (50%); ground nutmeg,,[blue graps; green grapes],,cream (25%),,
+baked berry cheesecake,learn,cooking,O,T,,,biscuit mix; cheese; gelatine (25% of solids); raw any berry,,,,,chopped any herb,x,
+baked cheesecake,learn,cooking,O,T,,,biscuit mix; cheese; gelatine (20% of solids),,,,,chopped any herb,x,
+baked chocolate cheesecake,learn,,,,T,,,biscuit mix; sugar; butter; egg; chocolate; cocoa; cheese,,,,,,,
+baked fruit cheesecake,learn,,,,T,,,biscuit mix; cheese; gelatine; any raw fruit,,,,,,,
+baked lemon cheesecake,learn,,,,T,,,biscuit mix; sugar; butter; cheese; egg; lemon,,,,,,,
+Bangers and mash,learn,HFC,O,F,,,Mashed potato; sausage,,,,,gravy (20% of solids),x,
+Batter,learn,baking,,,spoon,pottery bowl,flour; milk (100% of solids); raw egg,,,,,,x,
+battered fish and chips,,,,,F,,,batter; fish; fries,,,,,tomato ketchup,,
+bearshark burger (nameable),,,,,,,,,,,,,,,,,,
+beer,learn,,,WB,cedar wood scrap,wine barrel,wort with hops,,,,,,,
+berry biscuits,learn,,O,B,,,biscuit mix; any raw berry,,,,,,,
+berry brandy,,,,,,,,,,,,,,,,,,
+berry cheesecake,learn,cooking,,T,hand,cake tin,digestive biscuit; any cheese; gelatine (50% of solids); any raw berry,,,,,chopped herb,x,
+berry gin,learn,bev,,,,,,,,,,,,,,,,
+berry jam,known,HFC,"O, C","C, S",,,"raw berry, maple syrup",,,,ground any spice; chopped any herb,x,
+berry juice,known,bev,,,fruit press,any raw berry,,,,,,,x,
+berry pie,learn,HFC,O,PD,,,raw any berry; pastry,,,,,ground any spice,x,
+berry tart,,,,,,,,,,,,,,,,,,
+berry Trifle,learn,,,,spoon,pottery bowl,custard; jelly; plain sponge cake; raw blueberry; whipped cream,,,,,,,
+billy sheep gruff stew,Troll (supreme),HFC,C,O,,pottery bowl,chopped belladonna; chopped carrot; chopped potato; chopped tomato; moonshine (25% of solids); raw lamb meat,,,,,,x,
+biscuit,,,,,B,,biscuit mix,,,,,,,
+biscuit mix,learn,baking,,,spoon,pottery bowl,flour; butter; sugar; raw egg; milk (100% of solids),,,,,,,
+bitter,learn,bev,,WB,firwood or pinewood wood scrap,wine barrel,wort with hops in the wine barrel,,,,,,,
+Black Forest Gateux,learn,,,,T,,,cake mix; cherries; chocolate; cocoa; Moonshine; whipped cream,,,,,,,
+blue grape juice,known,bev,,,fruit press,raw blue grapes,,,,,,,x,
+boiled egg,learn,,,,S,,,water; egg,,,,,,,
+boiled egg sandwitch,learn,,,,WP,,,boiled egg; 2x raw slice of bread,,,,,mayonnaise,,
+brandy,learn,bev,,,S,,undistilled brandy goes through the still,,,,,,,
+bread,known,bake,"O, C",B,,,any dough,,,,,,x,
+breadcrumbs,known,Milling,,,mortar & pestle,slice of bread,,,,,,,,
+breakfast,learn,HFC,"C, O",P,,,none but at least one is required from the one or more group,any veg / herb / cheese / raw nut / meat / fish / spice / bacon / sausage / fries / pesto / haggis / slice of bread / croutons,,,salt; tomato ketchup; mayonnaise,,
+breakfast muffin,,,,,B,,,cooked bacon; cake mix; egg,,,,,,,
+brown ale,lean,bev,,WB,chestnut or lindenwood wood scrap,,wort,,,,,,,
+buffalo cheese,known,dairy,,,cheese drill,bison milk,,,,,,,x,
+bug guts stew,learn,HFC,"C,O",O,,,diced meat (insect); conchineal; chopped carrots; water (100% solids); any flour,,,,,,x,
+bugged fish (namable),learn,,,,hand,wooden plate,raw meat (seafood); minced meat (insect); lemon,,,,,,,
+whipped cream,known,,,,fork,milk,,,,,,,,
+butter meat curry,,,O,P,,,Diced meat; lemon juice; ground paprika; ground turmeric; salt; chopped tomato; cooking oil; ground ginger; whipped cream; butter; rice,,,,,,x,
+buttercream icing,learn,,,,fork,bowl,Butter; milk; sugar,,,,,,,
+cake mix,learn,,,,spoon,bowl,butter; flour; milk; salt; sugar,,,,,,,
+campaign bread,learn,HFC,C,O,,,barley; wheat; lovage; water (100% of solids); any meat,,,,,,x,
+candied berry,learn,cooking,O,B,,,any raw berry; sugar,,,,,,x,
+candied fruit,learn,cooking,O,B,,,any raw fruit; sugar,,,,,,,,
+Candied Rose Petal,learn,,,,P,,,rose flower; sugar; egg,,,,,,,
+Carrot cake,,,,,T,,,cake mix; chopped carrot; buttercream icing; walnut,,,,,,,
+carrot crisps,learn,HFC,"O, C",B,,,chopped carrot; cooking oil (25%),,,,,salt,,
+cheese and onion crisps,learn,HFC,O,B,,,chopped potato; cheese (cow); chopped onion; cooking oil (25%),,,,,salt,,
+cheese and tomato swirls,learn,,O,B,,,pastry; passata (?% of solids); cheese; chopped onion,,,,,,,
+cheese bread,learn,,O,B,,,toast; butter; cheese,,,,,,,
+cheese stuffed mushroom,learn,HFC,O,M,,,cheese,,,,ground any spice; garlic,x,
+cheesy baked potato,learn,HFC,O,B,,,potato;cheese,,,,,,,
+cheesy fish casserole,learn,HFC,O,S,,,chopped any fish; water (300% of water); any cheese,chopped any veg,,,,any herb,x,
+cheesy meat stir fry,,,,F,,,diced meat; chopped veg; cooking oil; feta cheese,,,,,,,
+chocolate,learn,,O,S,,,cocoa; milk (100% of solids) ; sugar,,,,,,x,
+chocolate biscuit,,,,,B,,,cocoa; biscuit mix,,,,,,,
+chocolate buttercream Icing,learn,,,,fork,bowl,butter; milk; cocoa; sugar,,,,,,,
+chocolate cake,,,,,T,,,cake mix; cocoa; chocolate icing,,,,,,,
+chocolate chip muffin,learn,,O,B,,,cake mix; chocolate,,,,,chestnut,,
+chocolate coated berry,,,,S,,,berry; chocolate,,,,,,,
+chocolate coated nut,,,,S,,,nut; chocolate,,,,,,,
+chocolate coated rose petals,learn,,,,B,,,rose flower; chocolate,,,,,,,
+chocolate icing,,,,,P,fork,pottery bowl,sugar; cocoa; water,,,,,,,
+chocolate toffee,learn,HFC,O,S,,,sugar; milk (50% of solids); butter; chocolate,,,,,,x,
+chocolate toffee trifle,learn,,O,P,,,chocolate cake; fudge sauce; whipped cream,,,,,,,
+christmas cake,,,,,T,,,Cake mix; any raw fruit; icing,,,,,chestnut,,
+cider,learn,bev,,WB,non-fruitwood woodscrap,,apple juice,,,,,,,x,
+cider vinegar,learn,bev,,WB,any fruitwood woodscrap,,apple juice,,,,,,,
+clotted cream,,,,S,,,,cream,,,,,,,
+coconut,learn,cooking,,,cocoa,raw hazelnuts,,,,,,,x,
+cooked bacon,learn,HFC,"C, F, O",F,,,raw bacon,,,,,,x,
+cookie,learn,,O,B,,,flour; butter; raw egg; sugar,,,,,,,
+corn bread,learn,baking,O,B,,,corn dough,,,,,,x,
+corn crisps,learn,HFC,"O, C",B,,,corn dough; cooking oil (25%),,,,,salt,,
+corn dog,,,,S,,,batter; sasauge (canine),,,,,,,
+corn dough,learn,baking,,,hand,pottery bowl,cornflour; milk (100% of solids); raw egg,,,,,salt,x,
+corn oil,learn,Bev,,,fruit press,corn,,,,,,,x,
+cottage pie,learn,HFC,O,PD,,,diced meat; mashed potato; gravy (100% of solids),,,,cheese; pastry; chopped any veg,x,
+cotton seed oil,,,,fruit press,cotton seed,,,,,,,,
+crab bisque,learn,,O,P,,,cream (?% of solids); stock (?% of solids); flour; chopped onion; chopped garlic; crab meat,,,,,,,
+cream of cucumber soup,,,O,C,,,cream (?% of solids); chopped cucumber; water (?% of solids),,,,,,,
+cream of tomato soup,,,O,C,,,cream (?% of solids); chopped tomato; water (?% of solids),,,,,,,
+curry,,,,P,,,chopped garlic; ground paprika; cooking oil,,,,chopped oregano; cream,,
+custard,learn,,O,S,,,corn flour; milk (33% of solids); egg; sugar,,,,,,,
+custard pie,,,O,PD,,,custard (?% of solids); pastry,,,,,,,
+dagwood,learn,,,,hand,wooden plate,3x raw slice of bread,any veg; any herb; any spice; haggis,cooked meat,,,,x,
+dandelion bread pudding,learn,,O,S,,,yellow flower; chopped (onion; garlic; tomato); raw egg; whipped cream; feta cheese; breadcrumbs,,,,,,,
+deep fried haven bar,learn,HFC,O,S,,,batter; cooking oil (10% of solids); chocolate; honey (10% of solids); any nut,,,,,,x,
+dessert pizza,learn,HFC,O,B,,,dough; chocolate; lingonberry; strawberries; raspberries; blueberry,,,,,,,
+digestive biscuit,learn,HFC,O,B,,,biscuit mix,,,,,,,
+doner fish keebab,learn,,O,F,,,butter; chopped fish fillet; lemon; egg; salt; ground ginger,,,,,,,
+doner meat keebap,learn,,O,F,,,diced meat; salt; raw egg; lemon; butter,,,,,,,
+double chocolate muffin,,,O,B,,,chocolate; cocoa; cake mix,,,,,,,
+dry pasta,learn,cooking,,PD,knife,pottery bowl,wheat flour; water (100% of solids),,,,,,x,
+egg nog,learn,baking,,,spoon,pottery bowl,milk; cream; whiskey; egg; ground nutmeg,,,,,,x,
+eye ball stew,Champ Goblin,HFC,C,,pottery bowl,eye; heart; salt; water (50% of solids); chopped veg,,,,,,x,
+fairy cakes,learn,,O,B,,,cake mix; icing; any flower,,,,,,,
+fennel oil,learn,beverages,,,fruit press,fennel seed,,,,,,,,
+fermenting cider,learn,Bev,,,woodscrap,wine barrel,apple juice,,,,,,x,
+fermenting ginger beer,learn,Bev,,WB,woodscrap,wine barrel,wort with ginger,,,,,,,
+fermenting mead,learn ,Bev,,WB,woodscrap,Wine barrel,honey water,,,,,,,
+fermenting multi-hops beer,learn,beverages,,wood scrap,wine barrel,wort with lots of hops,,,,,,x,
+fermenting Vodka,learn,Bev,,WB,wood scrap,Wine Barrel,unfermented vodka,,,,,,,
+fermenting whiskey,learn,beverages,,WB,wood scrap,wine barrel,unfermented whisky,,,,,,x,
+fish cake,learn,,,,F,,,breakcrumbs; chopped fish fillet; mashed potato; parsley,,,,,egg,,
+fish casserole,learn,,O,S,,,chopped fish fillet; flour; water(300% of solids),chopped veg,,,,any herb,x,
+fish curry,learn,HFC,O,P,,,chopped fish fillet; ground any spice; rice; cooking oil (25%),,,,lemon; chopped veg; chopped herb,x,
+fish gulasch,learn,,O,S,,,chopped fish fillet; chopped onion; chopped carrot; chopped garlic; ground tumeric; stock (?% of solids),,,,,,,
+fish jalfrezi,learn,HFC,O,S,,,chopped fish fillet; chopped onion; chopped garlic; passata (25%); cooking oil (25%); vinegar (10%); cornflour; salt; rice,,,,,,x,
+fish madras,,,O,P,,,chopped fish fillet; chopped onion; chopped tomato; chopped fennel; cooling oil (?%); lemon juice (?%); corn flour; passata (?%); rice,,,,,,,
+fish maki,,,,hand,pottery bowl,cooked rice; nori; raw chopped fish fillet,,,,,,,
+fish meal,learn,HFC,O,R,,,raw any fish; raw any veg; white sauce (20% of solids),,,,,,x,
+fish paella,,,O,F,,,Any chopped fish filet; rice; Chopped Onion; Cheese; Olive oil,,,,,,,
+fish passanda,,,,,S,,,chopped fish fillet; chopped onion; walnut; cooking oil; cream; chopped garlic; ground ginger; passata; rice,,,,,,,
+fish pasty,learn,HFC,O,B,,,pastry; chopped fish fillet,,,,chopped veg; chopped herb; white sauce (25%),,
+fish pie,learn,HFC,O,PD,,,chopped any fish fillet; mashed potatot; white sauce (20% of solids),,,,,,,
+fish stew,learn, HFC,O,P,,,chopped any fish fillet; water; flour,,,,chopped veg; chopped herb,x,
+fish stew with dumplings,learn,HFC,O,"P,C",,,chopped fish fillet; water (300%); flour; dough,,,,chopped veg; chopped herb,x,
+fish stir fry,learn,HFC,O,"F,C",,,chopped fish fillet; cooking oil (33%),chopped any veg,,,,chopped herb,x,
+fishermans hut pie,learn,HFC,O,PD,,,chopped any fish fillet; mashed potato; pastry; gravy (100% of solids),,,,any cheese; any chopped veg,x,
+fishyfingers,goblin,,"C,O",F,,,fish fillet; fat; breadcrumbs; salt; tomato ketchup (?%); vinegar (?%),,,,,,,
+focaccia,,,,,,,,,,,,,,,
+four seasons pizza,learn,,,,B,,,dough; passata; cheese; bacon; fennel; olives; red mushroom,,,,,,,
+fowl stir fry,learn,,O,F,,,Diced Fowl Meat; Chopped Corn; Chopped Onion; Chopped Garlic; Olive Oil (200g),,,,,,,
+fresh pasta,,,,P,knife,pottery bowl,wheat flour; water (100% of solids); raw egg,,,,,,,
+fried egg,,,,F,,,egg; cooking oil,,,,,,,
+fried meat,learn,HFC,O,F,,,any raw meat,,,,,salt,x,
+fried veg,learn,,O,F,,,raw any veg,,,,,,,
+fries,,,,F,,,raw fries,,,,,vinegar,,
+frikadellar,,,,F,,,minced meat; flour; oil,,,,,salt,,
+fruit bread,,,O,B,,,dough; any raw fruit,,,,,,x,
+fruit cake,lean,HFC,O,T,,,cake mix; any raw fruit,,,,,any nut,x,
+fruit cheesecake,,,,P,spoon,pottery bowl,digestive biscuit; any raw fruit; gelatine (%?); cheese,,,,,,,
+fruit drops,,,O,S,,,Any fruit juice 40-60g; sugar,,,,,,,
+fruit jam,known,HFC,"O, C","C, S",,,"raw any fruit, maple syrup",,,,chopped any herb; ground any spice,x,
+fruit muffin,,,O,B,,,biscuit mix; any raw fruit,,,,,,,
+fruit pie,,,,,PD,,,any fruit; pastry,,,,,,,
+fruit scone,,,,,B,,,scone mix; any fruit,,,,,,,
+fruit sorbet,,,,,P,hand,,snowball; fruit juice,,,,,,,
+fruity cookie,learn,HFC,O,B,,,flour; butter; raw egg; sugar; any raw fruit,,,,,,,
+Fudge Sauce,learn,,,,P,,,butter; chocolate; cream; Maple syrup; sugar,,,,,,,
+full house pizza,learn,HFC,O,B,,,dough; passata,chopped any veg; chopped any herb; any cheese; ground any spice; bacon; sausage,,,,,x,
+futomaki,,,,"S,P",hand,container,Nori; cooked rice; raw chopped fish fillet; raw crab; raw veg,,,,,,,
+game pie,learn,HFC,O,PD,,,pastry; diced meat (game); gravy(100% of solids),,,,chopped any veg; chopped any herb,x,
+gelatine,learn,HFC,C,C,,,water (200% of solids),hoove; horn; tooth,,,,,x,
+gin,learn,Bev,S,S,,,run fermented gin through the still,,,,,,,
+ginger biscuit,learn,HFC,O,B,,,biscuit mix; ground ginger,,,,,,,
+ginger cookie,learn,HFC,O,B,,,flour; butter; raw egg; maple syrup (50%); ground ginger,,,,,,,
+ginger toffee,,,O,S,,,sugar; milk (?%); butter; ground ginger,,,,,,,
+ginger beer,learn,Bev,,WB,Any non-fruitwood wood scrap,,wort with ginger,,,,,,,
+goblin liver and onion,Troll (rare),HFC,C,C,,,chopped onion; cooking oil; gland; salt,,,,,,,
+gravy,learn,HFC,"C, O","S, C",,,cornflour; fat; stock (100% of solids),,,,,,x,
+green apple nougat,learn,,,,P,,,fruit; nut; sugar; honey; geletine,,,,,,,
+green meat curry,,,O,S,,,diced meat; chopped onion; chopped garlic; chopped belladonna; chopped basil; ground ginger; sugar; coconut; rice cooking oil (?%),,,,,,,
+gruel,learn,HFC,,,S,,,any cereal; water,,,,,,,
+gulasch,,,,S,,,stock; chopped veg; chopped lettus; ground cumin,,,,,,,
+gumbo,,,,C,,,crab meat; stock; chopped onion; chopped garlic; salt; flour; rice; chopped rosemary; ground tumeric x2,,,,,,,
+haggis,learn,HFC,O,SS,,,chopped onion; eye; heart; oat; fat; gland,,,,,,x,
+herb dumpling,learn,HFC,O,C,,,chopped fish fillet; raw slice of bread; chopped parsley; chopped fennel; chopped onion; olive oil (10% of solids); flour; water (100% of solids); chopped oregano; chopped rosemary; butter; raw egg; meat broth (200% of solids); salt,,,,,,x,
+herb tea,lean,Bev,"O, C","C, P",,,water (800% of solids); any chopped herb,,sugar; maple syrup; honey; lemon juice (10%); any milk,,,,,
+honey pancake,,,,C,,,batter; butter; honey,,,,,,,
+honey vinegar,learn,Bev,,WP,Any fruitwood woodscrap,winebarrel,honey water,,,,,,,
+honey water,learn,Bev,,,honey,water,none,,,,,,,x,
+hot chocolate,learn,bev,,,P,,,cocoa; water,,,,,,,
+hot dog,,,,,WP,,,slice of bread; sausage(dog),,,,,,,
+icing,,,,,P,fork,pottery bowl,sugar; water (50% of solids),,,,,,,
+jam,learn,,,,S,,,chopped fruit; maple syrup,,,,,chopped mint,,
+jelly,learn,HFC,O,P,,,gelatine (100% of solids); fruit juice (100% of solids),,,any raw fruit,,,x,
+kielbasa,learn,HFC,O,SS,,,fat; raw+chopped garlic; raw+minced meat,,,,,,x,
+kyara lime pie,,,,,PD,,,biscuit mix; lemon juice; cream; sugar; egg; leather pieces; butter,,,,,,,
+lamb and mint crisps,lean,HFC,O,B,,,chopped potato; minced meat (lamb); chopped mint; cooking oil (25%),,,,,salt,,
+lasagne,,,,B,,,raw fresh pasta; minced meat; chopped tomato; cheese; white sauce,,,,,,,
+lavender cookie,,,O,B,,,flour; butter; raw egg; sugar; lavendar,,,,,,,
+lemon marmalade,learn,,,,C,,,lemon; maple syrup,,,,,chopped basil,,
+lovage soup,learn,HFC,"O, C","S, C, P",,,butter; chopped onion; chopped thyme; chopped lovage; stock (50% of solids); chopped lettuce; any pea; whipped cream (10% of solids),,,,,,,
+lutefisk,learn,HFC,O,F,,,chopped fish fillet; lye (1g worked),,,,,,,
+macaroni cheese,learn,HFC,O,B,,,white sauce (%50 of solids); cheese; water (%100 of solids),,,raw dry pasta,,,,
+malt vinegar,learn,bev,,any fruitwood woodscrap,wine barrel,wort or any of the wort with xyz varients,,,,,,,
+marshmallow,learn,HFC,O,S,,,gelatine (100% of solids); sugar,,,,,raw any nut,,
+mayonnaise,learn,baking,,,fork,pottery bowl,egg; cooking oil (50%); fennel seed,,,vinegar (25%); lemon juice (25%),,,x,
+mead,learn,bev,,WB,any non-fruitwood woodscrap,,honey water,,,,,,,x,
+meat broth,learn,HFC,"C, O","S, C",,,diced any meat; stock (300% of solids),,,,,chopped any veg,x,
+meat bulash with wine,learn,,O,P,,,chopped carrot; chopped onion; diced meat; fat; flour; ground tumeric; white wine; chopped pumpkin,,,,,,,
+meat burger,learn,HFC,O,"F, C",,,minced any meat; raw slice of any bread (x2),,,,,chopped any mushroom,x,
+meat casserole,learn,,O,S,,,Any Diced meat; water; flour,chopped veggie,,,,,,
+meat curry,learn,,O,"S, P",,,diced meat; ground cumin; rice; any oil (25% of solids),,,,chopped veg; chopped herb,x,
+meat gulasch with wine,learn,HFC,O,S,,,chopped (onion; carrot); diced meat; fat; flour; ground spice,chopped pumpkin,,white wine,,,,
+meat gulash,,,,S,,,diced meat; chopped onion; chopped carrot; ground cumin; stock; chopped pea,,,,,chopped any herb,,
+meat jalfrezi,learn,HFC,O,S,,,diced meat; chopped garlic; chopped onion; cooking oil (25% of solids); cornflour; passata (25% of solids); rice; salt; vinegar (10% of solids); ground cumin; ground turmeric; ground paprika; ground ginger,,,,,,,
+meat loaf,,,C,T,,,minced meat; breadcrumbs; egg,,,,,,,
+meat madras,,,,S,,,diced meat; chopped onion; chopped tomato; cooking oil; chopped fennel; lemon juice; cornflour; passata; rice; ground turmeric,,,,,,,
+meat pasty,learn,HFC,O,B,,,pastry; diced meat,,,,chopped any veg; chopped any herb; gravy (25%),x,
+meat ravioli,learn,HFC,O,S,,,raw pasta; minced meat; water(100% of solids),,,,,,x,
+meat soup,learn,HFC,"C, O","S, C",,,diced any meat; water (300% of solids),,,,,,x,
+meat stew with dumplings,learn,HFC,O,C,,,diced any meat; any flour; any dough; water (300% of solids),,,,,chopped any veg,x,
+meat stir fry,learn,HFC,"C, O","F, C",,,Diced any meat; any oil (33% of solids),chopped any veg,,,,chopped any herb,x,
+meatballs,learn,HFC,"C, O",F,,,raw+minced any meat; chopped any herb; any oil,,,,,,x,
+meatballs with potato,learn,HFC,O,F,,,meatballs; potato; gravy(75%),,,,,,,
+meatballs with spaghetti,learn,HFC,O,S,,,meatballs; spaghetti; parsley; passata (25%),,,,,,x,
+Mint choc Chip Icecream,learn,,,,P,spoon,pottery bowl,chocolate; chopped mint; cream; snowball,,,,,,,
+Mint Humbugs,learn,,,,S,,,chipped mint; sugar; water,,,,,,,
+moonshine,learn,bev,,,,,,made with undistilled moonshine is converted to whisky in a still,,,,,,,
+mushroom bhaji,learn,HFC,O,F,,,cooking oil (10% of solids); chopped onion; chopped mushroom; chopped garlic; ground turmeric; ground cumin,,,,,,x,
+Nicrolis Ginger Beer,learn,Bev,,WB,wood scrap,Wine Barrel,unfermented wort with ginger,,,,,,x,
+Nicrolis bugged fish,,,,,WP,,,crab meat; minced meat (insect); lemon,,,,,,,
+nougat,learn,,,,S,,,geletine; honey; apple; nuts; sugar,,,,,,,
+nut roast,learn,HFC,O,R,,,stock(20% of solids); breadcrumbs; raw egg,any nut; chopped veg,,,chopped any herb; cheese,x,
+nutty cookie,learn,HFC,O,B,,,butter; flour; hazelnut; raw egg; sugar,,,,,,,
+nutty meat stir fry,learn,,O,F,,,chopped veg; diced any meat; any nut; cooking oil (%? of solids),,,,,,,
+oatmeal,learn,HFC,"O, C","P, O",,,raw oat (x2),,,,sugar; applesauce (20% of solids); berry; milk,x,
+omelette,learn,,O,F,,,raw egg,,,,,buffalo cheese,,
+onion bhaji,learn,HFC,O,F,,,any oil; batter; chopped onion; cornflour,,,,,salt,,
+onion crisps,lean,HFC,"O, C",B,,,chopped onion; cooking oil (25%),,,,,salt,,
+open sandwich,,,,,WP,,,slice of bread; cheese,,,,,,,
+orange creamsicle,,,,,WP,,,handle; orange,,,,,,,
+Oxtail Toup,learn,,,,C,,,tail; water,,,,,,,
+pale ale,Learn,Bev,,WB ,brichwood or maplewood woodscrap,wine barrel,wort,,,,,,,
+pancake,learn,HFC,O,C,,,batter; butter,,,,,strawberry,,
+Pandalet one true pizza,,,,,B,,,dough; passata; garlic; pineapple; feta cheese; bacon; olives; buffalo cheese,,,,,,,
+pansy petal pancake,learn,HFC,O,"F, C",,,batter; blue flower; butter,,,,,blueberry,,
+passata,learn,,,,fork,pottery bowl,garlic; tomato; any herb (Except duplicate garlic),,,,,,,
+pastry,,,,hand,pottery bowl,flour; salt; butter; water (100% of solids),,,,,,,
+peppermint tea,,,O,"P, C",,,Chopped Mint ?; Water (800% of solids),,,,,,,
+pesto,,,,fork,pottery bowl,pinenut; basil; garlic; cooking oil,,,,,,,
+Phelaen lovage soup,learn,,O,S,,,butter; chopped onion; chopped thyme; chopped lovage; stock; chopped lettuce; pea; chopped cucumber; whipped cream,,,,,,,
+pickled veg,learn,,,,hand,pottery jar,vinegar 1kg; chopped veg must be .50 kg in weight,,,,,,,
+pilsner,learn,bev,,WB,birchwood or wallnut woodscrap,wine barrel,wort with hops,,,,,,,
+pineapple,,,,pinenuts,apple,,,,,,,,
+Pingpong bearshark burger,learn,HFC,O,F,,,chopped parsley; minced bear meat; minced seafood meat; 2 raw slice of bread; raw egg; salt,,,,,,,
+pizza marinara,learn,HFC,O,B,,,dough; passata; garlic,,,,,,,
+plain crisps,learn,HFC,"O, C",B,,,potato; cooking oil (25%),,,,,salt,,
+plain popcorn,learn,HFC,O,S,,,corn; cooking oil (20% of solids),,,,,,,
+plain sponge cake,,,,,T,,,cake mix; whipped cream,,,,,,,
+plain toffee,learn,HFC,,S,,,sugar; milk; butter,,,,,,,
+ploughman lunch,,,,,WP,hand,wooden plate,pickled onion; cheese; loaf of bread,,,,steak; apple; spiced apple,,
+poppies golden spaghetti,learn,HFC,O,S,,,buffallo cheese; ground turmeric; orange-red flower; raw egg; raw spaghetti,,,,,,,
+pork pie,learn,HFC,O,PD,,,pastry; diced meat (pork); gelatine (50% of solids),,,,,,x,
+porter,learn,Bev,,WB,maplewood or lindenwood woodscrap,Wine Barrel,wort with hops,,,,,,,
+pumpkin crisps,learn,HFC,"O, C",B,,,chopped pumpkin; cooking oil (25%),,,,,salt,,
+pumpkin pie,learn,baking,O,PD,,,chopped pumpkin; pastry,,,,,nutmeg,,
+quiche,learn,HFC,O,PD,,,pastry; raw egg,,,,diced any meat; chopped any veg; chopped any herb; cheese,x,
+raspberry pi,learn,HFC,O,PD,,,raw raspberries; pastry,,,,surgar; custard(20% of solids),x,
+raspberry ripple,,,,,P,hand,pottery bowl,snowball; cream; raspberry juice,,,,,,,
+ratatouille,learn,,O,P,,,chopped tomato; chopped onion; chopped parsley; olive oil; red wine,,,,,chopped yellow mushroom,,
+raw fries,known,,,,butcher knife,potato,,,,,,,,
+raw meatballs,learn,cooking,,B,hand,baking stone,minced meat; any milk (50%); breadcrumbs,,,,,cheese,x,
+red wine vinegar,learn,Bev,,WB,any fruitwood woodscrap,wine barrel,unfermented red wine,,,,,,,
+rice porridge,known,HFC,"O, C","P, S",,,cooked rice; any milk,,,,,salt,x,
+rice pudding,,,O,P,,,Cooked Rice; Maple syrup,,,,,,,
+rice wine vinegar,learn,Bev,,WB,any fruitwood woodscrap,wine barrel,unfermented rice wine,,,,,,,
+risotto,learn,HFC,O,S,,,chopped (fish fillet; garlic; onion); olive oil; stock; rice,,,,,buffalo cheese,,
+roast beef crisps,learn,HFC,O,B,,,chopped potato; minced meat (beef); cooking oil (25%),,,,,salt,,
+roast meal,learn,HFC,O,R,,,meat any; veg any; gravy (25% of solids),,,,,any herb,x,
+Roasted meat,learn,,O,R,,,any meat,,,,,,,
+Roasted Pork,learn,,C,,branch,Pig corpse,,,,,,,,
+Roasted Rat on a Stick,learn,HFC,C,,branch,rat corpse,,,,,,,,
+Roasted vegitable,learn,,O,R,,,any vegetable,,,,,,,
+rocky road crunch bar,,,,B,,,marshmallow (nut); biscuit mix; maple syrup; chocolate; butter,,,,,,,
+rolf favorite sandwich,,,,,,,2 bread slices; buffalo cheese; cucumber; butter,,,,,,,
+root beer,learn,bev,,WB,any non-fruitwood woodscrap,wine barrel,wort with sassafras,,,,,,,
+salad,learn,cooking,,WP,hand,wooden plate,lettuce,,any roasted meat; any fried meat; steamed any fish; grilled any fish,,any mushroom; any raw veggie for: corn; onion; potato; cabbage; carrot; pea; pea pod; tomato; cucumber; any herb; raw any fruit; raw any nut; any crisps; croutons; raw+chopped pumpkin,,
+salt and vinegar crisps,learn,HFC,O,B,,,chopped potato; salt; vinegar (20%); cooking oil (25%),,,,,,,
+salted popcorn,,,O,S,,,Corn; Salt; Cooking oil (25% of solids),,,,,,,
+sandwich,known,,,,WP,,,sice of bread x2; any cooked meat; boiled egg / fried egg; any veggie,,,,,,,
+sashimi,,,,,WP,hand,wooden plate,pickled ginger; diced meat,,,,,,,
+saucy blueberry ice cream,,,,,hand,pottery bowl,snowball; cream; fudge sauce; blueberry juice,,,,,,,
+saucy chocolate ice cream,,,,,hand,,snowball; cream; cocoa; fudge sauce,,,,,,,
+saucy double chocolate ice cream,,,,,spoon,pottery bowl,snowball; cream; chocolate; fudge sauce; cocoa,,,,,,,
+saucy mint choclate chip icecream,learn,,,,spoon,pottery bowl,chocolate; chopped mint; cream; snow ball; fudge sauce,,,,,,,
+saucy strawberry ice cream,,,,,spoon,pottery bowl,snowball; fudge sauce; strawberry juice; cream,,,,,,,
+saucy vanilla ice cream,,,,,hand,pottery bowl,fudge sauce; cream; snowball,,,,,,,
+sausage,learn,HFC,O,SS,,,any raw+minced meat; fat; breadcrumbs,,,,,,x,
+sausage skin,known,,,,knife,bladder,,,,,,,,
+scone mix,,,,spoon,pottery bowl,butter; salt; milk; flour (barley),,,,,,,
+shami kebabs,learn,,O,F,,,diced ?any? meat; ground cumin; ground tumeric; ground paprika; chopped garlic; chopped oregano; salt; cream (?% of solids); egg; lemon; butter,,,,,,,
+shark tooth soup,,,,S,,,meat (seafood/crab); tooth; water,,,,,,,
+shish fish keebab,,,O,B,,,Chopped fish fillet; salt; egg; lemon; butter; ground ginger,,,,,,,
+shish meat keebab,,,O,B,,,diced meat; salt; egg; lemon; butter; ground cumin,,,,,,,
+shrimpiie gumbo,,,,,,,,seafood meat; stock; rice; 2x ground paprika; chopped oregano; chopped garlic; chopped onion; salt; flour,,,,,,,
+spaghetti,learn,,,,P,knife,pottery bowl,wheat flour; salt; water,,,,,,x,
+spaghetti bolognese,learn,,,"S, P",,,cheese; minced meat; passata; raw spaghetti,,,,,,,
+spearmint tea,learn,,O,"P, C",,,Chopped Mint; Water (800% of solids),,,,,,,
+special fried rice,learn,HFC,O,F,,,diced meat; olive oil; rice,,,,,,,
+spiced apple,learn,HFC,O,P,,,apple; ground ginger; ground nutmeg; sugar; butter,,,,,,,
+spiced cookie,learn,HFC,O,B,,,flower; butter; raw egg; sugar; ground any spice,,,,,,,
+sponge cake,,,,,T,,,cake mix; raspberries; whipped cream,,,,,,,
+steak,,,,F,,,raw meat (beef /cow),,,,,,,
+steak and chips,,,,F,,,steak; fries,,,,,,,
+steamed fish,learn,HFC,O,S,,,whole fish; water (100%),,,,,,,
+steamed fish fillet,learn,HFC,O,S,,,fish fillet; water (100%),,,,,,,
+steamed veggie,known,,O,,any veggie,,Target any veggie do r-click menu on it choose wrap. Put the wrapped veggie in oven and it will turn into steamed veggie,,,,,,,
+stew veg with dumplings,learn,HFC,"C,F,O","S, P",,,dough,(any vegie); (raw any berry),,,any herb; salt,x,
+stew meat with dumplings,learn,HFC,"C,F,O","S, P",,,any meat; any dough,any veg,,,,,x,
+stock,learn,HFC,"C,O",C,,,onion; carrot; water (400% of solids),gland; eye; heart,,,,,x,
+stout,learn,beverages,,WB,oak/willow scrap,wine barrel,wort with hops in wine barrel,,,,,,,
+strawberry ice cream,learn,cooking,,,hand,pottery bowl,snowball; strawberry juice (20% of solids); cream (100% of solids),,,,,,x,
+strawberry trifle,,,,,spoon,pottery bowl,plain sponge cake; whipped cream; custard; jelly; strawberries,,,,,,,
+surimi sushi,,,,,knive,pottery bowl,cooked rice; raw crab meat; pickled ginger,,,,,,,
+sweet popcorn,,,O,S,,,sugar; corn; cooking oil (25% of solids),,,,,,,
+tagliatelle,,,,S,,,raw pasta; chopped onion; chopped garlic; water; cream; red wine,,,,,,,
+tamago sushi,,,,,hand,pottery bowl,cooked rice; nori; omlette (or pansy petal pancake),,,,,,,
+tea,known,bev,"O, C","C, P",,,water; chopped camellia,,sugar; maple syrup; honey; lemon juice; any milk,,,,,
+Telurius lovage soup,learn,HFC,O,S,,,butter; chopped (cucumber; lettuce; love; onion; thyme); pea (seed); stock; whipped cream,,,,,,,
+tempura vegetables,,,,F,,,batter; olive oil; any veggie,,,,,,,
+toad in the hole,learn,,,,PD,,,batter; olive oil; sausage,,,,,gravy,,
+toast,learn,bak,O,B,,,raw slice of any bread,,,,,,x,
+tomato crisps,learn,HFC,"O, C",B,,,chopped tomato; oil (25%),,,,,salt,,
+tomato ketchup,,,,fork,pottery bowl,vinegar (33%); tomato; onion; fennel; ginger; garlic; basil; sugar,,,,,,,
+tomato sauce crisps,learn,HFC,o,B,,,chopped potato; tomato ketchup; cooking oil (25%),,,,,salt,,
+triple hops,lean,beverages,,WB,any non-fruitwood wood scrap,wine barrel,wort with lots of hops,,,,,,,
+Ulviirala fried dandelions,learn,HFC,O,F,,,batter; chopped thyme; fennel; salt; yellow flower,,,,,,,
+undistilled brandy,learn,beverages,O,C,,,red wine cooked in cauldron,,,,,,,
+undistilled moonshine,learn,beverages,,WB,,,fermenting moonshine; wood scrap. Auto created when barrel fermenting ends,,,,,,,
+undistilled vodka,learn,beverages,,WB,,,fermenting vodka; wood scrap. Auto created when barrel fermenting ends,,,,,,,
+undistilled whisky,learn,beverages,,WB,,,fermenting whisky; wood scrap. Auto created when barrel fermenting ends,,,,,,,
+unfermented berry gin,learn,beverages,O,C,,,water; any berry,wheat; sugar,,,,,x,
+unfermented cider,learn,beverages,,WB,woodscrap,Wine Barrel,Apple juice in the wine barrel and seal with a wood scrap,,,,,,,
+unfermented fruit gin,learn,beverages,O,C,,,water (200% of solids); raw any fruit,wheat; sugar,,,,,x,
+unfermented gin,learn,beverages,O,C,,,water (200% of solids),wheat; sugar,,,,,x,
+unfermented moonshine,learn,beverages,O,C,,,water (200% of solids),sugar; any veg; oat; barley,,,,,x,
+unfermented rice wine,known,,,,,,,,,,,,x,
+unfermented rum,troll (common),beverages,"C,O",C,,,water (200% of solids),coconut; sugar; fennel seed,,,,,x,
+unfermented vodka,learn,beverages,O,C,,,water(200% of solids),potato; sugar,,,,,x,
+unfermented whisky,learn,beverages,O,C,,,water (200% of solids),rye; sugar,,,,,x,
+vanilla ice cream,,,,,hand,pottery bowl,snowball; cream,,,,,,,
+veg curry,learn,HFC,O,"F, P",,,chopped any veg; ground any spice; rice; cooking oil (25%),,,,,chopped any herb,x,
+veg fritter,learn,HFC,O,F,,,mashed any veg; cornflour; cooking oil (33%),,,,,,,
+veg gulasch,,,O,S,,,chopped onion; chopped carrot; chopped potato; stock(?%); ground paprika,,,,,chopped any herb,,
+Veg gulasch with wine,learn,HFC,O,P,,,chopped onion; chopped carrot; ground paprika; fat; flour; red wine; chopped cabbage,,,,,,,
+veg jalfrezi,learn,HFC,O,"S,P",,,chopped garlic; chopped onion; cooking oil (25%); cornflour; passata (25%); rice; salt; vinegar (10%),ground spice; chopped veg,,,,,,
+veg madras,learn,HFC,O,S,,,chopped (fennel; onion; tomato); cooking oil; cornflour; lemon juice; passata; rice,ground spice; chopped veg,,,,,,
+veg maki,learn,HFC,,,hand,,cooked rice; nori; raw+chopped veg,,,,,,,
+veg passanda,learn,HFC,O,P,,,chopped onion; any nut; cooking oil (25% of solids); cream (25% of solids); chopped garlic; ground ginger; passata (25% of solids); rice,chopped carrot,,,,,x,
+veg pasty,learn,HFC,O,B,,,pastry; chopped any veg,,,,chopped herb; gravy (25%),x,
+veg ravioli,learn,HFC,O,S,,,raw pasta; chopped any veg; water (100%),,,,,,,
+veg sausage,learn,HFC,O,SS,,,breadcrumbs; chopped any veg; fat,,,,chopped any herb; ground any spice,x,
+veg soup,learn,HFC,"O, C","S,C,P",,,chopped any veg; water (300%),,,,chopped any herb; ground any spice,x,
+veg soup with dumplings,learn,HFC,O,"C,P",,,chopped any veg; water (300%); flour; dough,,,,,chopped any herb,x,
+veg stew,learn,HFC,O,S,,,chopped vegetable; flour; water,,,,,,,
+veg stir fry,learn,HFC,O,F,,,olive oil,chopped veg,, ,chopped herb,,,
+victorian sponge cake,,,,,T,,,cake mix; jam / marmalade; butter cream icing,,,,,,,
+vodka,learn,Bev,S,-,,,fermenting vodka,,,,,,,
+wallnut oil,learn,bev,,,fruit press,wallnut,,,,,,,,
+warrior stew,learn,HFC,C,O,,,raw+whole any meat; raw+whole any veg; water (100% solids),,,,any herb; any spice,x,
+waybread,learn,baking,O,B,,,dough; honey (33%); salt; butter; sugar; milk (33%); raw green apple; any nut,,,,,,x,
+welsh rarebit,learn,HFC,O,F,,,toast; cheese; flour,,,beer (33%); milk (33%),,Any butter,x,
+whisky,learn,bev,S,-,,,made with undistiled whisky is converted to whisky in a still,,,,,,,
+white fish salad,learn,cooking,,WP,hand,wooden plate,lettuce; chopped tomato; olives; bouquet of white flowers; sassafras; steamed whole fish,,,,,,x,
+white sauce,learn,HFC,O,"C, S",,,cornflour; milk (100% of solids); butter,,,,,,x,
+white wine vinegar,,,,any fruitwood woodscrap,wine barrel,unfermented white wine,,,,,,,
+wort,learn,Bev,"O, C",C,,,Barley; any herb (including hops); water (400% of solids),,,,,,,
+wort with ginger,learn,Bev,"O, C",C,,,water (400% of solids); ginger,barley; sugar,,,,,x,
+wort with hops,learn,Bev,"O, C",C,,,water (400% of solids); hops,barley; sugar,,,,,,
+wort with lots of hops,learn,Bev,"O, C",C,,,water (400% of solids); hops (x3+),barley; sugar; wheat,,,,,,
+wort with sassafras,learn,Bev,"O, C",C,,,water (400% of solids); sassafras,barley; sugar,,,,,x,
+yorkshire pudding,learn,HFC,O,PD,,,milk (100% of solids); cooking oil (20% of solids); flour; raw egg,,,,,,x,
+Jackal Jambalaya,recipe,HFC,O,C,,,Chopped parsley;ground paprika; chop oregano;chop thyme;any oil; any broth,rice;chop onion;chop tomato; chop garlic; Sausage,,,Diced meat,,x,`;
+
+    // === RESTANTE DO CÓDIGO (EMOJIS, PARSE, RENDER, MODAL, FILTROS) ===
+    const EMOJI_MAP = {
+      'bread': '🍞', 'potion': '🧪', 'cake': '🎂', 'pie': '🥧',
+      'soup': '🥣', 'stew': '🍲', 'curry': '🍛', 'salad': '🥗',
+      'sandwich': '🥪', 'pizza': '🍕', 'pasta': '🍝', 'rice': '🍚',
+      'meat': '🥩', 'fish': '🐟', 'cheese': '🧀', 'egg': '🥚',
+      'drink': '🥤', 'beer': '🍺', 'wine': '🍷', 'juice': '🧃',
+      'cookie': '🍪', 'biscuit': '🥠', 'muffin': '🧁', 'ice cream': '🍦'
+    };
+    function getEmoji(n) { const l = n.toLowerCase(); for (let k in EMOJI_MAP) if (l.includes(k)) return EMOJI_MAP[k]; return '🍴'; }
+
+    const containerNames = { 'T': 'Forma de Bolo', 'B': 'Pedra de Assar', 'F': 'Frigideira', 'S': 'Panela', 'C': 'Caldeirão', 'O': 'Forno Aberto', 'P': 'Tigela', 'R': 'Assadeira', 'PD': 'Forma de Torta', 'SS': 'Tripa', 'WP': 'Prato Madeira', 'M': 'Cogumelos', 'WB': 'Barril Vinho' };
+    const skillNames = { 'HFC': 'Hot Food Cooking', 'bev': 'Bebidas', 'beverages': 'Bebidas', 'baking': 'Panificação', 'cooking': 'Cozinha', 'dairy': 'Laticínios', 'Milling': 'Moagem' };
+
+    function expand(t, d) { if (!t) return t; return t.split(',').map(x => d[x.trim()] || x.trim()).join(', '); }
+
+    function parseCSV(csv) {
+      const lines = csv.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = [];
+        let cur = '', inQ = false;
+        for (let c of lines[i] + ',') {
+          if (c === '"') inQ = !inQ;
+          else if (c === ',' && !inQ) { values.push(cur.trim()); cur = ''; }
+          else cur += c;
+        }
+        if (values.length < headers.length) continue;
+        const obj = {};
+        headers.forEach((h, i) => {
+          let v = values[i] || '';
+          if (h.includes('container') || h.includes('cookers')) v = expand(v, containerNames);
+          if (h === 'skill') v = expand(v, skillNames);
+          obj[h] = v;
+        });
+        if (obj.name) data.push(obj);
+      }
+      return data;
+    }
+
+    let recipes = parseCSV(csvData);
+    let filtered = recipes;
+
+    function render() {
+      const list = document.getElementById('recipeList');
+      list.innerHTML = '';
+      if (!filtered.length) {
+        document.getElementById('noResults').style.display = 'block';
+        return;
+      }
+      document.getElementById('noResults').style.display = 'none';
+
+      filtered.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'recipe-item';
+        item.onclick = () => showModal(r);
+        item.innerHTML = `
+          <div class="recipe-emoji">${getEmoji(r.name)}</div>
+          <div class="recipe-name">${r.name}</div>
+          <div class="recipe-tags">
+            ${r.skill ? `<span class="tag">${r.skill}</span>` : ''}
+            ${r['container *2'] ? `<span class="tag">${r['container *2']}</span>` : ''}
+            ${r.verified === 'x' ? `<span class="tag verified">✓</span>` : ''}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function showModal(r) {
+      document.getElementById('modalTitle').innerHTML = `${getEmoji(r.name)} ${r.name}`;
+      let body = '';
+      const add = (icon, title, content) => {
+        if (content) body += `<div class="detail-title">${icon} ${title}</div><ul class="ingredient-list">${content.split(';').map(i => `<li>${i.trim()}</li>`).join('')}</ul>`;
+      };
+      add('Ingredientes', 'Obrigatórios', r.mandatory);
+      add('1+ por Grupo', 'Um ou Mais', r['one or more from each [group]']);
+      add('0-1 por Grupo', 'Opcional', r['zero or one from each [group]']);
+      add('Qualquer Qtd', 'Livre', r['any zero one or many from each']);
+      add('Opcional', 'Extra', r['optional zero or one from each']);
+      if (r['active item']) body += `<div class="detail-title">Ferramenta</div><div>${r['active item']}</div>`;
+      if (r['target item']) body += `<div class="detail-title">Alvo</div><div>${r['target item']}</div>`;
+      if (r['cookers *1']) body += `<div class="detail-title">Forno</div><div>${r['cookers *1']}</div>`;
+      if (r['container *2']) body += `<div class="detail-title">Recipiente</div><div>${r['container *2']}</div>`;
+      document.getElementById('modalBody').innerHTML = body || '<p>Sem detalhes.</p>';
+      document.getElementById('recipeModal').style.display = 'block';
+    }
+
+    function closeModal() { document.getElementById('recipeModal').style.display = 'none'; }
+    window.onclick = e => { if (e.target.className === 'modal') closeModal(); };
+
+    function applyFilters() {
+      const s = document.getElementById('searchInput').value.toLowerCase();
+      const sk = document.getElementById('skillFilter').value;
+      const co = document.getElementById('containerFilter').value;
+      const ck = document.getElementById('cookerFilter').value;
+
+      filtered = recipes.filter(r => {
+        const match = r.name.toLowerCase().includes(s) ||
+          (r.mandatory && r.mandatory.toLowerCase().includes(s)) ||
+          (r['one or more from each [group]'] && r['one or more from each [group]'].toLowerCase().includes(s));
+        return match &&
+          (!sk || r.skill === sk) &&
+          (!co || (r['container *2'] && r['container *2'].includes(co))) &&
+          (!ck || (r['cookers *1'] && r['cookers *1'].includes(ck)));
+      });
+      render();
+    }
+
+    function populateFilters() {
+      const add = (id, arr) => {
+        const sel = document.getElementById(id);
+        [...new Set(arr)].filter(Boolean).forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v; opt.textContent = v;
+          sel.appendChild(opt);
+        });
+      };
+      add('skillFilter', recipes.map(r => r.skill));
+      add('containerFilter', recipes.map(r => r['container *2']));
+      add('cookerFilter', recipes.map(r => r['cookers *1']));
+    }
+
+    function resetFilters() {
+      ['searchInput','skillFilter','containerFilter','cookerFilter'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      applyFilters();
+    }
+
+    // INIT
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    ['skillFilter','containerFilter','cookerFilter'].forEach(id => {
+      document.getElementById(id).addEventListener('change', applyFilters);
+    });
+    populateFilters();
+    render();
+  </script>
+</body>
+</html>

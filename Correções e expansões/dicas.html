@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wurm Online - Guia Completo de Ferramentas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 20px;
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1em;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid;
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.gathering {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+        }
+
+        .stat-card.improve {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+        }
+
+        .stat-card.both {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+        }
+
+        .stat-card.roi {
+            border-color: #ec4899;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.05));
+        }
+
+        .stat-number {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #cbd5e1;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .stat-sublabel {
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            margin-bottom: 40px;
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .analysis-section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .analysis-card {
+            background: rgba(255,255,255,0.03);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid;
+        }
+
+        .analysis-card.quality {
+            border-color: #fbbf24;
+        }
+
+        .analysis-card.time {
+            border-color: #3b82f6;
+        }
+
+        .analysis-card.roi {
+            border-color: #10b981;
+        }
+
+        .analysis-card h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+
+        .analysis-card p, .analysis-card ul {
+            color: #cbd5e1;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+
+        .analysis-card ul {
+            list-style-position: inside;
+            margin-top: 10px;
+        }
+
+        .analysis-card li {
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+
+        .highlight {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Filters */
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-btn.active {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4);
+        }
+
+        .filter-all {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .filter-gathering {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .filter-improve {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .filter-both {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #1e40af, #7c3aed);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 20px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #ffffff;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(96, 165, 250, 0.15);
+            transform: scale(1.005);
+        }
+
+        tbody tr.gathering-tool {
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        tbody tr.gathering-tool:hover {
+            background: rgba(34, 197, 94, 0.2);
+        }
+
+        td {
+            padding: 18px 15px;
+            font-size: 13px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            vertical-align: top;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        td:first-child {
+            font-weight: 700;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .tool-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gathering-icon {
+            font-size: 20px;
+        }
+
+        .skill {
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .skill-secondary {
+            color: #a78bfa;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .status-yes {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .status-no {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .rarity-badge {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 11px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rarity-high {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .rarity-medium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .rarity-low {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .rarity-indirect {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .notes {
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .notes strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Avoid Section */
+        .avoid-section {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .avoid-section h2 {
+            color: #ef4444;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avoid-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .avoid-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .avoid-item h4 {
+            color: #fca5a5;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .avoid-item p {
+            color: #cbd5e1;
+            font-size: 0.95em;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 2px solid rgba(96, 165, 250, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .tips-section h2 {
+            color: #60a5fa;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tip-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #60a5fa;
+            transition: all 0.3s ease;
+        }
+
+        .tip-item:hover {
+            background: rgba(96, 165, 250, 0.1);
+            transform: translateX(5px);
+        }
+
+        .tip-item strong {
+            color: #fbbf24;
+        }
+
+        @media (max-width: 1024px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛠️ Guia Definitivo - Ferramentas Wurm Online</h1>
+            <p>Análise Completa: Improve + Gathering + Impacto de Rarity</p>
+            <div class="subtitle">Maximize seu ROI: Tempo economizado, QL superior e yields extras</div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card gathering">
+                <div class="stat-number">7</div>
+                <div class="stat-label">🌿 Ferramentas Gathering</div>
+                <div class="stat-sublabel">Com impacto direto em yields e QL</div>
+            </div>
+            <div class="stat-card improve">
+                <div class="stat-number">20</div>
+                <div class="stat-label">🔨 Ferramentas Improve</div>
+                <div class="stat-sublabel">Usadas ativamente em melhorias</div>
+            </div>
+            <div class="stat-card both">
+                <div class="stat-number">7</div>
+                <div class="stat-label">⚡ Uso Duplo</div>
+                <div class="stat-sublabel">Gathering + Improve combinados</div>
+            </div>
+            <div class="stat-card roi">
+                <div class="stat-number">20-30%</div>
+                <div class="stat-label">💎 Tempo Economizado</div>
+                <div class="stat-sublabel">Com Supreme em gathering diário</div>
+            </div>
+        </div>
+
+        <!-- Analysis Section -->
+        <div class="analysis-section">
+            <h2>📊 Análise Detalhada: Como Rarity Impacta o Jogo</h2>
+            <div class="analysis-grid">
+                <div class="analysis-card quality">
+                    <h3>🎯 Impacto no Produto Final</h3>
+                    <ul>
+                        <li><span class="highlight">Gathering com high QL/rarity</span> dá materiais de QL superior (ex.: supreme pickaxe +1.5-3 QL em ore)</li>
+                        <li>Materiais de <span class="highlight">QL superior elevam o QL max no improve</span> (ex.: ore 90QL permite tool 90QL)</li>
+                        <li><span class="highlight">Rarity pode transferir</span> (1/100 chance), tornando itens finais raros (mais valor no mercado)</li>
+                        <li>Exemplo: rare ore → rare lump ao smelting → chance de rare tool final</li>
+                    </ul>
+                </div>
+
+                <div class="analysis-card time">
+                    <h3>⚡ Impacto no Tempo</h3>
+                    <ul>
+                        <li><span class="highlight">Gathering:</span> -0.2s/action com supreme + yields extras = <span class="highlight">20-40% menos tempo</span> em farms grandes</li>
+                        <li><span class="highlight">Supreme pickaxe:</span> acelera mine grind em 20-30%</li>
+                        <li><span class="highlight">Improve:</span> Indireto via melhores materiais (menos ações para QL alto) + durabilidade (tool dura 3x mais)</li>
+                        <li>Enchants preservados <span class="highlight">10x mais tempo</span> (WoA speed + CoC skill gain)</li>
+                    </ul>
+                </div>
+
+                <div class="analysis-card roi">
+                    <h3>💰 Custo-Benefício (ROI)</h3>
+                    <ul>
+                        <li><span class="highlight">Gathering diário</span> (ex.: mining para smithing): tools como pickaxe/hatchet sobem no ranking</li>
+                        <li>Supreme de <span class="highlight">100-200s se paga em 1 semana</span> via tempo/yields economizados</li>
+                        <li>Para <span class="highlight">pure improve</span>, hammer/mallet ainda são tops</li>
+                        <li><span class="highlight">Evite rarity em tools nichadas</span> se não grindar resources diariamente</li>
+                        <li>QL da Tool: <span class="highlight">Aumenta sucesso</span> no gathering (mais yields, menos falhas) e no improve (mais sucesso por ação)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <span style="font-size: 20px;">🌿</span>
+                <span>Ferramenta de Gathering</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-yes">✅</span>
+                <span>Sim / Ativo</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-no">❌</span>
+                <span>Não / Inativo</span>
+            </div>
+            <div class="legend-item">
+                <span class="rarity-badge rarity-high">Alta</span>
+                <span>Rarity Essencial</span>
+            </div>
+            <div class="legend-item">
+                <span class="rarity-badge rarity-medium">Média</span>
+                <span>Rarity Boa</span>
+            </div>
+            <div class="legend-item">
+                <span class="rarity-badge rarity-low">Baixa</span>
+                <span>Rarity Opcional</span>
+            </div>
+            <div class="legend-item">
+                <span class="rarity-badge rarity-indirect">Indireta</span>
+                <span>Via Materiais</span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <button class="filter-btn filter-all active" onclick="filterTable('all')">📊 Todas (20)</button>
+            <button class="filter-btn filter-gathering" onclick="filterTable('gathering')">🌿 Gathering (7)</button>
+            <button class="filter-btn filter-improve" onclick="filterTable('improve')">🔨 Pure Improve (13)</button>
+            <button class="filter-btn filter-both" onclick="filterTable('both')">⚡ Uso Duplo (7)</button>
+        </div>
+
+        <!-- Main Table -->
+        <div class="table-wrapper">
+            <table id="toolsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ferramenta</th>
+                        <th>Skill Principal</th>
+                        <th>Uso Secundário</th>
+                        <th>Ativa em Improve?</th>
+                        <th>Rarity Afeta Gathering?</th>
+                        <th>Rarity Afeta Improve?</th>
+                        <th>Notas Detalhadas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-type="improve" data-tier="s">
+                        <td>1</td>
+                        <td><div class="tool-name">Hammer</div></td>
+                        <td><div class="skill">Blacksmithing</div></td>
+                        <td><div class="skill-secondary">Weapons/Armorsmithing</div></td>
+                        <td><span class="status-yes">✅ Sim (batidas)</span></td>
+                        <td><span class="status-no">❌ Não</span><br><small style="color: #94a3b8;">(não gathering)</small></td>
+                        <td><span class="rarity-badge rarity-high">✅ Alta</span><br><small style="color: #cbd5e1;">(durabilidade + enchants)</small></td>
+                        <td><div class="notes"><strong>Rainha do improve;</strong> gathering irrelevante.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="s">
+                        <td>2</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Pickaxe</div></td>
+                        <td><div class="skill">Mining</div></td>
+                        <td><div class="skill-secondary">Tunneling</div></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-high">✅ Alta</span><br><small style="color: #cbd5e1;">(QL extra em ore/rock; -0.2s timer supreme)</small></td>
+                        <td><span class="rarity-badge rarity-indirect">✅ Indireta</span><br><small style="color: #cbd5e1;">(melhor ore QL → melhor lumps para improve)</small></td>
+                        <td><div class="notes"><strong>Essencial para metal;</strong> supreme acelera mine grind 20-30%.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="s">
+                        <td>3</td>
+                        <td><div class="tool-name">Mallet</div></td>
+                        <td><div class="skill">Carpentry</div></td>
+                        <td><div class="skill-secondary">Fine Carpentry/Leather</div></td>
+                        <td><span class="status-yes">✅ Sim (batidas)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-high">✅ Alta</span><br><small style="color: #cbd5e1;">(multi-skill)</small></td>
+                        <td><div class="notes">Gathering nulo; <strong>foco em improve.</strong></div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="s">
+                        <td>4</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Hatchet</div></td>
+                        <td><div class="skill">Woodcutting</div></td>
+                        <td><div class="skill-secondary">Forestry</div></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-high">✅ Alta</span><br><small style="color: #cbd5e1;">(QL extra em logs; faster chop)</small></td>
+                        <td><span class="rarity-badge rarity-indirect">✅ Indireta</span><br><small style="color: #cbd5e1;">(melhor logs → melhor planks para carpentry improve)</small></td>
+                        <td><div class="notes"><strong>Diária para wood;</strong> rarity dá yields + QL, reduz tempo total.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="a">
+                        <td>5</td>
+                        <td><div class="tool-name">File</div></td>
+                        <td><div class="skill">Fine Carpentry</div></td>
+                        <td><div class="skill-secondary">Carpentry</div></td>
+                        <td><span class="status-yes">✅ Sim (raspar)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-high">✅ Alta</span><br><small style="color: #cbd5e1;">(sucesso em fine work)</small></td>
+                        <td><div class="notes">Gathering irrelevante.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="a">
+                        <td>6</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Shovel</div></td>
+                        <td><div class="skill">Digging</div></td>
+                        <td><div class="skill-secondary">Gardening</div></td>
+                        <td><span class="status-yes">✅ Sim (terra/tiles)</span></td>
+                        <td><span class="rarity-badge rarity-high">✅ Alta</span><br><small style="color: #cbd5e1;">(QL extra em dirt/clay; faster dig)</small></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span><br><small style="color: #cbd5e1;">(melhora tiles, não itens principais)</small></td>
+                        <td><div class="notes"><strong>Versátil;</strong> supreme para deeds grandes (tempo + yields).</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="a">
+                        <td>7</td>
+                        <td><div class="tool-name">Carving Knife</div></td>
+                        <td><div class="skill">Fine Carpentry</div></td>
+                        <td><div class="skill-secondary">Carpentry</div></td>
+                        <td><span class="status-yes">✅ Sim (entalhe)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média-Alta</span></td>
+                        <td><div class="notes">Gathering nulo.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="b">
+                        <td>10</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Stone Chisel</div></td>
+                        <td><div class="skill">Masonry/Stonecutting</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (entalhe)</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média</span><br><small style="color: #cbd5e1;">(QL em shards/bricks)</small></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média</span><br><small style="color: #cbd5e1;">(sucesso em masonry)</small></td>
+                        <td><div class="notes">Gathering em stone; rarity ajuda yields.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="b">
+                        <td>11</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Saw</div></td>
+                        <td><div class="skill">Forestry/Carpentry</div></td>
+                        <td><div class="skill-secondary">Logs</div></td>
+                        <td><span class="status-yes">✅ Sim (corte tábuas)</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média</span><br><small style="color: #cbd5e1;">(QL em planks/shafts)</small></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa-Média</span></td>
+                        <td><div class="notes"><strong>Overlap gathering/improve;</strong> supreme para wood farm.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="c">
+                        <td>12</td>
+                        <td><div class="tool-name">Scissors</div></td>
+                        <td><div class="skill">Tailoring</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (corte pano)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Média-Baixa</span></td>
+                        <td><div class="notes">Gathering nulo.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="c">
+                        <td>13</td>
+                        <td><div class="tool-name">Leather Knife</div></td>
+                        <td><div class="skill">Leatherworking</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (corte couro)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média</span></td>
+                        <td><div class="notes">Gathering irrelevante.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="c">
+                        <td>14</td>
+                        <td><div class="tool-name">Metal Brush</div></td>
+                        <td><div class="skill">Blacksmithing</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (polimento)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span></td>
+                        <td><div class="notes">Gathering nulo.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="b">
+                        <td>15</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Sickle</div></td>
+                        <td><div class="skill">Farming/Forestry</div></td>
+                        <td><div class="skill-secondary">Botany</div></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média</span><br><small style="color: #cbd5e1;">(yields em herbs/crops; faster harvest)</small></td>
+                        <td><span class="rarity-badge rarity-indirect">✅ Indireta</span><br><small style="color: #cbd5e1;">(melhor botanicals para alchemy/dyes)</small></td>
+                        <td><div class="notes">Nicho para farm; rarity reduz tempo em large fields.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="c">
+                        <td>16</td>
+                        <td><div class="tool-name">Spindle</div></td>
+                        <td><div class="skill">Tailoring</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (fiar lã)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span></td>
+                        <td><div class="notes">Gathering nulo.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="d">
+                        <td>17</td>
+                        <td><div class="tool-name">Fruit Press</div></td>
+                        <td><div class="skill">Cooking</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (espremer)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span></td>
+                        <td><div class="notes">Gathering irrelevante.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="d">
+                        <td>18</td>
+                        <td><div class="tool-name">Cheese Drill</div></td>
+                        <td><div class="skill">Cooking</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (furos queijo)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span></td>
+                        <td><div class="notes">Gathering nulo.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="d">
+                        <td>19</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Trowel</div></td>
+                        <td><div class="skill">Gardening</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (plantio)</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span><br><small style="color: #cbd5e1;">(QL em plants)</small></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span></td>
+                        <td><div class="notes">Gathering em herbs; baixo impacto.</div></td>
+                    </tr>
+
+                    <tr class="gathering-tool" data-type="both" data-tier="d">
+                        <td>20</td>
+                        <td><div class="tool-name"><span class="gathering-icon">🌿</span> Rake</div></td>
+                        <td><div class="skill">Farming</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (fields)</span></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span><br><small style="color: #cbd5e1;">(yields em crops)</small></td>
+                        <td><span class="rarity-badge rarity-low">✅ Baixa</span></td>
+                        <td><div class="notes">Gathering em farm; nicho.</div></td>
+                    </tr>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="a">
+                        <td>8</td>
+                        <td><div class="tool-name">Needle</div></td>
+                        <td><div class="skill">Leather/Tailoring</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (costura)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média-Alta</span></td>
+                        <td><div class="notes">Gathering irrelevante.</div></td>
+                    </tr>
+
+                    <tr data-type="improve" data-tier="b">
+                        <td>9</td>
+                        <td><div class="tool-name">Awl</div></td>
+                        <td><div class="skill">Leatherworking</div></td>
+                        <td><div class="skill-secondary">—</div></td>
+                        <td><span class="status-yes">✅ Sim (furos)</span></td>
+                        <td><span class="status-no">❌ Não</span></td>
+                        <td><span class="rarity-badge rarity-medium">✅ Média</span></td>
+                        <td><div class="notes">Gathering nulo.</div></td>
