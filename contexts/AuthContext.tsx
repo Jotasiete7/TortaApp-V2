@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, Profile } from '../services/supabase';
 import { User } from '@supabase/supabase-js';
+import { open } from '@tauri-apps/plugin-shell';
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
 
 interface AuthContextType {
     user: User | null;
@@ -74,7 +76,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         };
 
+        const setupDeepLink = async () => {
+            try {
+                // @ts-ignore - plugin might not display ts types correctly in some environments
+                await onOpenUrl(async (urls) => {
+                    console.log('Deep link received:', urls);
+                    for (const url of urls) {
+                         // Check if it's our auth callback
+                         if (url.includes('access_token') || url.includes('refresh_token')) {
+                              const fragment = url.split('#')[1];
+                              if (fragment) {
+                                   const params = new URLSearchParams(fragment);
+                                   const access_token = params.get('access_token');
+                                   const refresh_token = params.get('refresh_token');
+                                   
+                                   if (access_token && refresh_token) {
+                                        const { error } = await supabase.auth.setSession({
+                                             access_token,
+                                             refresh_token
+                                        });
+                                        if (error) console.error('Error setting session from deep link:', error);
+                                   }
+                              }
+                         }
+                    }
+               });
+            } catch (err) {
+                // Ignore errors if plugin is not available (e.g. browser mode)
+                console.log('Deep link listener skipped/failed (expected in browser)');
+            }
+        };
+
         initAuth();
+        setupDeepLink();
 
         // Safety timeout: If auth takes too long (> 3s), force loading false
         const timeoutId = setTimeout(() => {
@@ -136,13 +170,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const signInWithGoogle = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/auth/v1/callback`
+        // Check if running in Tauri (using internals check or window check)
+        // @ts-ignore
+        const isTauri = typeof window !== 'undefined' && window.__TAURI_INTERNALS__ !== undefined;
+
+        if (isTauri) {
+             const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: 'torta-app://z-auth-callback',
+                    skipBrowserRedirect: true
+                }
+            });
+            if (error) throw error;
+            if (data?.url) {
+                 await open(data.url);
             }
-        });
-        if (error) throw error;
+        } else {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/v1/callback`
+                }
+            });
+            if (error) throw error;
+        }
     };
 
     const signUp = async (email: string, password: string) => {
