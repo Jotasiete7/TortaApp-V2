@@ -41,26 +41,26 @@ const BadgeIconMap: Record<string, React.ElementType> = {
 
 // Map Lucide Interface Names -> Emoji Characters for Vivid SVGs
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '???',
-    'Award': '???',
-    'Star': '??',
-    'Heart': '??',
-    'Gift': '??',
-    'Beaker': '??',
-    'TrendingUp': '??',
-    'Trophy': '??',
-    'Flame': '??',
-    'Zap': '?',
-    'Crown': '??',
-    'Diamond': '??',
-    'Swords': '??',
-    'Scroll': '??',
-    'Map': '???',
-    'Compass': '??',
-    'Anchor': '?',
-    'Hammer': '??',
-    'Axe': '??',
-    'Pickaxe': '??'
+    'Shield': '🛡️',
+    'Award': '🎖️',
+    'Star': '⭐',
+    'Heart': '❤️',
+    'Gift': '🎁',
+    'Beaker': '🧪',
+    'TrendingUp': '📈',
+    'Trophy': '🏆',
+    'Flame': '🔥',
+    'Zap': '⚡',
+    'Crown': '👑',
+    'Diamond': '💎',
+    'Swords': '⚔️',
+    'Scroll': '📜',
+    'Map': '🗺️',
+    'Compass': '🧭',
+    'Anchor': '⚓',
+    'Hammer': '🔨',
+    'Axe': '🪓',
+    'Pickaxe': '⛏️'
 };
 
 // VIBRANT BADGE STYLES
@@ -383,24 +383,52 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                                 const days = Array.from({ length: 30 }, (_, i) => {
                                     const d = new Date();
                                     d.setDate(d.getDate() - (29 - i));
-                                    d.setHours(0, 0, 0, 0);
                                     return d;
                                 });
+
+                                // Helper to get YYYY-MM-DD in Local Time
+                                const getLocalDateStr = (date: Date) => {
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    return `${year}-${month}-${day}`;
+                                };
+
                                 const chartData = days.map(day => {
-                                    const dayStr = day.toISOString().split('T')[0]; const point = activity.find(a => { const activityDateStr = a.activity_date.split('T')[0]; return activityDateStr === dayStr; });
+                                    const dayStr = getLocalDateStr(day);
+                                    
+                                    const point = activity.find(a => {
+                                        // Handle both full ISO timestamps and simple dates
+                                        const activityDateStr = a.activity_date.split('T')[0];
+                                        return activityDateStr === dayStr;
+                                    });
+
                                     return { date: day, count: point ? point.trade_count : 0 };
                                 });
-                                const maxCount = Math.max(...chartData.map(d => d.count), 10);
+
+                                const maxCount = Math.max(...chartData.map(d => d.count), 5); // Minimum scale of 5
 
                                 return chartData.map((point, i) => {
-                                    const height = (point.count / maxCount) * 100;
+                                    // Calculate height percentage, ensuring at least a sliver is shown if data exists
+                                    const heightPerc = point.count === 0 ? 0 : Math.max(5, (point.count / maxCount) * 100);
                                     const isZero = point.count === 0;
+                                    
                                     return (
                                         <div key={i} className="flex-1 flex flex-col justify-end group relative h-full">
-                                            <div className={`transition-all rounded-t-sm min-w-[2px] mx-0.5 ${isZero ? 'bg-slate-700/30 hover:bg-slate-700/50' : 'bg-blue-500 hover:bg-blue-400'}`} style={{ height: isZero ? '4px' : `${height}%`, opacity: isZero ? 0.2 : 1 }}></div>
-                                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900 text-xs text-white p-2 rounded border border-slate-700 whitespace-nowrap z-20 shadow-xl">
-                                                <p className="font-bold">{point.date.toLocaleDateString()}</p>
-                                                <p className="text-slate-400">{point.count} trades</p>
+                                            {/* Bar */}
+                                            <div 
+                                                className={`transition-all rounded-t-sm w-full mx-auto max-w-[8px] min-w-[3px] 
+                                                    ${isZero ? 'bg-slate-700/20 h-[2px]' : 'bg-blue-500 hover:bg-blue-400'}
+                                                `}
+                                                style={{ 
+                                                    height: isZero ? '2px' : `${heightPerc}%` 
+                                                }}
+                                            ></div>
+                                            
+                                            {/* Tooltip */}
+                                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900/95 backdrop-blur text-xs text-white p-2 rounded border border-slate-700 whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                                                <p className="font-bold text-slate-200">{point.date.toLocaleDateString()}</p>
+                                                <p className="text-blue-400 font-mono">{point.count} trades</p>
                                             </div>
                                         </div>
                                     );
@@ -519,7 +547,3 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
         </div>
     );
 };
-
-
-
-

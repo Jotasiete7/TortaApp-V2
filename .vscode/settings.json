@@ -1,4 +1,4 @@
-﻿{
+{
   "sqltools.connections": [
     {
       "name": "Supabase - TortaApp",
@@ -15,6 +15,6 @@
       "previewLimit": 50
     }
   ],
-  "sqltools.useNodeRuntime": true,
+  "sqltools.useNodeRuntime": false,
   "sqltools.autoOpenSessionFiles": false
 }
