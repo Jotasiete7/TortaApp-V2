@@ -286,3 +286,51 @@ src-tauri/
 
 **Última Atualização:** 12/12/2024  
 **Versão do Prompt:** 1.0
+## 🚨 Barreiras Críticas e Caminhos Perigosos
+
+> **IMPORTANTE:** Baseado em análise de múltiplas IAs (Manus, ChatGPT, Antigravity), estas são áreas identificadas como **ALTO RISCO** e devem ser evitadas ou abordadas com extrema cautela.
+
+### ⛔ NÃO IMPLEMENTAR (Risco Crítico)
+
+1. **Auto-Response Automático**
+   - ⚠️ **Violação de ToS:** Possível violação dos Termos de Serviço do Wurm Online
+   - 🚫 **Risco de Ban:** Pode resultar em banimento permanente da conta
+   - ✅ **Alternativa Segura:** Sistema de "Quick Copy" (já implementado)
+
+2. **Rewrite Completo da Aplicação**
+   - 📊 **Taxa de Falha:** 80% de chance de abandono no meio do processo
+   - ⏱️ **Custo de Oportunidade:** 3+ meses sem features novas para usuários
+   - 🔄 **Abordagem Correta:** Refatoração incremental e gradual
+
+3. **ML/AI sem Dados Normalizados**
+   - 🗑️ **Garbage In, Garbage Out:** Modelos treinados em dados ruins produzem resultados ruins
+   - 💰 **Desperdício de Recursos:** Tempo e esforço sem retorno
+   - ✅ **Pré-requisito:** Completar Fase 1 (normalização de dados) primeiro
+
+### ⚠️ IMPLEMENTAR COM CAUTELA (Risco Médio)
+
+4. **Scam Detection Heurística**
+   - ❌ **Falso Positivo = Oportunidade Perdida:** Usuário pode perder negócio legítimo
+   - 🎯 **Abordagem Segura:** Começar com alertas passivos ("preço incomum")
+   - 📊 **Pré-requisito:** Coletar dados históricos suficientes primeiro
+
+5. **Multi-Server Real**
+   - 📈 **Implementar Sob Demanda:** Só se houver demanda real de usuários
+   - 💰 **Custo Adicional:** Aumenta complexidade e custos do Supabase
+
+6. **Modo Offline-First / SQLite Local**
+   - 🔄 **Complexidade de Sync:** Adiciona camada complexa de sincronização
+   - 💰 **Implementar Sob Demanda:** Só se Supabase ficar caro demais
+
+### 📋 Princípios de Implementação Segura
+
+**Ao considerar novas features, pergunte:**
+1. ✅ Viola algum ToS do Wurm Online?
+2. ✅ Requer dados normalizados que ainda não temos?
+3. ✅ Adiciona complexidade sem validação de demanda?
+4. ✅ Pode ser feito incrementalmente ou requer rewrite?
+5. ✅ Tem alternativa mais simples e segura?
+
+**Regra de Ouro:** Refatore incrementalmente, nunca rewrite completo.
+
+---
