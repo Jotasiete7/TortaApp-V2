@@ -553,20 +553,58 @@ export const LiveTradeSetup = () => {
                                 </div>
 
                                 {/* Trade Type Filters */}
-                                <div className="flex gap-2 text-xs">
+                                <div className="flex gap-2 text-xs items-center flex-wrap">
                                     <span className="text-slate-500">Filtrar por tipo:</span>
-                                    {(['WTB', 'WTS', 'WTT'] as const).map(type => (
-                                        <label key={type} className="flex items-center gap-1 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={newAlertTypes.includes(type)}
-                                                onChange={() => toggleTradeType(type)}
-                                                className="rounded"
-                                            />
-                                            <span className={newAlertTypes.includes(type) ? 'text-white' : 'text-slate-500'}>{type}</span>
-                                        </label>
-                                    ))}
-                                    <span className="text-slate-600 text-[10px]">(vazio = todos)</span>
+                                    
+                                    <label 
+                                        className="flex items-center gap-1 cursor-pointer group relative" 
+                                        title="Alerta quando alguém quer COMPRAR (você vende)"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={newAlertTypes.includes('WTB')}
+                                            onChange={() => toggleTradeType('WTB')}
+                                            className="rounded"
+                                        />
+                                        <span className={newAlertTypes.includes('WTB') ? 'text-white' : 'text-slate-500'}>WTB</span>
+                                        <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block bg-slate-950 text-[10px] text-blue-300 px-2 py-1 rounded whitespace-nowrap border border-blue-500/30 z-50 shadow-lg">
+                                            💰 Alguém quer COMPRAR (você vende)
+                                        </span>
+                                    </label>
+                                    
+                                    <label 
+                                        className="flex items-center gap-1 cursor-pointer group relative"
+                                        title="Alerta quando alguém quer VENDER (você compra)"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={newAlertTypes.includes('WTS')}
+                                            onChange={() => toggleTradeType('WTS')}
+                                            className="rounded"
+                                        />
+                                        <span className={newAlertTypes.includes('WTS') ? 'text-white' : 'text-slate-500'}>WTS</span>
+                                        <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block bg-slate-950 text-[10px] text-emerald-300 px-2 py-1 rounded whitespace-nowrap border border-emerald-500/30 z-50 shadow-lg">
+                                            🛒 Alguém quer VENDER (você compra)
+                                        </span>
+                                    </label>
+                                    
+                                    <label 
+                                        className="flex items-center gap-1 cursor-pointer group relative"
+                                        title="Alerta quando alguém quer TROCAR"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={newAlertTypes.includes('WTT')}
+                                            onChange={() => toggleTradeType('WTT')}
+                                            className="rounded"
+                                        />
+                                        <span className={newAlertTypes.includes('WTT') ? 'text-white' : 'text-slate-500'}>WTT</span>
+                                        <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block bg-slate-950 text-[10px] text-purple-300 px-2 py-1 rounded whitespace-nowrap border border-purple-500/30 z-50 shadow-lg">
+                                            🔄 Alguém quer TROCAR
+                                        </span>
+                                    </label>
+                                    
+                                    <span className="text-slate-600 text-[10px]">(vazio = todos os tipos)</span>
                                 </div>
                             </div>
 
