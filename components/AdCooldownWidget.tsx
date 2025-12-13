@@ -94,7 +94,7 @@ export const AdCooldownWidget = () => {
 
     return (
         <div 
-            className={`fixed z-[100] bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-2xl shadow-2xl p-4 w-48 transition-all select-none ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-default'}`}
+            className={`fixed z-[100] bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-xl p-3 w-36 transition-all select-none ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-default'}`}
             style={{ left: position.x, top: position.y }}
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
@@ -102,12 +102,12 @@ export const AdCooldownWidget = () => {
         >
             {/* Header / Drag Handle */}
             <div 
-                className="flex items-center justify-between mb-3 text-slate-400 cursor-grab active:cursor-grabbing"
+                className="flex items-center justify-between mb-2 text-slate-400 cursor-grab active:cursor-grabbing"
                 onMouseDown={handleDragStart}
             >
                 <div className="flex items-center gap-2">
                     <GripVertical size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">{timerConfig.label}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wide">{timerConfig.label}</span>
                 </div>
                 <button 
                     onClick={() => { stopTimer(); setIsVisible(false); }} 
@@ -118,10 +118,10 @@ export const AdCooldownWidget = () => {
             </div>
 
             {/* Timer Display */}
-            <div className="relative flex items-center justify-center mb-4">
+            <div className="relative flex items-center justify-center mb-3">
                 {/* Progress Circle (Simplified CSS Border) */}
-                <div className={`w-24 h-24 rounded-full border-4 flex items-center justify-center bg-gradient-to-b to-transparent ${getColors()} ${timeLeft === 0 ? 'animate-pulse shadow-[0_0_20px_currentColor]' : ''}`}>
-                    <span className={`text-2xl font-bold font-mono ${timeLeft === 0 ? 'animate-bounce' : ''}`}>
+                <div className={`w-16 h-16 rounded-full border-3 flex items-center justify-center bg-gradient-to-b to-transparent ${getColors()} ${timeLeft === 0 ? 'animate-pulse shadow-[0_0_20px_currentColor]' : ''}`}>
+                    <span className={`text-lg font-bold font-mono ${timeLeft === 0 ? 'animate-bounce' : ''}`}>
                         {timeLeft === 0 ? "READY" : formatTime(timeLeft)}
                     </span>
                 </div>
@@ -135,7 +135,7 @@ export const AdCooldownWidget = () => {
                         className="p-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black transition-transform active:scale-95"
                         title="Start Timer"
                     >
-                        <Play size={18} fill="currentColor" />
+                        <Play size={14} fill="currentColor" />
                     </button>
                 ) : (
                     <button 
@@ -143,7 +143,7 @@ export const AdCooldownWidget = () => {
                         className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors"
                         title="Reset"
                     >
-                        <RotateCcw size={18} />
+                        <RotateCcw size={14} />
                     </button>
                 )}
             </div>
