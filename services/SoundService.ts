@@ -9,29 +9,18 @@ export class SoundService {
     private static loadedSounds = new Map<string, HTMLAudioElement>();
     private static activeAudios: HTMLAudioElement[] = [];
 
-    // Embedded short sounds (Base64) to ensure it works OOTB without external files
-    private static sounds: Record<string, string> = {
-        // Simple "Pop" sound
-        click: 'data:audio/wav;base64,UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAsDsAAND/AAD//wAA',
-        // Default Notification
-        notification: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
-        // Retro Coin
-        coin: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
-        // Magical chime
-        magic: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA',
-        // Alarm/Alert
-        alarm: 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXAAACQAAAAkAAAAJAAAACQAAAAkAAAA'
-    };
-
-    // Actual file paths (prioritized if they exist)
+    // Real sound files from docs folder
     private static filePaths: Record<string, string> = {
-        click: '/sounds/click.mp3',
-        levelup: '/sounds/levelup.mp3',
-        notification: '/sounds/notification.mp3',
-        confetti: '/sounds/confetti.mp3',
-        coin: '/sounds/coin.mp3',
-        magic: '/sounds/magic.mp3',
-        alarm: '/sounds/alarm.mp3'
+        // Mapped to meaningful names
+        click: '/docs/mixkit-page-turn-chime-1106.wav',          // Light chime for clicks
+        notification: '/docs/mixkit-toy-drums-and-bell-ding-560.wav', // Bell ding for notifications
+        coin: '/docs/mixkit-clinking-coins-1993.wav',           // Coin clink
+        coins: '/docs/mixkit-coins-handling-1939.wav',          // Multiple coins
+        alarm: '/docs/mixkit-tribal-dry-drum-558.wav',          // Drum for alarms
+        magic: '/docs/mixkit-page-turn-chime-1106.wav',         // Chime for magic
+        success: '/docs/mixkit-toy-drums-and-bell-ding-560.wav', // Bell for success
+        drumroll: '/docs/mixkit-drum-roll-566.wav',             // Drum roll
+        unlock: '/docs/mixkit-door-key-in-door-lock-2842.wav',  // Key unlock sound
     };
 
     static initialize() {
@@ -58,6 +47,12 @@ export class SoundService {
             }
 
             const path = this.filePaths[soundName as string];
+            
+            if (!path) {
+                console.warn(`Sound not found: ${soundName}`);
+                return;
+            }
+            
             let audio: HTMLAudioElement;
 
             // Check if already loaded
@@ -68,13 +63,8 @@ export class SoundService {
                 // Load for first time
                 audio = new Audio(path);
                 
-                audio.onerror = () => {
-                    const fallback = this.sounds[soundName as string];
-                    if (fallback) {
-                        const fallbackAudio = new Audio(fallback);
-                        fallbackAudio.volume = this.volume;
-                        fallbackAudio.play().catch(e => console.error("Audio play failed", e));
-                    }
+                audio.onerror = (e) => {
+                    console.error(`Failed to load sound: ${soundName} from ${path}`, e);
                 };
 
                 this.loadedSounds.set(soundName as string, audio);
@@ -121,8 +111,28 @@ export class SoundService {
         return this.muted;
     }
 
+    /**
+     * Get list of available sounds
+     */
     static getAvailableSounds() {
-        return Object.keys(this.sounds);
+        return Object.keys(this.filePaths);
+    }
+
+    /**
+     * Get sound info for UI display
+     */
+    static getSoundInfo() {
+        return {
+            click: { name: 'Click', description: 'Light chime' },
+            notification: { name: 'Notification', description: 'Bell ding' },
+            coin: { name: 'Coin', description: 'Single coin' },
+            coins: { name: 'Coins', description: 'Multiple coins' },
+            alarm: { name: 'Alarm', description: 'Tribal drum' },
+            magic: { name: 'Magic', description: 'Chime' },
+            success: { name: 'Success', description: 'Bell' },
+            drumroll: { name: 'Drumroll', description: 'Drum roll' },
+            unlock: { name: 'Unlock', description: 'Key unlock' },
+        };
     }
 }
 

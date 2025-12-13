@@ -300,28 +300,29 @@ export const LiveTradeSetup = () => {
 
     if (!isOpen) {
         return (
-            <button
-                onClick={() => setIsOpen(true)}
-                className={`fixed bottom-24 right-6 p-3 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-12 hover:w-auto overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-12 hover:w-auto overflow-hidden'}`}
-                title="Configurar Live Monitor (Ctrl+M)"
-            >
-                {isWatching ? (
-                    <div className="flex items-center gap-2 px-1">
-                        <span className="relative flex h-3 w-3 shrink-0">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400"></span>
-                        </span>
-                        <span className="text-white font-bold text-sm hidden group-hover:block whitespace-nowrap animate-in fade-in transition-all">MONITOR ON</span>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-2 px-1">
-                        <Settings className="text-white w-6 h-6 shrink-0" />
-                        <span className="text-white font-bold text-sm hidden group-hover:block whitespace-nowrap animate-in fade-in transition-all">CONFIGURAR</span>
-                    </div>
-                )}
-            </button>
-        );
-    }
+            \u003cbutton
+                onClick={() =\u003e setIsOpen(true)}
+                className={`fixed bottom-24 right-6 w-14 h-14 rounded-full shadow-lg transition-all z-50 flex items-center justify-center ${
+                    isWatching 
+                        ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/50' 
+                        : 'bg-slate-700 hover:bg-slate-600 border border-slate-500'
+                }`}
+                title={isWatching ? " \Live Monitor Ativo (Ctrl+M)\\ : \\Configurar Live Monitor (Ctrl+M)\\}
+ \u003e
+ {isWatching ? (
+ \u003cdiv className=\\relative\\\u003e
+ \u003cShield className=\\text-white w-6 h-6\\ /\u003e
+ \u003cspan className=\\absolute -top-1 -right-1 flex h-3 w-3\\\u003e
+ \u003cspan className=\\animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75\\\u003e\u003c/span\u003e
+ \u003cspan className=\\relative inline-flex rounded-full h-3 w-3 bg-emerald-300\\\u003e\u003c/span\u003e
+ \u003c/span\u003e
+ \u003c/div\u003e
+ ) : (
+ \u003cShield className=\\text-slate-400 w-6 h-6\\ /\u003e
+ )}
+ \u003c/button\u003e
+ );
+ }
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -979,3 +980,4 @@ export const LiveTradeSetup = () => {
         </div>
     );
 };
+
