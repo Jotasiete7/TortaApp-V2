@@ -5,6 +5,10 @@ export class SoundService {
     private static STORAGE_KEY = 'app_volume';
     private static MUTED_KEY = 'app_muted';
 
+    // Lazy-loaded audio instances
+    private static loadedSounds = new Map<string, HTMLAudioElement>();
+    private static activeAudios: HTMLAudioElement[] = [];
+
     // Embedded short sounds (Base64) to ensure it works OOTB without external files
     private static sounds: Record<string, string> = {
         // Simple "Pop" sound
@@ -54,18 +58,37 @@ export class SoundService {
             }
 
             const path = this.filePaths[soundName as string];
-            let sourceToPlay = path;
+            let audio: HTMLAudioElement;
 
-            const audio = new Audio(sourceToPlay);
+            // Check if already loaded
+            if (this.loadedSounds.has(soundName as string)) {
+                audio = this.loadedSounds.get(soundName as string)!;
+                audio.currentTime = 0; // Reset to play again
+            } else {
+                // Load for first time
+                audio = new Audio(path);
+                
+                audio.onerror = () => {
+                    const fallback = this.sounds[soundName as string];
+                    if (fallback) {
+                        const fallbackAudio = new Audio(fallback);
+                        fallbackAudio.volume = this.volume;
+                        fallbackAudio.play().catch(e => console.error("Audio play failed", e));
+                    }
+                };
+
+                this.loadedSounds.set(soundName as string, audio);
+            }
+
             audio.volume = this.volume;
 
-            audio.onerror = () => {
-                const fallback = this.sounds[soundName as string];
-                if (fallback) {
-                    const fallbackAudio = new Audio(fallback);
-                    fallbackAudio.volume = this.volume;
-                    fallbackAudio.play().catch(e => console.error("Audio play failed", e));
-                }
+            // Track active audio for cleanup
+            this.activeAudios.push(audio);
+
+            // Clean up after playback
+            audio.onended = () => {
+                const index = this.activeAudios.indexOf(audio);
+                if (index > -1) this.activeAudios.splice(index, 1);
             };
 
             await audio.play();
@@ -105,4 +128,3 @@ export class SoundService {
 
 // Auto-initialize
 SoundService.initialize();
-
