@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { liveTradeMonitor } from '../services/LiveTradeMonitor';
@@ -170,7 +170,7 @@ export const LiveTradeSetup = () => {
 
     const handleStart = async () => {
         if (!consent) {
-            toast.error("Você precisa aceitar os termos da LGPD.");
+            toast.error("VocÃª precisa aceitar os termos da LGPD.");
             return;
         }
         if (!filePath) {
@@ -179,7 +179,7 @@ export const LiveTradeSetup = () => {
         }
 
         if (typeof window.__TAURI_INTERNALS__ === 'undefined') {
-            toast.warning("Modo Browser Detectado: O monitoramento só funciona no App Desktop.");
+            toast.warning("Modo Browser Detectado: O monitoramento sÃ³ funciona no App Desktop.");
             setIsWatching(true);
             setIsOpen(false);
             return;
@@ -199,7 +199,7 @@ export const LiveTradeSetup = () => {
             toast.success("Monitoramento iniciado! Acompanhe o Live Feed.");
         } catch (error) {
             console.error(error);
-            toast.error("Falha ao iniciar monitor. Verifique as permissões ou se o arquivo existe.");
+            toast.error("Falha ao iniciar monitor. Verifique as permissÃµes ou se o arquivo existe.");
         }
     };
 
@@ -245,11 +245,11 @@ export const LiveTradeSetup = () => {
 
         if (editingAdId) {
             updateTemplate(editingAdId, { label: newAdLabel, content: newAdContent });
-            toast.success("Anúncio atualizado!");
+            toast.success("AnÃºncio atualizado!");
             setEditingAdId(null);
         } else {
             addTemplate(newAdLabel, newAdContent);
-            toast.success("Novo anúncio salvo!");
+            toast.success("Novo anÃºncio salvo!");
         }
 
         setNewAdLabel('');
@@ -281,9 +281,9 @@ export const LiveTradeSetup = () => {
             if (file) {
                 try {
                     await importConfig(file);
-                    toast.success("Configurações importadas com sucesso!");
+                    toast.success("ConfiguraÃ§Ãµes importadas com sucesso!");
                 } catch (error) {
-                    toast.error("Erro ao importar configurações");
+                    toast.error("Erro ao importar configuraÃ§Ãµes");
                 }
             }
         };
@@ -300,29 +300,28 @@ export const LiveTradeSetup = () => {
 
     if (!isOpen) {
         return (
-            \u003cbutton
-                onClick={() =\u003e setIsOpen(true)}
-                className={`fixed bottom-24 right-6 w-14 h-14 rounded-full shadow-lg transition-all z-50 flex items-center justify-center ${
-                    isWatching 
-                        ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/50' 
-                        : 'bg-slate-700 hover:bg-slate-600 border border-slate-500'
-                }`}
-                title={isWatching ? " \Live Monitor Ativo (Ctrl+M)\\ : \\Configurar Live Monitor (Ctrl+M)\\}
- \u003e
- {isWatching ? (
- \u003cdiv className=\\relative\\\u003e
- \u003cShield className=\\text-white w-6 h-6\\ /\u003e
- \u003cspan className=\\absolute -top-1 -right-1 flex h-3 w-3\\\u003e
- \u003cspan className=\\animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75\\\u003e\u003c/span\u003e
- \u003cspan className=\\relative inline-flex rounded-full h-3 w-3 bg-emerald-300\\\u003e\u003c/span\u003e
- \u003c/span\u003e
- \u003c/div\u003e
- ) : (
- \u003cShield className=\\text-slate-400 w-6 h-6\\ /\u003e
- )}
- \u003c/button\u003e
- );
- }
+            <button
+                onClick={() => setIsOpen(true)}
+                className={`fixed bottom-24 right-6 p-3 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-12 hover:w-auto overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-12 hover:w-auto overflow-hidden'}`}
+                title="Configurar Live Monitor (Ctrl+M)"
+            >
+                {isWatching ? (
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="relative flex h-3 w-3 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400"></span>
+                        </span>
+                        <span className="text-white font-bold text-sm hidden group-hover:block whitespace-nowrap animate-in fade-in transition-all">MONITOR ON</span>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 px-1">
+                        <Settings className="text-white w-6 h-6 shrink-0" />
+                        <span className="text-white font-bold text-sm hidden group-hover:block whitespace-nowrap animate-in fade-in transition-all">CONFIGURAR</span>
+                    </div>
+                )}
+            </button>
+        );
+    }
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -360,7 +359,7 @@ export const LiveTradeSetup = () => {
                         onClick={() => setActiveTab('history')}
                         className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'history' ? 'text-purple-400 border-b-2 border-purple-500 bg-purple-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
                     >
-                        <History size={14} /> Histórico
+                        <History size={14} /> HistÃ³rico
                     </button>
                     <button
                         onClick={() => setActiveTab('timer')}
@@ -395,9 +394,9 @@ export const LiveTradeSetup = () => {
                                         <p className="text-xs text-slate-500">
                                             {isWatching ? (
                                                 tradesProcessed > 0 ? (
-                                                    <>✅ {tradesProcessed} trades processados{lastTradeTime && ` • Último: ${lastTradeTime}`}</>
+                                                    <>âœ… {tradesProcessed} trades processados{lastTradeTime && ` â€¢ Ãšltimo: ${lastTradeTime}`}</>
                                                 ) : (
-                                                    '⏳ Aguardando trades...'
+                                                    'â³ Aguardando trades...'
                                                 )
                                             ) : (
                                                 'Configure abaixo para iniciar'
@@ -444,7 +443,7 @@ export const LiveTradeSetup = () => {
                                         <span className="text-amber-400 font-bold">Dica:</span> Procure na pasta da Steam: <br />
                                         ...\SteamLibrary\steamapps\common\Wurm Online\gamedata\players\SEU_NICK\logs\
                                         <br /><br />
-                                        <span className="text-emerald-400 font-bold">Importante:</span> Selecione o arquivo do mês atual (ex: <code>Trade.2025-12.txt</code>).
+                                        <span className="text-emerald-400 font-bold">Importante:</span> Selecione o arquivo do mÃªs atual (ex: <code>Trade.2025-12.txt</code>).
                                     </div>
                                 )}
 
@@ -509,7 +508,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-amber-900/20 p-4 rounded-lg border border-amber-500/20 flex gap-3 text-amber-200 text-sm">
                                 <AlertTriangle className="shrink-0 text-amber-500" size={18} />
                                 <p>
-                                    Receba notificações do Windows quando termos específicos aparecerem no chat de troca.
+                                    Receba notificaÃ§Ãµes do Windows quando termos especÃ­ficos aparecerem no chat de troca.
                                     <br />
                                     <span className="opacity-75 text-xs">Ex: "casket harmony" encontra mensagens com "casket" E "harmony".</span>
                                 </p>
@@ -535,7 +534,7 @@ export const LiveTradeSetup = () => {
                                         >
                                             {availableSounds.map(sound => (
                                                 <option key={sound} value={sound} className="bg-slate-900 text-white">
-                                                    🔊 {sound}
+                                                    ðŸ”Š {sound}
                                                 </option>
                                             ))}
                                         </select>
@@ -553,58 +552,20 @@ export const LiveTradeSetup = () => {
                                 </div>
 
                                 {/* Trade Type Filters */}
-                                <div className="flex gap-2 text-xs items-center flex-wrap">
+                                <div className="flex gap-2 text-xs">
                                     <span className="text-slate-500">Filtrar por tipo:</span>
-                                    
-                                    <label 
-                                        className="flex items-center gap-1 cursor-pointer group relative" 
-                                        title="Alerta quando alguém quer COMPRAR (você vende)"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={newAlertTypes.includes('WTB')}
-                                            onChange={() => toggleTradeType('WTB')}
-                                            className="rounded"
-                                        />
-                                        <span className={newAlertTypes.includes('WTB') ? 'text-white' : 'text-slate-500'}>WTB</span>
-                                        <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block bg-slate-950 text-[10px] text-blue-300 px-2 py-1 rounded whitespace-nowrap border border-blue-500/30 z-50 shadow-lg">
-                                            💰 Alguém quer COMPRAR (você vende)
-                                        </span>
-                                    </label>
-                                    
-                                    <label 
-                                        className="flex items-center gap-1 cursor-pointer group relative"
-                                        title="Alerta quando alguém quer VENDER (você compra)"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={newAlertTypes.includes('WTS')}
-                                            onChange={() => toggleTradeType('WTS')}
-                                            className="rounded"
-                                        />
-                                        <span className={newAlertTypes.includes('WTS') ? 'text-white' : 'text-slate-500'}>WTS</span>
-                                        <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block bg-slate-950 text-[10px] text-emerald-300 px-2 py-1 rounded whitespace-nowrap border border-emerald-500/30 z-50 shadow-lg">
-                                            🛒 Alguém quer VENDER (você compra)
-                                        </span>
-                                    </label>
-                                    
-                                    <label 
-                                        className="flex items-center gap-1 cursor-pointer group relative"
-                                        title="Alerta quando alguém quer TROCAR"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={newAlertTypes.includes('WTT')}
-                                            onChange={() => toggleTradeType('WTT')}
-                                            className="rounded"
-                                        />
-                                        <span className={newAlertTypes.includes('WTT') ? 'text-white' : 'text-slate-500'}>WTT</span>
-                                        <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block bg-slate-950 text-[10px] text-purple-300 px-2 py-1 rounded whitespace-nowrap border border-purple-500/30 z-50 shadow-lg">
-                                            🔄 Alguém quer TROCAR
-                                        </span>
-                                    </label>
-                                    
-                                    <span className="text-slate-600 text-[10px]">(vazio = todos os tipos)</span>
+                                    {(['WTB', 'WTS', 'WTT'] as const).map(type => (
+                                        <label key={type} className="flex items-center gap-1 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={newAlertTypes.includes(type)}
+                                                onChange={() => toggleTradeType(type)}
+                                                className="rounded"
+                                            />
+                                            <span className={newAlertTypes.includes(type) ? 'text-white' : 'text-slate-500'}>{type}</span>
+                                        </label>
+                                    ))}
+                                    <span className="text-slate-600 text-[10px]">(vazio = todos)</span>
                                 </div>
                             </div>
 
@@ -641,7 +602,7 @@ export const LiveTradeSetup = () => {
                                                     className="px-2 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded text-xs font-bold transition-colors"
                                                     title="Testar alerta (Ctrl+T)"
                                                 >
-                                                    🔔
+                                                    ðŸ””
                                                 </button>
                                                 <button
                                                     onClick={() => toggleAlert(alert.id)}
@@ -700,7 +661,7 @@ export const LiveTradeSetup = () => {
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <span className="text-[10px] text-slate-500">
-                                                    {fired.trade.nick} • {fired.trade.timestamp}
+                                                    {fired.trade.nick} â€¢ {fired.trade.timestamp}
                                                 </span>
                                                 <button
                                                     onClick={() => handleCopyNick(fired.trade.nick)}
@@ -727,7 +688,7 @@ export const LiveTradeSetup = () => {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-slate-500">Rótulo</label>
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">RÃ³tulo</label>
                                         <input
                                             type="text"
                                             value={timerConfig.label}
@@ -736,7 +697,7 @@ export const LiveTradeSetup = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-slate-500">Duração (Min)</label>
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">DuraÃ§Ã£o (Min)</label>
                                         <input
                                             type="number"
                                             value={timerConfig.duration}
@@ -798,7 +759,7 @@ export const LiveTradeSetup = () => {
                                         type="text"
                                         value={newAdLabel}
                                         onChange={(e) => setNewAdLabel(e.target.value)}
-                                        placeholder="Nome do Anúncio (Ex: Vendo Rares)"
+                                        placeholder="Nome do AnÃºncio (Ex: Vendo Rares)"
                                         className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm outline-none focus:border-blue-500"
                                     />
                                     <textarea
@@ -819,7 +780,7 @@ export const LiveTradeSetup = () => {
                                 {/* List */}
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                                     {adTemplates.length === 0 ? (
-                                        <p className="text-center text-xs text-slate-600 py-4">Nenhum anúncio salvo.</p>
+                                        <p className="text-center text-xs text-slate-600 py-4">Nenhum anÃºncio salvo.</p>
                                     ) : (
                                         adTemplates.map(ad => (
                                             <div key={ad.id} className="bg-slate-800 p-2 rounded border border-slate-700 flex items-center justify-between group">
@@ -866,7 +827,7 @@ export const LiveTradeSetup = () => {
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2">
                                         <TrendingUp size={14} className="text-emerald-400" />
-                                        ESTATÍSTICAS (Hoje)
+                                        ESTATÃSTICAS (Hoje)
                                     </h3>
                                     <button
                                         onClick={resetStats}
@@ -899,7 +860,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2 mb-3">
                                     <Clock size={14} className="text-purple-400" />
-                                    NÃO PERTURBE
+                                    NÃƒO PERTURBE
                                 </h3>
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-sm text-slate-300">Modo Silencioso</span>
@@ -913,7 +874,7 @@ export const LiveTradeSetup = () => {
                                 {dndMode && (
                                     <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1">
                                         <div>
-                                            <label className="text-[10px] text-slate-500">Início</label>
+                                            <label className="text-[10px] text-slate-500">InÃ­cio</label>
                                             <input
                                                 type="time"
                                                 value={dndSchedule.start}
@@ -938,7 +899,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2 mb-3">
                                     <Download size={14} className="text-blue-400" />
-                                    BACKUP DE CONFIGURAÇÕES
+                                    BACKUP DE CONFIGURAÃ‡Ã•ES
                                 </h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
@@ -955,7 +916,7 @@ export const LiveTradeSetup = () => {
                                     </button>
                                 </div>
                                 <p className="text-[10px] text-slate-600 mt-2">
-                                    Backup automático a cada 5 minutos
+                                    Backup automÃ¡tico a cada 5 minutos
                                 </p>
                             </div>
 
@@ -963,7 +924,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2 mb-3">
                                     <MessageSquare size={14} className="text-blue-400" />
-                                    MENSAGEM RÁPIDA (Double Click)
+                                    MENSAGEM RÃPIDA (Double Click)
                                 </h3>
                                 <p className="text-xs text-slate-500 mb-2">
                                     Use <code>{'{nick}'}</code> para substituir pelo nome do jogador.
@@ -996,17 +957,17 @@ export const LiveTradeSetup = () => {
                                         onChange={handleSpeedChange}
                                         className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                                     />
-                                    <span className="text-xs text-slate-500 font-mono">RÁPIDO</span>
+                                    <span className="text-xs text-slate-500 font-mono">RÃPIDO</span>
                                     <span className="text-xs font-bold text-emerald-400 w-8 text-right">{tickerSpeed}s</span>
                                 </div>
                             </div>
 
                             {/* Keyboard Shortcuts Info */}
                             <div className="bg-blue-900/10 p-3 rounded-lg border border-blue-500/20">
-                                <h4 className="text-xs font-bold text-blue-400 mb-2">⌨️ Atalhos de Teclado</h4>
+                                <h4 className="text-xs font-bold text-blue-400 mb-2">âŒ¨ï¸ Atalhos de Teclado</h4>
                                 <div className="space-y-1 text-[10px] text-blue-200">
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+M</kbd> Abrir/Fechar Monitor</p>
-                                    <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+T</kbd> Testar Último Alerta</p>
+                                    <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+T</kbd> Testar Ãšltimo Alerta</p>
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">ESC</kbd> Fechar Modal</p>
                                 </div>
                             </div>
@@ -1018,4 +979,3 @@ export const LiveTradeSetup = () => {
         </div>
     );
 };
-
