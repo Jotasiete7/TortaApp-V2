@@ -5,7 +5,7 @@ mod watcher;
 use std::fs::File;
 use std::io::Read;
 use std::sync::Mutex;
-use tauri::Manager; // Added for general use if needed, though plugin init usually sufficient
+use tauri::Manager;
 
 #[tauri::command]
 fn check_file_access(path: String) -> Result<bool, String> {
@@ -23,8 +23,13 @@ fn check_file_access(path: String) -> Result<bool, String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.get_webview_window("main")
+                .expect("no main window")
+                .set_focus();
+        }))
         .manage(watcher::WatcherState(Mutex::new(None)))
-        .plugin(tauri_plugin_deep_link::init()) // Initialize Deep Link Plugin
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())

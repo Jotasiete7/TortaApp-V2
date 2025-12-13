@@ -501,13 +501,26 @@ export const LiveTradeSetup = () => {
                                             <option value="purple">Purple</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-end pb-1">
+                                    <div className="flex items-end pb-1 gap-2">
                                         <button
                                             onClick={() => setTimerConfig({ ...timerConfig, soundEnabled: !timerConfig.soundEnabled })}
-                                            className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded w-full justify-center transition-colors ${timerConfig.soundEnabled ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}
+                                            className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded w-1/2 justify-center transition-colors ${timerConfig.soundEnabled ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}
                                         >
                                             {timerConfig.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />} Som
                                         </button>
+                                         <div className="w-1/2 flex flex-col justify-end">
+                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1">Volume</label>
+                                            <input 
+                                                type="range" 
+                                                min="0" max="1" step="0.1"
+                                                defaultValue={SoundService.getVolume()}
+                                                onChange={(e) => {
+                                                    const vol = parseFloat(e.target.value);
+                                                    SoundService.setVolume(vol);
+                                                }}
+                                                className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

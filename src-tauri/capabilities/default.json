@@ -7,6 +7,8 @@
   ],
   "permissions": [
     "core:default",
+    "notification:default",
+    "shell:default",
     {
       "identifier": "shell:allow-open",
       "allow": [
@@ -15,6 +17,9 @@
         },
         {
           "href": "https://patreon.com/*"
+        },
+        {
+          "href": "https://google.com/*"
         }
       ]
     }
