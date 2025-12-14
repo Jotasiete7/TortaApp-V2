@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Sparkles, Monitor, Bell } from 'lucide-react';
 import { SoundService } from '../services/SoundService';
+import { AlertsManager } from './AlertsManager';
 
 export const UserSettings: React.FC = () => {
     // Local state for UI feedback, but backing is SoundService/LocalStorage ideally
@@ -120,3 +121,4 @@ export const UserSettings: React.FC = () => {
         </div>
     );
 };
+

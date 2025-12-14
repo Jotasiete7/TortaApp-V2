@@ -4,6 +4,7 @@ import localforage from 'localforage';
 import { supabase } from './supabase';
 import { toast } from 'sonner';
 import { Money } from '../src/domain/price/Money';
+import { AlertService, ExtendedTradeAlert } from './AlertService';
 
 export interface Trade {
     timestamp: string;
@@ -60,6 +61,7 @@ class LiveTradeMonitor {
     private readonly RETRY_DELAY = 1000;
     private currentServer = 'Cadence'; 
     private currentUserId: string | null = null;
+    private alerts: ExtendedTradeAlert[] = [];
 
     private store: LocalForage;
 
@@ -76,8 +78,17 @@ class LiveTradeMonitor {
 
     private async init() {
         await this.loadOfflineQueue();
+        await this.loadAlerts();
         const { data } = await supabase.auth.getUser();
         this.currentUserId = data.user?.id || null;
+    }
+
+    
+    private async loadAlerts() {
+        const saved = await this.store.getItem<ExtendedTradeAlert[]>('trade_alerts');
+        if (saved) {
+            this.alerts = saved;
+        }
     }
 
     private async loadOfflineQueue() {
@@ -170,6 +181,37 @@ class LiveTradeMonitor {
                 server: this.currentServer,
                 raw: JSON.stringify(raw)
             };
+
+            
+            // Check Alerts
+            try {
+                // Refresh alerts occasionally or assume synced? For now assume synced via localforage sharing the same store name?
+                // Actually LiveTradeMonitor sets store name 'TortaApp_OfflineQueue', AlertsManager uses default or distinct.
+                // AlertsManager uses default 'localforage'.
+                // We should fix this: AlertsManager should use specific store or LiveMonitor should access default.
+                // Let's assume for now we use 'trade_alerts' key on default instance.
+                // Re-instantiate a default store for reading alerts to be safe?
+                // Or just use localforage (global) since AlertsManager imported it globally.
+                
+                const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
+                
+                // Prepare object for alert check (needs Money price)
+                const checkObj = {
+                    timestamp: trade.timestamp,
+                    nick: trade.nick,
+                    message: trade.message,
+                    type: trade.type,
+                    price: Money.fromString(trade.price)
+                };
+
+                const matched = AlertService.checkAlerts(checkObj, alerts);
+                if (matched) {
+                    console.log('🔔 Alert Triggered:', matched.term);
+                    AlertService.fireAlert(matched, checkObj);
+                }
+            } catch (err) {
+                console.error('Error checking alerts:', err);
+            }
 
             await this.submitTrade(trade);
         });
@@ -272,3 +314,4 @@ class LiveTradeMonitor {
 }
 
 export const liveTradeMonitor = new LiveTradeMonitor();
+
