@@ -16,5 +16,18 @@
     }
   ],
   "sqltools.useNodeRuntime": false,
-  "sqltools.autoOpenSessionFiles": false
+  "sqltools.autoOpenSessionFiles": false,
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/src-tauri/target/**": true,
+    "**/dist/**": true,
+    "**/.git/objects/**": true,
+    "**/.gemini/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/src-tauri/target": true,
+    "**/dist": true,
+    "**/.gemini": true
+  }
 }
