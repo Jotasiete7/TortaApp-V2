@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   toastInfoMock: vi.fn(),
   invokeMock: vi.fn(),
   listenMock: vi.fn(),
+  getUserMock: vi.fn().mockResolvedValue({ data: { user: { id: 'mock-user-id' } } }),
 }));
 
 vi.mock('localforage', () => {
@@ -29,6 +30,9 @@ vi.mock('localforage', () => {
 vi.mock('../services/supabase', () => ({
   supabase: {
     rpc: mocks.rpcMock,
+    auth: {
+        getUser: mocks.getUserMock
+    }
   },
 }));
 
@@ -82,6 +86,9 @@ describe('LiveTradeMonitor', () => {
 
     // Default: Supabase success
     mocks.rpcMock.mockResolvedValue({ error: null });
+    
+    // Default: Auth success
+    mocks.getUserMock.mockResolvedValue({ data: { user: { id: 'mock-user-id' } } });
   });
 
   afterEach(() => {
@@ -92,6 +99,8 @@ describe('LiveTradeMonitor', () => {
     setNavigatorOnline(false);
 
     const monitor = new LiveTradeMonitor();
+    
+    // Wait for init
     await vi.runAllTicks();
 
     await monitor.submitTrade(tradeFixture);
