@@ -281,9 +281,9 @@ export const LiveTradeSetup = () => {
             if (file) {
                 try {
                     await importConfig(file);
-                    toast.success("Configurações importadas com sucesso!");
+                    toast.success("CONFIGURAÇÕESso!");
                 } catch (error) {
-                    toast.error("Erro ao importar configurações");
+                    toast.error("Erro ao importar CONFIGURAÇÕES");
                 }
             }
         };
@@ -827,7 +827,7 @@ export const LiveTradeSetup = () => {
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2">
                                         <TrendingUp size={14} className="text-emerald-400" />
-                                        ESTATÃSTICAS (Hoje)
+                                        ESTATÍSTICAS (Hoje)
                                     </h3>
                                     <button
                                         onClick={resetStats}
@@ -860,7 +860,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2 mb-3">
                                     <Clock size={14} className="text-purple-400" />
-                                    NÃƒO PERTURBE
+                                    NÃO PERTURBE
                                 </h3>
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-sm text-slate-300">Modo Silencioso</span>
@@ -899,7 +899,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2 mb-3">
                                     <Download size={14} className="text-blue-400" />
-                                    BACKUP DE CONFIGURAÃ‡Ã•ES
+                                    BACKUP DE CONFIGURAÇÕES
                                 </h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
@@ -924,7 +924,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h3 className="text-xs font-semibold text-slate-400 flex items-center gap-2 mb-3">
                                     <MessageSquare size={14} className="text-blue-400" />
-                                    MENSAGEM RÃPIDA (Double Click)
+                                    MENSAGEM RÁPIDA (Double Click)
                                 </h3>
                                 <p className="text-xs text-slate-500 mb-2">
                                     Use <code>{'{nick}'}</code> para substituir pelo nome do jogador.
@@ -957,14 +957,14 @@ export const LiveTradeSetup = () => {
                                         onChange={handleSpeedChange}
                                         className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                                     />
-                                    <span className="text-xs text-slate-500 font-mono">RÃPIDO</span>
+                                    <span className="text-xs text-slate-500 font-mono">RÁPIDO</span>
                                     <span className="text-xs font-bold text-emerald-400 w-8 text-right">{tickerSpeed}s</span>
                                 </div>
                             </div>
 
                             {/* Keyboard Shortcuts Info */}
                             <div className="bg-blue-900/10 p-3 rounded-lg border border-blue-500/20">
-                                <h4 className="text-xs font-bold text-blue-400 mb-2">âŒ¨ï¸ Atalhos de Teclado</h4>
+                                <h4 className="text-xs font-bold text-blue-400 mb-2">⌨️ Atalhos de Teclado</h4>
                                 <div className="space-y-1 text-[10px] text-blue-200">
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+M</kbd> Abrir/Fechar Monitor</p>
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+T</kbd> Testar Último Alerta</p>
