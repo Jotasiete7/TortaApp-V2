@@ -39,12 +39,6 @@ function normalizeItemName(item: string): string {
 }
 
 // Removed: convertToCopper function - now using Money class
-    const copperMatch = price.match(/(\d+)c/i);
-    if (copperMatch) {
-        copper += parseInt(copperMatch[1], 10);
-    }
-    return copper;
-}
 
 async function generateTradeHash(trade: Trade): Promise<string> {
     const timestampMs = new Date().getTime(); 

@@ -1,12 +1,14 @@
-/**
- * Money class for Albion Online currency system
+﻿/**
+ * Money class for Albion Online currency system (Adapted for Wurm Online)
  * 
  * Monetary System:
- * - 1 Gold = 1,000 Silver
+ * - 1 Gold = 100 Silver
  * - 1 Silver = 100 Copper
- * - 1 Gold = 100,000 Copper
+ * - 1 Copper = 100 Iron (implied by fileParser, not strictly handled here but allowed via floats)
+ * - 1 Gold = 10,000 Copper
  * 
  * Internally stores values in copper (smallest unit) to avoid precision issues.
+ * NOTE: To support 'iron' (decimals of copper), we accept non-integers.
  */
 export class Money {
   private readonly copper: number;
@@ -17,16 +19,14 @@ export class Money {
 
   /**
    * Creates a Money instance from a copper value
-   * @param copper - The amount in copper (must be non-negative integer)
-   * @throws Error if copper is negative or not an integer
+   * @param copper - The amount in copper (accepts floats for iron support)
+   * @throws Error if copper is negative
    */
   static fromCopper(copper: number): Money {
     if (copper < 0) {
       throw new Error('Copper value cannot be negative');
     }
-    if (!Number.isInteger(copper)) {
-      throw new Error('Copper value must be an integer');
-    }
+    // Removed integer check to support Iron (decimals)
     return new Money(copper);
   }
 
@@ -60,8 +60,8 @@ export class Money {
       throw new Error(`Invalid money format: "${value}"`);
     }
 
-    // Calculate total copper
-    const totalCopper = gold * 100000 + silver * 100 + copperValue;
+    // Calculate total copper (1g = 10000c, 1s = 100c)
+    const totalCopper = gold * 10000 + silver * 100 + copperValue;
     
     return Money.fromCopper(totalCopper);
   }
@@ -79,22 +79,18 @@ export class Money {
    * @returns The value in gold
    */
   toGold(): number {
-    return this.copper / 100000;
+    return this.copper / 10000;
   }
 
   /**
    * Returns a human-readable string representation
    * Format: "Xg Ys Zc" (omits units with zero value)
-   * 
-   * Examples:
-   * - 150350 copper ? "1g 503s 50c"
-   * - 500 copper ? "5s"
-   * - 1000000 copper ? "10g"
+   * Uses Math.floor for display, ignoring Iron (decimals) for standard format.
    */
   toString(): string {
-    const gold = Math.floor(this.copper / 100000);
-    const silver = Math.floor((this.copper % 100000) / 100);
-    const copper = this.copper % 100;
+    const gold = Math.floor(this.copper / 10000);
+    const silver = Math.floor((this.copper % 10000) / 100);
+    const copper = Math.floor(this.copper % 100);
 
     const parts: string[] = [];
     
@@ -118,7 +114,7 @@ export class Money {
    * @returns true if both have the same copper value
    */
   equals(other: Money): boolean {
-    return this.copper === other.copper;
+    return Math.abs(this.copper - other.copper) < 0.0001; // Float comparison safety
   }
 
   /**
@@ -162,6 +158,9 @@ export class Money {
     if (factor < 0) {
       throw new Error('Factor cannot be negative');
     }
-    return Money.fromCopper(Math.floor(this.copper * factor));
+    // Removed Math.floor to keep precision for Iron?
+    // But original multiply used Math.floor to keep integer. 
+    // If we support Iron (float), we should probably NOT floor.
+    return Money.fromCopper(this.copper * factor);
   }
 }

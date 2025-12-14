@@ -1,3 +1,4 @@
+﻿import { Money } from '../src/domain/price/Money';
 
 /**
  * priceUtils.ts
@@ -189,6 +190,15 @@ export const loadPricesFromStorage = (): Record<string, number> | null => {
         return JSON.parse(raw);
     } catch (e) {
         console.error('Failed to load prices from storage', e);
+        return null;
+    }
+};
+
+
+export const parsePriceToMoney = (priceStr: string): Money | null => {
+    try {
+        return Money.fromString(priceStr);
+    } catch (e) {
         return null;
     }
 };
