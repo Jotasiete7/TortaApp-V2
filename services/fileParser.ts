@@ -1,10 +1,11 @@
-
 /**
  * fileParser.ts
  * Service responsible for parsing and cleaning raw data from Wurm Online logs.
  */
 
 import { MarketItem } from '../types';
+import { Money } from '../src/domain/price/Money';
+import { ParsedTrade, EnrichedTrade } from '../src/domain/trade/Trade';
 
 export interface TradeRecord {
     timestamp: string;
@@ -19,7 +20,7 @@ export interface TradeRecord {
 
 export class FileParser {
 
-    // 1. CONSTANTE: Lista de Termos de RuÃ­do (Stop Words)
+    // 1. CONSTANTE: Lista de Termos de Ruído (Stop Words)
     private static readonly NOISE_TERMS = [
         "You can disable receiving these messages",
         "View the full Trade Chat Etiquette",
@@ -133,6 +134,29 @@ export class FileParser {
         return parsedRecords;
     }
 }
+
+// --- TRADE ENRICHMENT FUNCTION ---
+
+/**
+ * Converts a ParsedTrade (with primitive types) to an EnrichedTrade (using Money class)
+ * 
+ * @param parsedTrade - The parsed trade with primitive types from the Rust backend
+ * @returns An enriched trade with Money instance for price handling
+ */
+export const toEnrichedTrade = (parsedTrade: ParsedTrade): EnrichedTrade => {
+    return {
+        timestamp: parsedTrade.timestamp,
+        nick: parsedTrade.nick,
+        message: parsedTrade.message,
+        tradeType: parsedTrade.tradeType,
+        item: parsedTrade.item,
+        quality: parsedTrade.quality,
+        rarity: parsedTrade.rarity,
+        price: parsedTrade.priceCopper !== null 
+            ? Money.fromCopper(parsedTrade.priceCopper) 
+            : null
+    };
+};
 
 // --- EXPORTED FUNCTIONS FOR APP COMPATIBILITY ---
 
