@@ -1,11 +1,11 @@
-# 🧠 TortaApp - Design Decisions & Implementation Guide
+﻿# ðŸ§  TortaApp - Design Decisions & Implementation Guide
 
 **Purpose:** Prevent regressions when multiple agents/developers work on the project.  
 **Last Updated:** 2025-12-08
 
 ---
 
-## 🎯 Core Principles
+## ðŸŽ¯ Core Principles
 
 1. **Never remove existing optimizations** without explicit user request
 2. **Always check component history** before major refactors
@@ -14,16 +14,16 @@
 
 ---
 
-## 🏗️ Critical Components - DO NOT BREAK
+## ðŸ—ï¸ Critical Components - DO NOT BREAK
 
 ### 1. Sidebar (`components/layout/Sidebar.tsx`)
 
 **Key Features (DO NOT REMOVE):**
-- ✅ Admin Panel visibility based on `role`
-- ✅ Patreon support link
-- ✅ Icon-based navigation
-- ✅ Active state highlighting
-- ✅ Responsive design
+- âœ… Admin Panel visibility based on `role`
+- âœ… Patreon support link
+- âœ… Icon-based navigation
+- âœ… Active state highlighting
+- âœ… Responsive design
 
 **Recent Improvements:**
 - Layout optimizations (spacing, alignment)
@@ -37,10 +37,10 @@
 ### 2. UserSettings (`components/UserSettings.tsx`)
 
 **Key Features:**
-- ✅ Audio controls (volume, mute)
-- ✅ Visual effects toggles
-- ✅ **Auto-Updater button** (Check for Updates)
-- ✅ SoundService integration
+- âœ… Audio controls (volume, mute)
+- âœ… Visual effects toggles
+- âœ… **Auto-Updater button** (Check for Updates)
+- âœ… SoundService integration
 
 **Critical:** The "Check for Updates" section was added for Tauri auto-updater. DO NOT remove.
 
@@ -49,10 +49,10 @@
 ### 3. MarketTable (`components/market/MarketTable.tsx`)
 
 **Performance Critical:**
-- ✅ Uses `useMemo` for `processedData` (filters 100k+ records)
-- ✅ Pagination (50 items per page)
-- ✅ SearchEngine integration
-- ✅ Advanced query parser
+- âœ… Uses `useMemo` for `processedData` (filters 100k+ records)
+- âœ… Pagination (50 items per page)
+- âœ… SearchEngine integration
+- âœ… Advanced query parser
 
 **DO NOT:**
 - Remove `useMemo` hooks
@@ -64,16 +64,16 @@
 ### 4. MLPredictor (`components/market/MLPredictor.tsx`)
 
 **Complex Logic:**
-- ✅ Dynamic material extraction
-- ✅ Bulk analysis
-- ✅ Statistical calculations
-- ✅ Confidence scoring
+- âœ… Dynamic material extraction
+- âœ… Bulk analysis
+- âœ… Statistical calculations
+- âœ… Confidence scoring
 
 **If modifying:** This is ML code. Test thoroughly before changes.
 
 ---
 
-## 🎨 Design Standards
+## ðŸŽ¨ Design Standards
 
 ### Colors
 - **Primary:** Amber (`amber-500`, `amber-400`)
@@ -93,7 +93,7 @@
 
 ---
 
-## ⚡ Performance Rules
+## âš¡ Performance Rules
 
 ### Always Use:
 1. **`useMemo`** for expensive calculations
@@ -102,14 +102,14 @@
 4. **Lazy loading** for heavy components (if needed)
 
 ### Never Do:
-1. ❌ Remove existing `useMemo` without profiling
-2. ❌ Load all 100k records at once
-3. ❌ Inline complex calculations in JSX
-4. ❌ Create new objects/arrays in render
+1. âŒ Remove existing `useMemo` without profiling
+2. âŒ Load all 100k records at once
+3. âŒ Inline complex calculations in JSX
+4. âŒ Create new objects/arrays in render
 
 ---
 
-## 🔐 Security Rules
+## ðŸ” Security Rules
 
 ### Environment Variables
 - **NEVER** hardcode API keys
@@ -117,13 +117,13 @@
 - **CHECK** `.gitignore` before committing
 
 ### Data Sanitization
-- ✅ `sanitizeItemName()` for item names
-- ✅ `sanitizeSeller()` for seller names
-- ✅ Prevent token leakage in logs
+- âœ… `sanitizeItemName()` for item names
+- âœ… `sanitizeSeller()` for seller names
+- âœ… Prevent token leakage in logs
 
 ---
 
-## 📦 State Management
+## ðŸ“¦ State Management
 
 ### Global State (App.tsx)
 - `user` - Current authenticated user
@@ -138,24 +138,24 @@
 
 ---
 
-## 🧩 Component Hierarchy
+## ðŸ§© Component Hierarchy
 
 ```
 App.tsx (root)
-├── Login.tsx (if not authenticated)
-└── Main Layout
-    ├── Sidebar.tsx
-    ├── NewsTicker.tsx
-    ├── Dashboard.tsx
-    ├── MarketTable.tsx
-    ├── MLPredictor.tsx
-    ├── UserSettings.tsx
-    └── FeedbackWidget.tsx
+â”œâ”€â”€ Login.tsx (if not authenticated)
+â””â”€â”€ Main Layout
+    â”œâ”€â”€ Sidebar.tsx
+    â”œâ”€â”€ NewsTicker.tsx
+    â”œâ”€â”€ Dashboard.tsx
+    â”œâ”€â”€ MarketTable.tsx
+    â”œâ”€â”€ MLPredictor.tsx
+    â”œâ”€â”€ UserSettings.tsx
+    â””â”€â”€ FeedbackWidget.tsx
 ```
 
 ---
 
-## 🚨 Common Pitfalls
+## ðŸš¨ Common Pitfalls
 
 ### 1. "Simplifying" Code
 **Problem:** Removing `useMemo` to "simplify"  
@@ -174,7 +174,7 @@ App.tsx (root)
 
 ---
 
-## 📝 Before Making Changes
+## ðŸ“ Before Making Changes
 
 ### Checklist:
 1. [ ] Read this document
@@ -185,7 +185,7 @@ App.tsx (root)
 
 ---
 
-## 🔄 When Multiple Agents Work
+## ðŸ”„ When Multiple Agents Work
 
 ### For the Agent:
 1. **Read this file first** before major changes
@@ -200,7 +200,7 @@ App.tsx (root)
 
 ---
 
-## 📚 Key Files Reference
+## ðŸ“š Key Files Reference
 
 | File | Purpose | Critical Features |
 |------|---------|-------------------|
@@ -213,7 +213,7 @@ App.tsx (root)
 
 ---
 
-## 🎯 Future Considerations
+## ðŸŽ¯ Future Considerations
 
 ### Planned Features:
 - Mobile view
@@ -227,7 +227,7 @@ App.tsx (root)
 ---
 
 **Remember:** This is a **production-ready beta**. Every feature exists for a reason. When in doubt, preserve existing functionality.
-## 🎮 Gamification System - Critical Rules
+## ðŸŽ® Gamification System - Critical Rules
 
 ### Badge System
 
@@ -261,7 +261,7 @@ App.tsx (root)
 
 ---
 
-## 🗄️ Database Patterns & SQL Guidelines
+## ðŸ—„ï¸ Database Patterns & SQL Guidelines
 
 ### Naming Conventions
 - **Tables:** Plural snake_case (`trade_logs`, `user_badges`)
@@ -287,7 +287,7 @@ App.tsx (root)
 
 ---
 
-## 🔧 Development Workflows
+## ðŸ”§ Development Workflows
 
 ### Adding a New Badge
 1. Update BADGE_REGISTRY.md
@@ -303,7 +303,7 @@ App.tsx (root)
 
 ---
 
-## 🚀 Performance Checklist
+## ðŸš€ Performance Checklist
 - [ ] Large lists use pagination
 - [ ] Expensive calculations use `useMemo`
 - [ ] No console.logs in production
@@ -315,19 +315,19 @@ App.tsx (root)
 
 ---
 
-## 🎨 Design System - Assets & Branding
+## ðŸŽ¨ Design System - Assets & Branding
 
 ### Icons & Images
 
 **Icon Library:** Lucide React (`lucide-react` v0.555.0)
-- ✅ Consistent style across app
-- ✅ Tree-shakeable (only imports used icons)
-- ✅ Customizable size/color
+- âœ… Consistent style across app
+- âœ… Tree-shakeable (only imports used icons)
+- âœ… Customizable size/color
 
 **DO NOT:**
-- ❌ Mix icon libraries (no Font Awesome, Material Icons, etc.)
-- ❌ Use raster icons for UI (use SVG/Lucide only)
-- ❌ Hardcode icon sizes (use Tailwind classes)
+- âŒ Mix icon libraries (no Font Awesome, Material Icons, etc.)
+- âŒ Use raster icons for UI (use SVG/Lucide only)
+- âŒ Hardcode icon sizes (use Tailwind classes)
 
 **App Icons (Tauri):**
 - Location: `src-tauri/icons/`
@@ -345,10 +345,10 @@ App.tsx (root)
 - License: CC-BY 4.0 (attribution required)
 
 **Why SVGs:**
-- ✅ Consistent across all platforms (Windows, Mac, Linux)
-- ✅ No font dependencies
-- ✅ Scalable without quality loss
-- ✅ Customizable colors
+- âœ… Consistent across all platforms (Windows, Mac, Linux)
+- âœ… No font dependencies
+- âœ… Scalable without quality loss
+- âœ… Customizable colors
 
 **Adding New Emojis:**
 1. Download from Twemoji repo
@@ -357,7 +357,7 @@ App.tsx (root)
 
 ---
 
-## 🎨 Color Palette - DO NOT CHANGE
+## ðŸŽ¨ Color Palette - DO NOT CHANGE
 
 ### Primary Colors
 ```css
@@ -404,7 +404,7 @@ App.tsx (root)
 
 ---
 
-## 📝 Typography & Fonts
+## ðŸ“ Typography & Fonts
 
 ### Font Stack
 ```css
@@ -413,10 +413,10 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont,
 ```
 
 **Why System Fonts:**
-- ✅ No external font loading (faster)
-- ✅ Native look on each OS
-- ✅ No GDPR issues (Google Fonts)
-- ✅ Better performance
+- âœ… No external font loading (faster)
+- âœ… Native look on each OS
+- âœ… No GDPR issues (Google Fonts)
+- âœ… Better performance
 
 ### Font Sizes (Tailwind)
 - `text-xs`: 12px - Small labels, metadata
@@ -430,7 +430,7 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont,
 
 ---
 
-## 👤 Developer Information
+## ðŸ‘¤ Developer Information
 
 ### Primary Developer
 - **Name:** Jotasiete7
@@ -458,7 +458,7 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont,
 
 ---
 
-## 🔑 Critical Keys & Secrets
+## ðŸ”‘ Critical Keys & Secrets
 
 ### Environment Variables (NEVER COMMIT)
 
@@ -472,7 +472,7 @@ VITE_SUPABASE_ANON_KEY=your_anon_key
 - **Private:** `src-tauri/app.key` (GITIGNORED)
 - **Public:** `src-tauri/app.key.pub` (Safe to commit)
 
-**⚠️ CRITICAL:**
+**âš ï¸ CRITICAL:**
 - Private key is used to sign updates
 - If lost, you CANNOT sign future updates
 - Backup securely (password manager, encrypted drive)
@@ -487,18 +487,18 @@ Before committing:
 
 ---
 
-## 📦 Third-Party Dependencies
+## ðŸ“¦ Third-Party Dependencies
 
 ### Core Libraries (DO NOT REMOVE)
 
 | Package | Version | Purpose | Can Remove? |
 |---------|---------|---------|-------------|
-| `react` | 19.2.0 | UI framework | ❌ Never |
-| `@supabase/supabase-js` | 2.86.0 | Backend | ❌ Never |
-| `lucide-react` | 0.555.0 | Icons | ❌ Never |
-| `recharts` | 3.5.1 | Charts | ⚠️ Only if removing analytics |
-| `react-markdown` | 10.1.0 | Docs rendering | ⚠️ Only if removing docs |
-| `@tauri-apps/api` | 2.9.1 | Desktop features | ❌ Never |
+| `react` | 19.2.0 | UI framework | âŒ Never |
+| `@supabase/supabase-js` | 2.86.0 | Backend | âŒ Never |
+| `lucide-react` | 0.555.0 | Icons | âŒ Never |
+| `recharts` | 3.5.1 | Charts | âš ï¸ Only if removing analytics |
+| `react-markdown` | 10.1.0 | Docs rendering | âš ï¸ Only if removing docs |
+| `@tauri-apps/api` | 2.9.1 | Desktop features | âŒ Never |
 
 ### License Compliance
 
@@ -513,7 +513,7 @@ Before committing:
 
 ---
 
-## 🚨 Breaking Changes - Approval Required
+## ðŸš¨ Breaking Changes - Approval Required
 
 ### Changes That REQUIRE User Approval
 
@@ -539,15 +539,15 @@ Before committing:
 
 ### Changes That Are OK
 
-- ✅ Performance optimizations
-- ✅ Bug fixes
-- ✅ New features (additive)
-- ✅ Code refactoring (same behavior)
-- ✅ Documentation updates
+- âœ… Performance optimizations
+- âœ… Bug fixes
+- âœ… New features (additive)
+- âœ… Code refactoring (same behavior)
+- âœ… Documentation updates
 
 ---
 
-## 📋 Asset Inventory
+## ðŸ“‹ Asset Inventory
 
 ### Images
 - `app-icon.png` (173 KB) - Main app icon source
@@ -567,7 +567,7 @@ Before committing:
 
 ---
 
-## 🔐 Security - Critical Reminders
+## ðŸ” Security - Critical Reminders
 
 ### Never Commit
 1. `.env.local` - Supabase credentials
@@ -594,7 +594,7 @@ Before committing:
 
 ---
 
-## 📚 Official Asset Sources
+## ðŸ“š Official Asset Sources
 
 ### Icons (Lucide React)
 - **Source:** https://lucide.dev/
@@ -622,7 +622,7 @@ import { IconName } from 'lucide-react';
 **How to Get Emojis:**
 1. Visit: https://github.com/twitter/twemoji/tree/master/assets/svg
 2. Download desired emoji SVG
-3. Rename to unicode (e.g., `1f4af.svg` for 💯)
+3. Rename to unicode (e.g., `1f4af.svg` for ðŸ’¯)
 4. Place in `public/emojis/`
 
 **Attribution Required:**
@@ -646,7 +646,7 @@ This creates all required sizes automatically in `src-tauri/icons/`.
 
 ---
 
-## 🎨 Design Resources
+## ðŸŽ¨ Design Resources
 
 ### Color Palette Tool
 - **Tailwind Colors:** https://tailwindcss.com/docs/customizing-colors
@@ -663,18 +663,18 @@ This creates all required sizes automatically in `src-tauri/icons/`.
 
 ---
 
-## 📦 Asset Management
+## ðŸ“¦ Asset Management
 
 ### Where Assets Live
 
 ```
 TortaApp-V2/
-├── public/
-│   └── emojis/          # Twemoji SVGs
-├── src-tauri/
-│   └── icons/           # App icons (all sizes)
-├── app-icon.png         # Source icon (root)
-└── components/          # Lucide icons imported here
+â”œâ”€â”€ public/
+â”‚   â””â”€â”€ emojis/          # Twemoji SVGs
+â”œâ”€â”€ src-tauri/
+â”‚   â””â”€â”€ icons/           # App icons (all sizes)
+â”œâ”€â”€ app-icon.png         # Source icon (root)
+â””â”€â”€ components/          # Lucide icons imported here
 ```
 
 ### Asset Checklist
@@ -707,7 +707,7 @@ TortaApp-V2/
 
 ---
 
-## 🏷️ Version Naming & Roadmap
+## ðŸ·ï¸ Version Naming & Roadmap
 
 ### Current Version
 - **Number:** 2.0.0-beta
@@ -742,32 +742,32 @@ TortaApp-V2/
 
 ### Roadmap Milestones
 
-**Phase 1: Foundation (v0.1.0 "Iron Ore")** ✅ Complete
+**Phase 1: Foundation (v0.1.0 "Iron Ore")** âœ… Complete
 - Core features implemented
 - Authentication & profiles
 - Market intelligence
 - ML predictor
 - Gamification basics
 
-**Phase 2: Strengthened (v0.2.0 "Steel Bar")** 🔄 In Progress
+**Phase 2: Strengthened (v0.2.0 "Steel Bar")** ðŸ”„ In Progress
 - Performance optimizations
 - In-app feedback system
 - Enhanced ML predictions
 - Bug fixes from beta
 
-**Phase 3: Social (v0.3.0 "Silver Coin")** 📋 Planned
+**Phase 3: Social (v0.3.0 "Silver Coin")** ðŸ“‹ Planned
 - Friends system
 - Trading groups
 - Chat integration
 - Shared wishlists
 
-**Phase 4: Premium (v0.4.0 "Gold Lump")** 📋 Planned
+**Phase 4: Premium (v0.4.0 "Gold Lump")** ðŸ“‹ Planned
 - Real-time price alerts
 - Advanced analytics
 - Custom dashboards
 - API access
 
-**Phase 5: Public Release (v1.0.0 "Dragon Scale")** 🎯 Goal
+**Phase 5: Public Release (v1.0.0 "Dragon Scale")** ðŸŽ¯ Goal
 - All beta features stable
 - Full documentation
 - Mobile app available
@@ -775,7 +775,7 @@ TortaApp-V2/
 
 ---
 
-## 📅 Release Schedule
+## ðŸ“… Release Schedule
 
 ### Beta Releases
 - **Frequency:** Every 2-4 weeks
@@ -801,7 +801,7 @@ TortaApp-V2/
 
 ---
 
-## 🎨 CORREÇÃO: Emoji System (OpenMoji, não Twemoji!)
+## ðŸŽ¨ CORREÃ‡ÃƒO: Emoji System (OpenMoji, nÃ£o Twemoji!)
 
 ### Emojis (OpenMoji)
 - **Source:** https://openmoji.org/
@@ -812,15 +812,15 @@ TortaApp-V2/
 - **Total Emojis:** 4,293 SVG files
 
 **Why OpenMoji (not Twemoji):**
-- ✅ Open source and free
-- ✅ Consistent design across all emojis
-- ✅ SVG format (scalable, customizable)
-- ✅ No platform dependencies
-- ✅ CC-BY-SA 4.0 license (commercial use OK with attribution)
+- âœ… Open source and free
+- âœ… Consistent design across all emojis
+- âœ… SVG format (scalable, customizable)
+- âœ… No platform dependencies
+- âœ… CC-BY-SA 4.0 license (commercial use OK with attribution)
 
 **How to Use:**
 ```tsx
-// Emoji files are named by unicode (e.g., 1F4AF.svg for 💯)
+// Emoji files are named by unicode (e.g., 1F4AF.svg for ðŸ’¯)
 <img src="/openmoji/1F4AF.svg" alt="emoji" className="w-6 h-6" />
 ```
 
@@ -831,9 +831,9 @@ Licensed under CC-BY-SA 4.0
 ```
 
 **DO NOT:**
-- ❌ Delete the `public/openmoji/` folder (4,293 files!)
-- ❌ Mix with other emoji libraries
-- ❌ Forget attribution in About page
+- âŒ Delete the `public/openmoji/` folder (4,293 files!)
+- âŒ Mix with other emoji libraries
+- âŒ Forget attribution in About page
 
 **Adding New Emojis:**
 1. Visit: https://openmoji.org/library/
@@ -845,103 +845,103 @@ Licensed under CC-BY-SA 4.0
 
 **ASSET SOURCES CORRECTED:**
 - **Icons:** Lucide (https://lucide.dev/) - 1000+ icons
-- **Emojis:** OpenMoji (https://openmoji.org/) - 4,293 emojis ✅
+- **Emojis:** OpenMoji (https://openmoji.org/) - 4,293 emojis âœ…
 - **Fonts:** System fonts (no downloads)
 - **Colors:** Tailwind palette
 
 ---
 
-## 🏷️ Version Codenames - Torta Creatures (OFICIAL!)
+## ðŸ·ï¸ Version Codenames - Torta Creatures (OFICIAL!)
 
 ### Current Version
 - **Number:** 2.0.0-beta
-- **Codename:** "Torta Dragon Hatchling" (versão beta/infantil mas poderosa!)
+- **Codename:** "Torta Dragon Hatchling" (versÃ£o beta/infantil mas poderosa!)
 - **Status:** Closed Beta
 - **Release Date:** December 2025
 
 ---
 
-## 🎭 Tier S+ (OBRIGATÓRIO usar algum dia - Wurmianos vão surtar de rir)
+## ðŸŽ­ Tier S+ (OBRIGATÃ“RIO usar algum dia - Wurmianos vÃ£o surtar de rir)
 
-### Criaturas Lendárias
-- **Torta Kyklops** - Para versão com visão única/foco
-- **Torta Deathcrawler** - Para versão que rasteja por bugs e os mata
-- **Torta Forest Giant** - Para versão GIGANTE de features
-- **Torta Red Dragon** - Para versão de fogo (performance extrema)
-- **Torta Dragon Hatchling** - Para versão beta/infantil (ATUAL v2.0.0-beta) ✅
-- **Torta Hell Horse** - Para versão veloz e infernal
-- **Torta Goblin Leader** - Para versão com liderança (novos recursos de admin)
+### Criaturas LendÃ¡rias
+- **Torta Kyklops** - Para versÃ£o com visÃ£o Ãºnica/foco
+- **Torta Deathcrawler** - Para versÃ£o que rasteja por bugs e os mata
+- **Torta Forest Giant** - Para versÃ£o GIGANTE de features
+- **Torta Red Dragon** - Para versÃ£o de fogo (performance extrema)
+- **Torta Dragon Hatchling** - Para versÃ£o beta/infantil (ATUAL v2.0.0-beta) âœ…
+- **Torta Hell Horse** - Para versÃ£o veloz e infernal
+- **Torta Goblin Leader** - Para versÃ£o com lideranÃ§a (novos recursos de admin)
 
 **Uso Recomendado:**
-- v1.0.0: "Torta Dragon Hatchling" (público release - nascimento oficial)
-- v2.0.0: "Torta Forest Giant" (versão MASSIVA)
-- v3.0.0: "Torta Red Dragon" (versão de FOGO)
-- v4.0.0: "Torta Kyklops" (visão unificada do projeto)
+- v1.0.0: "Torta Dragon Hatchling" (pÃºblico release - nascimento oficial)
+- v2.0.0: "Torta Forest Giant" (versÃ£o MASSIVA)
+- v3.0.0: "Torta Red Dragon" (versÃ£o de FOGO)
+- v4.0.0: "Torta Kyklops" (visÃ£o unificada do projeto)
 
 ---
 
-## 🔥 Tier S (Icônicos pra caralho)
+## ðŸ”¥ Tier S (IcÃ´nicos pra caralho)
 
-### Criaturas Épicas
-- **Torta Troll King** - Para versão BOSS (major release)
-- **Torta Lava Fiend** - Para versão quente/instável mas poderosa
-- **Torta Unique Slayer** - META! Para versão que MATA bugs (hotfix épico)
-- **Torta Rift Beast** - Para versão que abre portais (novas features dimensionais)
-- **Torta Venerable Whale** - Para versão GORDA de features (muuuito conteúdo)
+### Criaturas Ã‰picas
+- **Torta Troll King** - Para versÃ£o BOSS (major release)
+- **Torta Lava Fiend** - Para versÃ£o quente/instÃ¡vel mas poderosa
+- **Torta Unique Slayer** - META! Para versÃ£o que MATA bugs (hotfix Ã©pico)
+- **Torta Rift Beast** - Para versÃ£o que abre portais (novas features dimensionais)
+- **Torta Venerable Whale** - Para versÃ£o GORDA de features (muuuito conteÃºdo)
 
 **Uso Recomendado:**
-- Hotfix crítico: "Torta Unique Slayer" (mata todos os bugs)
+- Hotfix crÃ­tico: "Torta Unique Slayer" (mata todos os bugs)
 - Major update: "Torta Troll King"
 - Feature-heavy: "Torta Venerable Whale"
 
 ---
 
-## ⚔️ Tier A (Monstros clássicos que todo mundo odeia/ama)
+## âš”ï¸ Tier A (Monstros clÃ¡ssicos que todo mundo odeia/ama)
 
-### Criaturas Clássicas
-- **Torta Diseased Troll** - Para versão com bugs conhecidos mas funcional
-- **Torta Hardened Crocodile** - Para versão fortificada (segurança++)
-- **Torta Fierce Anaconda** - Para versão que aperta/otimiza tudo
-- **Torta Scaredy Cat** - Para versão cheia de jumpscare de bug 😂
-- **Torta Wild Cat** - A original, antes do nerf (versão clássica)
-- **Torta Greenish Goblin** - Para versão eco-friendly (otimização de recursos)
-- **Torta Mountain Gorilla** - O rei do early game (versão inicial estável)
+### Criaturas ClÃ¡ssicas
+- **Torta Diseased Troll** - Para versÃ£o com bugs conhecidos mas funcional
+- **Torta Hardened Crocodile** - Para versÃ£o fortificada (seguranÃ§a++)
+- **Torta Fierce Anaconda** - Para versÃ£o que aperta/otimiza tudo
+- **Torta Scaredy Cat** - Para versÃ£o cheia de jumpscare de bug ðŸ˜‚
+- **Torta Wild Cat** - A original, antes do nerf (versÃ£o clÃ¡ssica)
+- **Torta Greenish Goblin** - Para versÃ£o eco-friendly (otimizaÃ§Ã£o de recursos)
+- **Torta Mountain Gorilla** - O rei do early game (versÃ£o inicial estÃ¡vel)
 
 **Uso Recomendado:**
-- Versão com bugs: "Torta Diseased Troll" (honestidade é tudo)
-- Versão segura: "Torta Hardened Crocodile"
-- Versão otimizada: "Torta Fierce Anaconda"
+- VersÃ£o com bugs: "Torta Diseased Troll" (honestidade Ã© tudo)
+- VersÃ£o segura: "Torta Hardened Crocodile"
+- VersÃ£o otimizada: "Torta Fierce Anaconda"
 
 ---
 
-## 🐰 Tier B (Bichos "normais" mas que viraram meme)
+## ðŸ° Tier B (Bichos "normais" mas que viraram meme)
 
 ### Criaturas Meme
-- **Torta Aged Fat Rabbit** - Para versão gordinha mas experiente
-- **Torta Starving Hyena** - Para versão lean/minimalista
-- **Torta Pheasant** - O pássaro do tutorial (versão introdutória)
-- **Torta Rooster** - Para versão que ACORDA todo mundo com notificação 🐓
+- **Torta Aged Fat Rabbit** - Para versÃ£o gordinha mas experiente
+- **Torta Starving Hyena** - Para versÃ£o lean/minimalista
+- **Torta Pheasant** - O pÃ¡ssaro do tutorial (versÃ£o introdutÃ³ria)
+- **Torta Rooster** - Para versÃ£o que ACORDA todo mundo com notificaÃ§Ã£o ðŸ“
 
 **Uso Recomendado:**
-- Versão tutorial: "Torta Pheasant"
-- Versão com notificações: "Torta Rooster"
-- Versão minimalista: "Torta Starving Hyena"
+- VersÃ£o tutorial: "Torta Pheasant"
+- VersÃ£o com notificaÃ§Ãµes: "Torta Rooster"
+- VersÃ£o minimalista: "Torta Starving Hyena"
 
 ---
 
-## 📋 Roadmap com Codenames
+## ðŸ“‹ Roadmap com Codenames
 
-### Planejado (Sugestões)
+### Planejado (SugestÃµes)
 
 **Beta Releases (0.x.x)**
 - v0.1.0-beta: "Torta Pheasant" (tutorial, primeiros passos)
 - v0.2.0-beta: "Torta Mountain Gorilla" (early game king)
-- v0.3.0-beta: "Torta Wild Cat" (versão clássica)
-- v0.4.0-beta: "Torta Greenish Goblin" (otimizações)
+- v0.3.0-beta: "Torta Wild Cat" (versÃ£o clÃ¡ssica)
+- v0.4.0-beta: "Torta Greenish Goblin" (otimizaÃ§Ãµes)
 
 **Stable Releases (1.x.x)**
-- v1.0.0: "Torta Dragon Hatchling" (nascimento oficial) 🐣
-- v1.1.0: "Torta Unique Slayer" (mata bugs pós-release)
+- v1.0.0: "Torta Dragon Hatchling" (nascimento oficial) ðŸ£
+- v1.1.0: "Torta Unique Slayer" (mata bugs pÃ³s-release)
 - v1.2.0: "Torta Hardened Crocodile" (fortificado)
 - v1.5.0: "Torta Venerable Whale" (gorda de features)
 
@@ -952,26 +952,26 @@ Licensed under CC-BY-SA 4.0
 
 **Epic Releases (3.x.x+)**
 - v3.0.0: "Torta Red Dragon" (FOGO e velocidade)
-- v4.0.0: "Torta Kyklops" (visão única)
+- v4.0.0: "Torta Kyklops" (visÃ£o Ãºnica)
 - v5.0.0: "Torta Deathcrawler" (rasteja e domina)
 
 ---
 
-## �� Naming Rules (OFICIAL)
+## ï¿½ï¿½ Naming Rules (OFICIAL)
 
 ### Quando Usar Cada Tier
 
-**Tier S+ (Lendários):**
+**Tier S+ (LendÃ¡rios):**
 - Major releases (x.0.0)
 - Game-changing updates
-- Versões que definem o futuro
+- VersÃµes que definem o futuro
 
-**Tier S (Icônicos):**
-- Hotfixes críticos ("Unique Slayer")
+**Tier S (IcÃ´nicos):**
+- Hotfixes crÃ­ticos ("Unique Slayer")
 - Feature-heavy updates ("Venerable Whale")
 - Boss updates ("Troll King")
 
-**Tier A (Clássicos):**
+**Tier A (ClÃ¡ssicos):**
 - Security updates ("Hardened Crocodile")
 - Performance updates ("Fierce Anaconda")
 - Buggy but functional ("Diseased Troll")
@@ -983,15 +983,15 @@ Licensed under CC-BY-SA 4.0
 
 ### Special Cases
 
-**"Torta Scaredy Cat"** - RESERVADO para versão com muitos jumpscares de bug (use com humor!)
+**"Torta Scaredy Cat"** - RESERVADO para versÃ£o com muitos jumpscares de bug (use com humor!)
 
-**"Torta Diseased Troll"** - Para quando você sabe que tem bugs mas lança mesmo assim (honestidade++)
+**"Torta Diseased Troll"** - Para quando vocÃª sabe que tem bugs mas lanÃ§a mesmo assim (honestidade++)
 
-**"Torta Rooster"** - Para versão que adiciona sistema de notificações agressivo
+**"Torta Rooster"** - Para versÃ£o que adiciona sistema de notificaÃ§Ãµes agressivo
 
 ---
 
-## 🎨 Branding
+## ðŸŽ¨ Branding
 
 **Formato Oficial:**
 ```
@@ -1000,7 +1000,7 @@ TortaApp v2.0.0-beta "Torta Dragon Hatchling"
 
 **Em Changelogs:**
 ```markdown
-# v2.0.0-beta "Torta Dragon Hatchling" 🐣
+# v2.0.0-beta "Torta Dragon Hatchling" ðŸ£
 Released: 2025-12-06
 ```
 
@@ -1012,24 +1012,25 @@ Codename: Torta Dragon Hatchling
 
 ---
 
-**IMPORTANTE:** Esses nomes são OURO para marketing! Todo wurmiano vai reconhecer e rir. Use com orgulho! 🎯
+**IMPORTANTE:** Esses nomes sÃ£o OURO para marketing! Todo wurmiano vai reconhecer e rir. Use com orgulho! ðŸŽ¯
 
-**Última Atualização:** 2025-12-08
+**Ãšltima AtualizaÃ§Ã£o:** 2025-12-08
 **Mantido por:** Jotasiete7 (com ajuda da comunidade Wurm)
 
 ---
 
-## ✏️ CORREÇÃO: Versão Atual
+## âœï¸ CORREÃ‡ÃƒO: VersÃ£o Atual
 
 ### Current Version
 - **Number:** 2.0.0-beta
-- **Codename:** "Torta Venerable Whale" 🐋 (versão GORDA de features!)
+- **Codename:** "Torta Venerable Whale" ðŸ‹ (versÃ£o GORDA de features!)
 - **Status:** Closed Beta
 - **Release Date:** December 2025
 
 **Por que "Venerable Whale":**
-- Venerable = Experiente, respeitável
+- Venerable = Experiente, respeitÃ¡vel
 - Whale = GRANDE, muitas features
 - Perfeito para v2.0.0-beta com tudo implementado!
 
 ---
+
