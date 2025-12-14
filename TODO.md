@@ -38,6 +38,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 014 | 🟡 Média | [Feature] | **WTS Timer & Widget** | Widget flutuante de cooldown (30min) e gerenciador de anúncios. | ✅ Concluído (12/12) |
 | 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas (docs, secrets, resources) e limpeza da raiz. | ✅ Concluído (12/12) |
 | 016 | 🟡 Média | [Feature] | **Controle de Volume** | Persistência de volume e mute para alertas e sons do app. | ✅ Concluído (12/12) |
+| 017 | 🔴 Alta | [Feature] | **Simplificação do Parser** | Remover modo legado e usar apenas AdvancedParser como modo único. | ✅ Concluído (14/12) |
 
 ---
 
@@ -53,39 +54,29 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 16
-**Concluídas:** 14 (87.5%)
-**Pendentes:** 2 (12.5%)
+**Total de Tarefas:** 17
+**Concluídas:** 15 (88.2%)
+**Pendentes:** 2 (11.8%)
 
-**Última Atualização:** 12/12/2024 - Versão "Venerable Whale" 🐋 + Live Trade Premium
+**Última Atualização:** 14/12/2024 - Versão "Advanced Only Mode" 🚀
 
 ---
 
-## 📝 Notas da Sessão (12/12/2024)
+## 📝 Notas da Sessão (14/12/2024)
 
 ### ✅ Realizado Hoje:
-1.  **Google OAuth Fix**: Implementado Deep Linking (`torta-app://`) para permitir login Google no app desktop.
-    *   *Correção*: Adicionado plugin `deep-link` no `tauri.conf.json`.
-2.  **Controle de Volume**:
-    *   Adicionado controle de volume persistente (LocalStorage).
-    *   Sincronização entre `SoundService` e `UserSettings`.
-3.  **Activity Heatmap Fix**: Corrigido bug de visualização de datas (barras empilhadas).
-4.  **Live Trade Premium**:
-    *   **Alertas**: Notificações de sistema para palavras-chave.
-    *   **Quick Copy**: Double-click no ticker copia mensagem formatada.
-    *   **Interface**: Nova UI com abas (Monitor, Alertas, Ads & Timer).
-    *   **WTS Widget**: Timer flutuante de 30min com som e temas.
-    *   **Ad Manager**: Gerenciador de templates de anúncios com 1-click copy.
-5.  **Organização do Projeto**:
-    *   Criada estrutura profissional: `docs/notes`, `resources/data`, `secrets`.
-    *   Script `smart_organize.py` limpou a raiz do projeto.
-    *   Segurança reforçada no `.gitignore`.
-    *   Criado atalho na Área de Trabalho.
+1.  **Simplificação do Parser**:
+    *   Removido parser legado (`StandardLogParser`)
+    *   Removida trait `LogParser` e abstrações desnecessárias
+    *   Removida flag `USE_ADVANCED_PARSING`
+    *   Sistema agora usa apenas `AdvancedParser` como modo único
+    *   Redução de ~50 linhas de código
+    *   Compilação bem-sucedida (9m 27s) com apenas 2 warnings
 
 ### ⚠️ Próximos Passos:
--   Reiniciar PC para validar Deep Linking e Atalhos.
--   Testar login Google no executável final.
--   Validar alertas sonoros com o novo controle de volume.
+-   Testar o watcher com logs reais
+-   Verificar se campos avançados estão sendo populados corretamente
+-   Validar performance com arquivos grandes
 
 ## 📝 Nota de Performance
 **IMPORTANTE**: App.tsx ajustado para limite variável:

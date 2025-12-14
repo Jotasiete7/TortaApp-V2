@@ -1,18 +1,15 @@
-﻿use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::sync::mpsc::channel;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::thread;
 use tauri::{AppHandle, Emitter, Manager};
 
 // Import advanced parser
 use crate::parser::AdvancedParser;
-
-// FEATURE FLAG: Toggle between parsers
-const USE_ADVANCED_PARSING: bool = false; // Set to true to enable
 
 // --- LOGGING HELPER ---
 fn log_debug(msg: &str) {
@@ -27,86 +24,33 @@ fn log_debug(msg: &str) {
 // Re-export ParsedTrade from parser module
 pub use crate::parser::ParsedTrade;
 
-trait LogParser: Send + Sync {
-    fn parse(&self, line: &str) -> Option<ParsedTrade>;
-}
-
-struct StandardLogParser {
-    regex: Regex,
-}
-
-impl StandardLogParser {
-    fn new() -> Self {
-        Self {
-            regex: Regex::new(r"^\[(\d{2}:\d{2}:\d{2})\]\s+<([^>]+)>\s+(.+)").unwrap(),
-        }
-    }
-}
-
-impl LogParser for StandardLogParser {
-    fn parse(&self, line: &str) -> Option<ParsedTrade> {
-        self.regex.captures(line).map(|cap| ParsedTrade {
-            timestamp: cap[1].to_string(),
-            nick: cap[2].to_string(),
-            message: cap[3].to_string(),
-            trade_type: None,
-            item: None,
-            quality: None,
-            rarity: None,
-            price_copper: None,
-        })
-    }
-}
-
-// Advanced parser wrapper
-struct AdvancedLogParser {
+pub struct FileWatcher {
+    path: String,
+    last_pos: u64,
     regex: Regex,
     parser: AdvancedParser,
 }
 
-impl AdvancedLogParser {
-    fn new() -> Self {
+impl FileWatcher {
+    pub fn new(path: String) -> Self {
+        log_debug("🚀 Using ADVANCED parser - the only mode!");
+        
         Self {
+            path,
+            last_pos: 0,
             regex: Regex::new(r"^\[(\d{2}:\d{2}:\d{2})\]\s+<([^>]+)>\s+(.+)").unwrap(),
             parser: AdvancedParser::new(),
         }
     }
-}
 
-impl LogParser for AdvancedLogParser {
-    fn parse(&self, line: &str) -> Option<ParsedTrade> {
+    fn parse_line(&self, line: &str) -> Option<ParsedTrade> {
         self.regex.captures(line).map(|cap| {
             let timestamp = cap[1].to_string();
             let nick = cap[2].to_string();
             let message = cap[3].to_string();
             
-            // Use advanced parser
             self.parser.parse(timestamp, nick, message)
         })
-    }
-}
-
-pub struct FileWatcher {
-    path: String,
-    last_pos: u64,
-    parser: Box<dyn LogParser>,
-}
-
-impl FileWatcher {
-    pub fn new(path: String) -> Self {
-        let parser: Box<dyn LogParser> = if USE_ADVANCED_PARSING {
-            log_debug("ðŸš€ Using ADVANCED parser with tokenization");
-            Box::new(AdvancedLogParser::new())
-        } else {
-            log_debug("ðŸ“ Using STANDARD parser (legacy)");
-            Box::new(StandardLogParser::new())
-        };
-        
-        Self {
-            path,
-            last_pos: 0,
-            parser,
-        }
     }
 
     pub fn start(&mut self, app_handle: AppHandle) -> Result<(), String> {
@@ -146,15 +90,9 @@ impl FileWatcher {
                 
                 log_debug(&format!("File len: {}, Start pos: {}, Lines read: {}, Init output: {}", len, start_pos, lines.len(), recent.len()));
 
-                let parser_for_init = if USE_ADVANCED_PARSING {
-                    Box::new(AdvancedLogParser::new()) as Box<dyn LogParser>
-                } else {
-                    Box::new(StandardLogParser::new()) as Box<dyn LogParser>
-                };
-                
                 for line in recent.iter().rev() {
                     log_debug(&format!("Checking line: '{}'", line)); 
-                    if let Some(trade) = parser_for_init.parse(line) {
+                    if let Some(trade) = self.parse_line(line) {
                          log_debug(&format!("Emitting initial trade: {}", trade.message));
                          let _ = app_handle.emit("trade-event", trade);
                     }
@@ -179,11 +117,8 @@ impl FileWatcher {
         }
 
         let mut current_pos = self.last_pos;
-        let parser_for_thread = if USE_ADVANCED_PARSING {
-            Arc::new(AdvancedLogParser::new()) as Arc<dyn LogParser>
-        } else {
-            Arc::new(StandardLogParser::new()) as Arc<dyn LogParser>
-        };
+        let regex = self.regex.clone();
+        let parser = AdvancedParser::new();
         let p_str = path_str.clone();
 
         thread::spawn(move || {
@@ -204,7 +139,12 @@ impl FileWatcher {
                                                 current_pos += l.len() as u64 + 1;
                                                 log_debug(&format!("Checking LIVE line: '{}'", l));
                                                 
-                                                if let Some(trade) = parser_for_thread.parse(&l) {
+                                                if let Some(caps) = regex.captures(&l) {
+                                                    let timestamp = caps[1].to_string();
+                                                    let nick = caps[2].to_string();
+                                                    let message = caps[3].to_string();
+                                                    let trade = parser.parse(timestamp, nick, message);
+                                                    
                                                     log_debug(&format!("Emitting LIVE trade: {}", trade.message));
                                                     let _ = app_handle.emit("trade-event", trade);
                                                 }
