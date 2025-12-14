@@ -1,8 +1,9 @@
-import { invoke } from '@tauri-apps/api/core';
+﻿import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import localforage from 'localforage';
 import { supabase } from './supabase';
 import { toast } from 'sonner';
+import { Money } from '../src/domain/price/Money';
 
 export interface Trade {
     timestamp: string;
@@ -37,12 +38,7 @@ function normalizeItemName(item: string): string {
         .trim();
 }
 
-function convertToCopper(price: string): number {
-    let copper = 0;
-    const silverMatch = price.match(/(\d+)s/i);
-    if (silverMatch) {
-        copper += parseInt(silverMatch[1], 10) * 100;
-    }
+// Removed: convertToCopper function - now using Money class
     const copperMatch = price.match(/(\d+)c/i);
     if (copperMatch) {
         copper += parseInt(copperMatch[1], 10);
@@ -56,7 +52,7 @@ async function generateTradeHash(trade: Trade): Promise<string> {
         server: trade.server.toLowerCase().trim(),
         seller: trade.nick.toLowerCase().trim(),
         item: normalizeItemName(trade.item),
-        priceCopper: convertToCopper(trade.price),
+        priceCopper: Money.fromString(trade.price).getCopper(),
         timeWindow: Math.floor(timestampMs / 300000)
     };
 
@@ -128,7 +124,7 @@ class LiveTradeMonitor {
     // --- Public Methods ---
 
     public async startWatching(filePath: string) {
-        console.log("🚀 LiveTradeMonitor: BYPASSING PERMISSION CHECK");
+        console.log("ðŸš€ LiveTradeMonitor: BYPASSING PERMISSION CHECK");
         /*
         // 1. Check Permissions (DISABLED)
         */
@@ -138,7 +134,7 @@ class LiveTradeMonitor {
         try {
             // const allowed = await invoke<boolean>('check_file_access', { path: filePath });
             // if (!allowed) {
-                toast.error('Sem permissão de leitura no arquivo.');
+                toast.error('Sem permissÃ£o de leitura no arquivo.');
                 return;
             }
         } catch (err) {
@@ -146,23 +142,23 @@ class LiveTradeMonitor {
             return;
         }
         */
-        console.log("🚀 LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
+        console.log("ðŸš€ LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
 
         // 2. Start Watcher (Backend)
         try {
-            console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
+            console.log("ðŸš€ LiveTradeMonitor: Requesting backend to watch:", filePath);
             const res = await invoke('start_trade_watcher', { path: filePath }); 
-            console.log('✅ Backend responded:', res);
+            console.log('âœ… Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
-            console.error("❌ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
+            console.error("âŒ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
             toast.error(`Falha ao iniciar watcher: ${err}`);
             return;
         }
 
         // 3. Listen for Events
         await listen<{ timestamp: string, nick: string, message: string }>('trade-event', async (event) => {
-            console.log("📨 FRONTEND RECEIVED EVENT:", event);
+            console.log("ðŸ“¨ FRONTEND RECEIVED EVENT:", event);
             const raw = event.payload;
             const type = this.parseTradeType(raw.message);
 
@@ -237,12 +233,12 @@ class LiveTradeMonitor {
 
         this.offlineQueue.push(queuedTrade);
         this.saveOfflineQueue();
-        console.log('📴 Trade queued:', queuedTrade.retryCount);
+        console.log('ðŸ“´ Trade queued:', queuedTrade.retryCount);
     }
 
     private async handleOnline() {
         this.isOnline = true;
-        console.log('🌐 Online: Processing queue...');
+        console.log('ðŸŒ Online: Processing queue...');
 
         const failedTrades: QueuedTrade[] = [];
         const tempQueue = [...this.offlineQueue];
@@ -261,9 +257,9 @@ class LiveTradeMonitor {
 
             try {
                 await this.submitTradeInternal(trade);
-                console.log(`✅ Trade submitted after retry`);
+                console.log(`âœ… Trade submitted after retry`);
             } catch (err) {
-                console.error(`❌ Retry failed:`, err);
+                console.error(`âŒ Retry failed:`, err);
                 this.offlineQueue.push(trade);
             }
         }
@@ -271,13 +267,13 @@ class LiveTradeMonitor {
         this.saveOfflineQueue();
 
         if (failedTrades.length > 0) {
-            toast.warning(`${failedTrades.length} trades falharam após várias tentativas.`);
+            toast.warning(`${failedTrades.length} trades falharam apÃ³s vÃ¡rias tentativas.`);
         }
     }
 
     private handleOffline() {
         this.isOnline = false;
-        toast.info('Modo Offline: Trades serão salvas.');
+        toast.info('Modo Offline: Trades serÃ£o salvas.');
     }
 }
 
