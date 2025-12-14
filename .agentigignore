@@ -1,0 +1,54 @@
+﻿# Antigravity Ignore File
+# Excludes directories and files from language server indexing to reduce memory usage
+
+# Large emoji library (4,293 SVG files)
+public/openmoji/
+
+# Python scripts and data files
+python trade/
+BACKEND guilda/
+SUPER PY/
+SITE GUILDA prices/
+
+# Build outputs
+node_modules/
+dist/
+dist-ssr/
+build/
+src-tauri/target/
+
+# Data directories
+data/
+resources/data/
+externalv2/
+
+# Documentation
+docs/
+
+# Database files
+database/
+*.db
+*.sqlite
+*.sqlite3
+
+# Large data files
+*.csv
+*.log
+*.txt
+
+# Maintenance scripts
+maintenance/
+scripts/
+
+# Test files
+test/
+coverage/
+
+# Secrets
+secrets/
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+.tmp/
