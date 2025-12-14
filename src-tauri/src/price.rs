@@ -1,4 +1,4 @@
-use regex::Regex;
+﻿use regex::Regex;
 
 /// Normalizes Wurm Online prices to copper
 /// 1g = 10,000c | 1s = 100c | 1c = 1c

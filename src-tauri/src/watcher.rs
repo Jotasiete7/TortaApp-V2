@@ -7,10 +7,13 @@ use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use tauri::{AppHandle, Emitter, Manager};
+
 // Import advanced parser
 use crate::parser::AdvancedParser;
+
 // FEATURE FLAG: Toggle between parsers
 const USE_ADVANCED_PARSING: bool = false; // Set to true to enable
+
 // --- LOGGING HELPER ---
 fn log_debug(msg: &str) {
     let path = r"C:\Users\Pichau\.gemini\antigravity\brain\866f9c0a-69ae-4634-9410-a60e94a3ea1e\trade_debug.txt";
@@ -20,14 +23,18 @@ fn log_debug(msg: &str) {
         println!("RUST LOG FAIL: {}", msg);
     }
 }
+
 // Re-export ParsedTrade from parser module
 pub use crate::parser::ParsedTrade;
+
 trait LogParser: Send + Sync {
     fn parse(&self, line: &str) -> Option<ParsedTrade>;
 }
+
 struct StandardLogParser {
     regex: Regex,
 }
+
 impl StandardLogParser {
     fn new() -> Self {
         Self {
@@ -35,6 +42,7 @@ impl StandardLogParser {
         }
     }
 }
+
 impl LogParser for StandardLogParser {
     fn parse(&self, line: &str) -> Option<ParsedTrade> {
         self.regex.captures(line).map(|cap| ParsedTrade {
@@ -49,11 +57,13 @@ impl LogParser for StandardLogParser {
         })
     }
 }
+
 // Advanced parser wrapper
 struct AdvancedLogParser {
     regex: Regex,
     parser: AdvancedParser,
 }
+
 impl AdvancedLogParser {
     fn new() -> Self {
         Self {
@@ -62,6 +72,7 @@ impl AdvancedLogParser {
         }
     }
 }
+
 impl LogParser for AdvancedLogParser {
     fn parse(&self, line: &str) -> Option<ParsedTrade> {
         self.regex.captures(line).map(|cap| {
@@ -74,18 +85,20 @@ impl LogParser for AdvancedLogParser {
         })
     }
 }
+
 pub struct FileWatcher {
     path: String,
     last_pos: u64,
     parser: Box<dyn LogParser>,
 }
+
 impl FileWatcher {
     pub fn new(path: String) -> Self {
         let parser: Box<dyn LogParser> = if USE_ADVANCED_PARSING {
-            log_debug("🚀 Using ADVANCED parser with tokenization");
+            log_debug("ðŸš€ Using ADVANCED parser with tokenization");
             Box::new(AdvancedLogParser::new())
         } else {
-            log_debug("📝 Using STANDARD parser (legacy)");
+            log_debug("ðŸ“ Using STANDARD parser (legacy)");
             Box::new(StandardLogParser::new())
         };
         
@@ -95,15 +108,18 @@ impl FileWatcher {
             parser,
         }
     }
+
     pub fn start(&mut self, app_handle: AppHandle) -> Result<(), String> {
         let path_str = self.path.clone();
         let path = Path::new(&path_str);
         
         log_debug(&format!("FileWatcher::start for path: {:?}", path));
+
         if !path.exists() {
             log_debug("File does not exist!");
             return Err("File not found".to_string());
         }
+
         let (tx, rx) = channel();
         
         match File::open(path) {
@@ -118,15 +134,18 @@ impl FileWatcher {
                     log_debug(&format!("Seek error: {}", e));
                     return Err(format!("Seek error: {}", e));
                 }
+
                 let reader = BufReader::new(&file);
                 let mut lines: Vec<String> = reader.lines().filter_map(|l| l.ok()).collect();
                 
                 if start_pos > 0 && lines.len() > 1 {
                     lines.remove(0);
                 }
+
                 let recent: Vec<&String> = lines.iter().rev().take(10).collect();
                 
                 log_debug(&format!("File len: {}, Start pos: {}, Lines read: {}, Init output: {}", len, start_pos, lines.len(), recent.len()));
+
                 let parser_for_init = if USE_ADVANCED_PARSING {
                     Box::new(AdvancedLogParser::new()) as Box<dyn LogParser>
                 } else {
@@ -149,13 +168,16 @@ impl FileWatcher {
                 return Err(format!("Failed to open file: {}", e))
             },
         }
+
         let mut watcher = match RecommendedWatcher::new(tx, Config::default()) {
             Ok(w) => w,
             Err(e) => return Err(format!("Failed to create watcher: {}", e)),
         };
+
         if let Err(e) = watcher.watch(path, RecursiveMode::NonRecursive) {
             return Err(format!("Failed to watch file: {}", e));
         }
+
         let mut current_pos = self.last_pos;
         let parser_for_thread = if USE_ADVANCED_PARSING {
             Arc::new(AdvancedLogParser::new()) as Arc<dyn LogParser>
@@ -163,6 +185,7 @@ impl FileWatcher {
             Arc::new(StandardLogParser::new()) as Arc<dyn LogParser>
         };
         let p_str = path_str.clone();
+
         thread::spawn(move || {
             let _watcher = watcher; 
             log_debug("Watcher thread running...");
@@ -197,10 +220,13 @@ impl FileWatcher {
                 }
             }
         });
+
         Ok(())
     }
 }
+
 pub struct WatcherState(pub Mutex<Option<FileWatcher>>);
+
 #[tauri::command]
 pub fn start_trade_watcher(path: String, _state: tauri::State<WatcherState>, app: AppHandle) -> Result<(), String> {
     let clean = path.replace("\"", "");
