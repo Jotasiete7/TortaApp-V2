@@ -1,7 +1,7 @@
-use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Config, PollWatcher, RecursiveMode, Watcher};
 use regex::Regex;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, Seek, SeekFrom, Write, Read};
 use std::path::Path;
 use std::sync::mpsc::{channel, Receiver};
 use std::sync::Mutex;
@@ -42,7 +42,7 @@ pub struct FileWatcher {
 
 impl FileWatcher {
     pub fn new(path: String) -> Self {
-        log_debug("🚀 Using ADVANCED parser with BATCHING - the only mode!");
+        log_debug("🚀 Using ADVANCED parser with POLL WATCHER (200ms)!");
         
         Self {
             path,
@@ -120,7 +120,11 @@ impl FileWatcher {
         }
         // --- FIM DA LEITURA INICIAL ---
 
-        let mut watcher = match RecommendedWatcher::new(tx, Config::default()) {
+        // USE POLL WATCHER INSTEAD OF RECOMMENDED WATCHER
+        let config = Config::default()
+            .with_poll_interval(Duration::from_millis(200));
+
+        let mut watcher = match PollWatcher::new(tx, config) {
             Ok(w) => w,
             Err(e) => return Err(format!("Failed to create watcher: {}", e)),
         };
@@ -137,7 +141,7 @@ impl FileWatcher {
         // --- THREAD DE PROCESSAMENTO DE EVENTOS (COM BATCHING) ---
         thread::spawn(move || {
             let _watcher = watcher; 
-            log_debug("Watcher thread running...");
+            log_debug("Watcher thread running (POLL MODE)...");
             
             // Canal para receber eventos do FS e do timer de debounce
             let (tx_process, rx_process) = channel();
@@ -147,18 +151,17 @@ impl FileWatcher {
             thread::spawn(move || {
                 for res in rx {
                     if let Ok(event) = res {
-                        // Filtra apenas eventos de modificação
-                        if event.kind.is_modify() {
-                            let _ = tx_clone.send(event);
-                        }
+                        // Passa tudo, mas com PollWatcher, eventos são gerados periodicamente se houver mudança
+                        log_debug(&format!("POLL EVENT: {:?}", event));
+                        let _ = tx_clone.send(event);
                     }
                 }
             });
 
             // Variáveis para o debounce e batching
             let mut last_event_time = std::time::Instant::now();
-            let debounce_duration = Duration::from_millis(50); // Debounce para garantir que a escrita terminou
-            let batch_duration = Duration::from_millis(100); // Duração máxima do batch
+            let debounce_duration = Duration::from_millis(50); 
+            let batch_duration = Duration::from_millis(100); 
             let mut trade_batch: Vec<ParsedTrade> = Vec::new();
 
             loop {
@@ -167,7 +170,6 @@ impl FileWatcher {
                     Ok(_event) => {
                         // Evento de modificação recebido. Aplica debounce.
                         if last_event_time.elapsed() < debounce_duration {
-                            // Se o evento for muito rápido, espera um pouco para garantir que a escrita terminou
                             thread::sleep(debounce_duration - last_event_time.elapsed());
                         }
                         last_event_time = std::time::Instant::now();
@@ -177,26 +179,31 @@ impl FileWatcher {
                             if let Ok(len) = file.metadata().map(|m| m.len()) {
                                 if len > current_pos {
                                     if file.seek(SeekFrom::Start(current_pos)).is_ok() {
-                                        let reader = BufReader::new(file);
-                                        for line in reader.lines() {
-                                            if let Ok(l) = line {
-                                                // Não atualiza current_pos aqui, pois a leitura pode falhar
-                                                log_debug(&format!("Checking LIVE line: '{}'", l));
+                                        let mut buffer = Vec::new(); 
+                                        if let Ok(bytes_read) = file.read_to_end(&mut buffer) { 
+                                             if bytes_read > 0 {
+                                                let content = String::from_utf8_lossy(&buffer);
                                                 
-                                                if let Some(caps) = regex.captures(&l) {
-                                                    let timestamp = caps[1].to_string();
-                                                    let nick = caps[2].to_string();
-                                                    let message = caps[3].to_string();
-                                                    let trade = parser.parse(timestamp, nick, message);
+                                                for line in content.lines() {
+                                                    if line.trim().is_empty() { continue; }
+                                                    log_debug(&format!("Checking LIVE line: '{}'", line));
                                                     
-                                                    // Adiciona ao batch em vez de emitir imediatamente
-                                                    trade_batch.push(trade);
+                                                    if let Some(caps) = regex.captures(line) {
+                                                        let timestamp = caps[1].to_string();
+                                                        let nick = caps[2].to_string();
+                                                        let message = caps[3].to_string();
+                                                        let trade = parser.parse(timestamp, nick, message);
+                                                        
+                                                        trade_batch.push(trade);
+                                                    }
                                                 }
-                                            }
+                                                current_pos += bytes_read as u64; 
+                                             }
                                         }
-                                        // Atualiza current_pos apenas após a leitura bem-sucedida
-                                        current_pos = len; 
                                     }
+                                } else if len < current_pos {
+                                     // Truncated check
+                                     current_pos = len;
                                 }
                             }
                         }
