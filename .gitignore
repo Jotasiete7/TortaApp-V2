@@ -117,3 +117,6 @@ scripts/trade_scripts/
 *.csv
 *.zip
 *.rar
+
+# Emoji library (removed to reduce memory usage)
+public/openmoji/
