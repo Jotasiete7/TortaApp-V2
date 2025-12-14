@@ -5,40 +5,44 @@ import { LiveTradeMonitor, Trade } from '../services/LiveTradeMonitor';
 /*                              Mocks                                 */
 /* ------------------------------------------------------------------ */
 
-const setItemMock = vi.fn();
-const getItemMock = vi.fn();
+// Vitest Hoisting Fix: Variables used in vi.mock() must be hoisted
+const mocks = vi.hoisted(() => ({
+  setItemMock: vi.fn(),
+  getItemMock: vi.fn(),
+  rpcMock: vi.fn(),
+  toastInfoMock: vi.fn(),
+  invokeMock: vi.fn(),
+  listenMock: vi.fn(),
+}));
 
 vi.mock('localforage', () => {
   return {
     default: {
       createInstance: vi.fn(() => ({
-        getItem: getItemMock,
-        setItem: setItemMock,
+        getItem: mocks.getItemMock,
+        setItem: mocks.setItemMock,
       })),
     },
   };
 });
 
-const rpcMock = vi.fn();
-
 vi.mock('../services/supabase', () => ({
   supabase: {
-    rpc: rpcMock,
+    rpc: mocks.rpcMock,
   },
 }));
 
 vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(),
+  invoke: mocks.invokeMock,
 }));
 
 vi.mock('@tauri-apps/api/event', () => ({
-  listen: vi.fn(),
+  listen: mocks.listenMock,
 }));
 
-const toastInfoMock = vi.fn();
 vi.mock('sonner', () => ({
   toast: {
-    info: toastInfoMock,
+    info: mocks.toastInfoMock,
   },
 }));
 
@@ -74,10 +78,10 @@ describe('LiveTradeMonitor', () => {
     vi.clearAllMocks();
 
     // Default: no queue persisted
-    getItemMock.mockResolvedValue(null);
+    mocks.getItemMock.mockResolvedValue(null);
 
     // Default: Supabase success
-    rpcMock.mockResolvedValue({ error: null });
+    mocks.rpcMock.mockResolvedValue({ error: null });
   });
 
   afterEach(() => {
@@ -92,8 +96,8 @@ describe('LiveTradeMonitor', () => {
 
     await monitor.submitTrade(tradeFixture);
 
-    expect(setItemMock).toHaveBeenCalledTimes(1);
-    expect(setItemMock).toHaveBeenCalledWith(
+    expect(mocks.setItemMock).toHaveBeenCalledTimes(1);
+    expect(mocks.setItemMock).toHaveBeenCalledWith(
       'queue',
       expect.arrayContaining([
         expect.objectContaining({
@@ -103,8 +107,8 @@ describe('LiveTradeMonitor', () => {
       ]),
     );
 
-    expect(rpcMock).not.toHaveBeenCalled();
-    expect(toastInfoMock).toHaveBeenCalledWith(
+    expect(mocks.rpcMock).not.toHaveBeenCalled();
+    expect(mocks.toastInfoMock).toHaveBeenCalledWith(
       'Trade enfileirado para envio posterior.',
     );
   });
@@ -112,7 +116,7 @@ describe('LiveTradeMonitor', () => {
   it('processa a fila quando a conexão volta (evento online)', async () => {
     setNavigatorOnline(false);
 
-    getItemMock.mockResolvedValue([
+    mocks.getItemMock.mockResolvedValue([
       { ...tradeFixture, retryCount: 0 },
     ]);
 
@@ -125,20 +129,20 @@ describe('LiveTradeMonitor', () => {
     // 1s delay (primeiro retry)
     await vi.advanceTimersByTimeAsync(1000);
 
-    expect(rpcMock).toHaveBeenCalledTimes(1);
-    expect(setItemMock).toHaveBeenLastCalledWith('queue', []);
+    expect(mocks.rpcMock).toHaveBeenCalledTimes(1);
+    expect(mocks.setItemMock).toHaveBeenLastCalledWith('queue', []);
   });
 
   it('faz retry com back-off exponencial e tem sucesso na 3ª tentativa', async () => {
     setNavigatorOnline(true);
 
     // 2 falhas, 1 sucesso
-    rpcMock
+    mocks.rpcMock
       .mockResolvedValueOnce({ error: new Error('fail 1') })
       .mockResolvedValueOnce({ error: new Error('fail 2') })
       .mockResolvedValueOnce({ error: null });
 
-    getItemMock.mockResolvedValue([
+    mocks.getItemMock.mockResolvedValue([
       { ...tradeFixture, retryCount: 0 },
     ]);
 
@@ -154,18 +158,18 @@ describe('LiveTradeMonitor', () => {
     // Retry 3 → 4s
     await vi.advanceTimersByTimeAsync(4000);
 
-    expect(rpcMock).toHaveBeenCalledTimes(3);
+    expect(mocks.rpcMock).toHaveBeenCalledTimes(3);
 
     // Fila final vazia após sucesso
-    expect(setItemMock).toHaveBeenLastCalledWith('queue', []);
+    expect(mocks.setItemMock).toHaveBeenLastCalledWith('queue', []);
   });
 
   it('re-enfileira o trade se falhar mesmo após tentar online', async () => {
     setNavigatorOnline(true);
 
-    rpcMock.mockResolvedValue({ error: new Error('always fails') });
+    mocks.rpcMock.mockResolvedValue({ error: new Error('always fails') });
 
-    getItemMock.mockResolvedValue([
+    mocks.getItemMock.mockResolvedValue([
       { ...tradeFixture, retryCount: 0 },
     ]);
 
@@ -178,9 +182,9 @@ describe('LiveTradeMonitor', () => {
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
 
-    expect(rpcMock).toHaveBeenCalledTimes(3);
+    expect(mocks.rpcMock).toHaveBeenCalledTimes(3);
 
-    expect(setItemMock).toHaveBeenLastCalledWith(
+    expect(mocks.setItemMock).toHaveBeenLastCalledWith(
       'queue',
       expect.arrayContaining([
         expect.objectContaining({
