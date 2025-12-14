@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+﻿import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
@@ -205,6 +205,15 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const saved = localStorage.getItem(DND_SCHEDULE_KEY);
         return saved ? JSON.parse(saved) : { start: '22:00', end: '08:00' };
     });
+
+    // Refs for Listener Access (prevents stale closures without re-subscribing)
+    const dndModeRef = useRef(dndMode);
+    const dndScheduleRef = useRef(dndSchedule);
+
+    useEffect(() => {
+        dndModeRef.current = dndMode;
+        dndScheduleRef.current = dndSchedule;
+    }, [dndMode, dndSchedule]);
 
     // --- Actions ---
 
@@ -433,7 +442,7 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                             if (matchedAlert) {
                                 // Check DND mode
-                                const isDnd = AlertService.isDndActive(dndMode, dndSchedule);
+                                const isDnd = AlertService.isDndActive(dndModeRef.current, dndScheduleRef.current);
                                 
                                 if (!isDnd) {
                                     // Fire alert
@@ -467,7 +476,7 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         setupListener();
         return () => { if (unlistenFn) unlistenFn(); };
-    }, [dndMode, dndSchedule]);
+    }, []); // Listen once
 
     // --- Restore Monitoring ---
     useEffect(() => {
@@ -544,3 +553,4 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         </TradeEventContext.Provider>
     );
 };
+

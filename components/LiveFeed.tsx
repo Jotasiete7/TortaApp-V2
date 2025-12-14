@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { listen } from '@tauri-apps/api/event';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { Terminal, Trash2 } from 'lucide-react';
+import { useTradeEvents } from '../contexts/TradeEventContext';
 
 interface ParsedTrade {
     timestamp: string;
@@ -14,50 +14,47 @@ interface DisplayTrade extends ParsedTrade {
 }
 
 export const LiveFeed = () => {
+    const { trades: contextTrades, isMonitoring } = useTradeEvents();
     const [trades, setTrades] = useState<DisplayTrade[]>([]);
-    const [isMonitoring, setIsMonitoring] = useState(false);
     const scrollEndRef = useRef<HTMLDivElement>(null);
-    const tradeIdCounter = useRef(0);
+    const processedCount = useRef(0);
 
     useEffect(() => {
-        // Listen to trade-event from Rust watcher
-        const unlisten = listen<ParsedTrade>('trade-event', (event) => {
-            const newTrade: DisplayTrade = {
-                ...event.payload,
-                id: tradeIdCounter.current++
-            };
-
+        if (contextTrades.length > processedCount.current) {
+            const newItems = contextTrades.slice(processedCount.current);
             setTrades(prev => {
-                // Add marker before first live trade
-                if (prev.length > 0 && !prev.some(t => t.is_live_marker)) {
-                    const marker: DisplayTrade = {
+                const formattedNewItems = newItems.map((t, idx) => ({
+                    ...t,
+                    id: Date.now() + idx,
+                    is_live_marker: false
+                }));
+
+                if (prev.length === 0 && isMonitoring && processedCount.current === 0) {
+                     const marker: DisplayTrade = {
                         id: -1,
                         timestamp: '',
                         nick: '',
                         message: '',
                         is_live_marker: true
                     };
-                    return [...prev, marker, newTrade].slice(-50);
+                    return [...prev, marker, ...formattedNewItems].slice(-50);
                 }
-                return [...prev, newTrade].slice(-50);
+                return [...prev, ...formattedNewItems].slice(-50);
             });
+            processedCount.current = contextTrades.length;
+        } else if (contextTrades.length === 0 && processedCount.current > 0) {
+            setTrades([]);
+            processedCount.current = 0;
+        }
+    }, [contextTrades, isMonitoring]);
 
-            setIsMonitoring(true);
-        });
-
-        return () => {
-            unlisten.then(fn => fn());
-        };
-    }, []);
-
-    // Auto-scroll to bottom on new message
     useEffect(() => {
         scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [trades]);
 
     const handleClear = () => {
         setTrades([]);
-        tradeIdCounter.current = 0;
+        processedCount.current = 0;
     };
 
     return (

@@ -170,7 +170,7 @@ export const LiveTradeSetup = () => {
 
     const handleStart = async () => {
         if (!consent) {
-            toast.error("VocÃª precisa aceitar os termos da LGPD.");
+            toast.error("Você precisa aceitar os termos da LGPD.");
             return;
         }
         if (!filePath) {
@@ -179,7 +179,7 @@ export const LiveTradeSetup = () => {
         }
 
         if (typeof window.__TAURI_INTERNALS__ === 'undefined') {
-            toast.warning("Modo Browser Detectado: O monitoramento sÃ³ funciona no App Desktop.");
+            toast.warning("Modo Browser Detectado: O monitoramento só funciona no App Desktop.");
             setIsWatching(true);
             setIsOpen(false);
             return;
@@ -199,7 +199,7 @@ export const LiveTradeSetup = () => {
             toast.success("Monitoramento iniciado! Acompanhe o Live Feed.");
         } catch (error) {
             console.error(error);
-            toast.error("Falha ao iniciar monitor. Verifique as permissÃµes ou se o arquivo existe.");
+            toast.error("Falha ao iniciar monitor. Verifique as permissões ou se o arquivo existe.");
         }
     };
 
@@ -245,11 +245,11 @@ export const LiveTradeSetup = () => {
 
         if (editingAdId) {
             updateTemplate(editingAdId, { label: newAdLabel, content: newAdContent });
-            toast.success("AnÃºncio atualizado!");
+            toast.success("Anúncio atualizado!");
             setEditingAdId(null);
         } else {
             addTemplate(newAdLabel, newAdContent);
-            toast.success("Novo anÃºncio salvo!");
+            toast.success("Novo anúncio salvo!");
         }
 
         setNewAdLabel('');
@@ -281,9 +281,9 @@ export const LiveTradeSetup = () => {
             if (file) {
                 try {
                     await importConfig(file);
-                    toast.success("ConfiguraÃ§Ãµes importadas com sucesso!");
+                    toast.success("Configurações importadas com sucesso!");
                 } catch (error) {
-                    toast.error("Erro ao importar configuraÃ§Ãµes");
+                    toast.error("Erro ao importar configurações");
                 }
             }
         };
@@ -359,7 +359,7 @@ export const LiveTradeSetup = () => {
                         onClick={() => setActiveTab('history')}
                         className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'history' ? 'text-purple-400 border-b-2 border-purple-500 bg-purple-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
                     >
-                        <History size={14} /> HistÃ³rico
+                        <History size={14} /> Histórico
                     </button>
                     <button
                         onClick={() => setActiveTab('timer')}
@@ -394,7 +394,7 @@ export const LiveTradeSetup = () => {
                                         <p className="text-xs text-slate-500">
                                             {isWatching ? (
                                                 tradesProcessed > 0 ? (
-                                                    <>âœ… {tradesProcessed} trades processados{lastTradeTime && ` â€¢ Ãšltimo: ${lastTradeTime}`}</>
+                                                    <>✅ {tradesProcessed} trades processados{lastTradeTime && ` • Último: ${lastTradeTime}`}</>
                                                 ) : (
                                                     'â³ Aguardando trades...'
                                                 )
@@ -443,7 +443,7 @@ export const LiveTradeSetup = () => {
                                         <span className="text-amber-400 font-bold">Dica:</span> Procure na pasta da Steam: <br />
                                         ...\SteamLibrary\steamapps\common\Wurm Online\gamedata\players\SEU_NICK\logs\
                                         <br /><br />
-                                        <span className="text-emerald-400 font-bold">Importante:</span> Selecione o arquivo do mÃªs atual (ex: <code>Trade.2025-12.txt</code>).
+                                        <span className="text-emerald-400 font-bold">Importante:</span> Selecione o arquivo do mês atual (ex: <code>Trade.2025-12.txt</code>).
                                     </div>
                                 )}
 
@@ -508,7 +508,7 @@ export const LiveTradeSetup = () => {
                             <div className="bg-amber-900/20 p-4 rounded-lg border border-amber-500/20 flex gap-3 text-amber-200 text-sm">
                                 <AlertTriangle className="shrink-0 text-amber-500" size={18} />
                                 <p>
-                                    Receba notificaÃ§Ãµes do Windows quando termos especÃ­ficos aparecerem no chat de troca.
+                                    Receba notificações do Windows quando termos específicos aparecerem no chat de troca.
                                     <br />
                                     <span className="opacity-75 text-xs">Ex: "casket harmony" encontra mensagens com "casket" E "harmony".</span>
                                 </p>
@@ -534,7 +534,7 @@ export const LiveTradeSetup = () => {
                                         >
                                             {availableSounds.map(sound => (
                                                 <option key={sound} value={sound} className="bg-slate-900 text-white">
-                                                    ðŸ”Š {sound}
+                                                    🔊 {sound}
                                                 </option>
                                             ))}
                                         </select>
@@ -602,7 +602,7 @@ export const LiveTradeSetup = () => {
                                                     className="px-2 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded text-xs font-bold transition-colors"
                                                     title="Testar alerta (Ctrl+T)"
                                                 >
-                                                    ðŸ””
+                                                    🔔
                                                 </button>
                                                 <button
                                                     onClick={() => toggleAlert(alert.id)}
@@ -661,7 +661,7 @@ export const LiveTradeSetup = () => {
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <span className="text-[10px] text-slate-500">
-                                                    {fired.trade.nick} â€¢ {fired.trade.timestamp}
+                                                    {fired.trade.nick} • {fired.trade.timestamp}
                                                 </span>
                                                 <button
                                                     onClick={() => handleCopyNick(fired.trade.nick)}
@@ -688,7 +688,7 @@ export const LiveTradeSetup = () => {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-slate-500">RÃ³tulo</label>
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Rótulo</label>
                                         <input
                                             type="text"
                                             value={timerConfig.label}
@@ -697,7 +697,7 @@ export const LiveTradeSetup = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-slate-500">DuraÃ§Ã£o (Min)</label>
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Duração (Min)</label>
                                         <input
                                             type="number"
                                             value={timerConfig.duration}
@@ -759,7 +759,7 @@ export const LiveTradeSetup = () => {
                                         type="text"
                                         value={newAdLabel}
                                         onChange={(e) => setNewAdLabel(e.target.value)}
-                                        placeholder="Nome do AnÃºncio (Ex: Vendo Rares)"
+                                        placeholder="Nome do Anúncio (Ex: Vendo Rares)"
                                         className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm outline-none focus:border-blue-500"
                                     />
                                     <textarea
@@ -780,7 +780,7 @@ export const LiveTradeSetup = () => {
                                 {/* List */}
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                                     {adTemplates.length === 0 ? (
-                                        <p className="text-center text-xs text-slate-600 py-4">Nenhum anÃºncio salvo.</p>
+                                        <p className="text-center text-xs text-slate-600 py-4">Nenhum anúncio salvo.</p>
                                     ) : (
                                         adTemplates.map(ad => (
                                             <div key={ad.id} className="bg-slate-800 p-2 rounded border border-slate-700 flex items-center justify-between group">
@@ -874,7 +874,7 @@ export const LiveTradeSetup = () => {
                                 {dndMode && (
                                     <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1">
                                         <div>
-                                            <label className="text-[10px] text-slate-500">InÃ­cio</label>
+                                            <label className="text-[10px] text-slate-500">Início</label>
                                             <input
                                                 type="time"
                                                 value={dndSchedule.start}
@@ -916,7 +916,7 @@ export const LiveTradeSetup = () => {
                                     </button>
                                 </div>
                                 <p className="text-[10px] text-slate-600 mt-2">
-                                    Backup automÃ¡tico a cada 5 minutos
+                                    Backup automático a cada 5 minutos
                                 </p>
                             </div>
 
@@ -967,7 +967,7 @@ export const LiveTradeSetup = () => {
                                 <h4 className="text-xs font-bold text-blue-400 mb-2">âŒ¨ï¸ Atalhos de Teclado</h4>
                                 <div className="space-y-1 text-[10px] text-blue-200">
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+M</kbd> Abrir/Fechar Monitor</p>
-                                    <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+T</kbd> Testar Ãšltimo Alerta</p>
+                                    <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+T</kbd> Testar Último Alerta</p>
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">ESC</kbd> Fechar Modal</p>
                                 </div>
                             </div>
@@ -979,3 +979,5 @@ export const LiveTradeSetup = () => {
         </div>
     );
 };
+
+
