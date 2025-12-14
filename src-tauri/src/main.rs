@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod watcher;
+mod parser;
+mod price;
 
 use std::fs::File;
 use std::io::Read;
