@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+﻿import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
@@ -395,18 +395,26 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, []);
 
     // --- Listener ---
-    useEffect(() => {
+        useEffect(() => {
         let unlistenFn: (() => void) | undefined;
+        let isAborted = false;
 
         const setupListener = async () => {
             try {
                 if (typeof window.__TAURI_INTERNALS__ === 'undefined') return;
 
-                unlistenFn = await listen<ParsedTrade>('trade-event', (event) => {
+                const unlisten = await listen<ParsedTrade>('trade-event', (event) => {
                     const newTrade = event.payload;
 
                     // Update trades list (limit to 50)
                     setTrades(prev => {
+                        // Dedup check: Ignore if timestamp and message identical to last one
+                        if (prev.length > 0) {
+                            const last = prev[prev.length - 1];
+                            if (last.timestamp === newTrade.timestamp && last.message === newTrade.message && last.nick === newTrade.nick) {
+                                return prev;
+                            }
+                        }
                         const newTrades = [...prev, newTrade];
                         return newTrades.slice(-50);
                     });
@@ -415,7 +423,6 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     setStats(prev => {
                         const today = new Date().toISOString().split('T')[0];
                         if (prev.lastReset !== today) {
-                            // Reset if new day
                             return {
                                 wts: newTrade.type === 'WTS' ? 1 : 0,
                                 wtb: newTrade.type === 'WTB' ? 1 : 0,
@@ -433,22 +440,19 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         };
                     });
 
-                    // Check Alerts using AlertService
+                    // Check Alerts
                     const currentAlertsStr = localStorage.getItem(ALERTS_KEY);
                     if (currentAlertsStr) {
-                        try {
+                         try {
                             const currentAlerts: TradeAlert[] = JSON.parse(currentAlertsStr);
                             const matchedAlert = AlertService.checkAlerts(newTrade, currentAlerts);
 
                             if (matchedAlert) {
-                                // Check DND mode
                                 const isDnd = AlertService.isDndActive(dndModeRef.current, dndScheduleRef.current);
                                 
                                 if (!isDnd) {
-                                    // Fire alert
                                     AlertService.fireAlert(matchedAlert, newTrade);
-
-                                    // Add to history (keep last 10)
+                                    
                                     const firedAlert = AlertService.createFiredAlert(matchedAlert, newTrade);
                                     setFiredAlerts(prev => {
                                         const updated = [firedAlert, ...prev].slice(0, 10);
@@ -456,7 +460,6 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                         return updated;
                                     });
 
-                                    // Update stats
                                     setStats(prev => {
                                         const updated = { ...prev, alerts: prev.alerts + 1 };
                                         localStorage.setItem(STATS_KEY, JSON.stringify(updated));
@@ -469,13 +472,22 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         }
                     }
                 });
+
+                if (isAborted) {
+                    unlisten();
+                } else {
+                    unlistenFn = unlisten;
+                }
             } catch (e) { 
                 console.error('setup failed', e); 
             }
         };
 
         setupListener();
-        return () => { if (unlistenFn) unlistenFn(); };
+        return () => { 
+            isAborted = true;
+            if (unlistenFn) unlistenFn(); 
+        };
     }, []); // Listen once
 
     // --- Restore Monitoring ---
@@ -553,4 +565,6 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         </TradeEventContext.Provider>
     );
 };
+
+
 

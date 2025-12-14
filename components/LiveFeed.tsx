@@ -119,9 +119,16 @@ export const LiveFeed = () => {
                         </div>
                     )
                 ))}
+                {/* End of Stream Indicator */}
+                {trades.length > 0 && (
+                    <div className="pl-2 pt-1 pb-2">
+                        <span className="text-emerald-500/50 text-[10px] animate-pulse font-bold">_ AWAITING SIGNAL</span>
+                    </div>
+                )}
                 {/* Scroll Anchor */}
                 <div ref={scrollEndRef} className="shrink-0" />
             </div>
         </div>
     );
 };
+
