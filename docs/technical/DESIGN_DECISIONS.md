@@ -337,23 +337,10 @@ App.tsx (root)
 
 **DO NOT** replace icons without regenerating all sizes.
 
-### Emoji System
-
-**Source:** Open Source Emoji (Twemoji-compatible)
-- Location: `public/emojis/` (SVG format)
-- Used in: Ticker messages, badges, shout box
-- License: CC-BY 4.0 (attribution required)
-
-**Why SVGs:**
-- âœ… Consistent across all platforms (Windows, Mac, Linux)
-- âœ… No font dependencies
-- âœ… Scalable without quality loss
-- âœ… Customizable colors
-
-**Adding New Emojis:**
-1. Download from Twemoji repo
-2. Save to `public/emojis/[unicode].svg`
-3. Update `EmojiPicker.tsx` if needed
+### Emoji System (DEPRECATED / REMOVED)
+**Status:** Removed to prevent VS Code / Language Server RAM exhaustion.
+**Reason:** 4,000+ SVG files caused high memory usage in dev environment.
+**Solution:** EmojiPicker is currently disabled/empty. Future solution should use sprites or CDN.
 
 ---
 
@@ -1033,4 +1020,5 @@ Codename: Torta Dragon Hatchling
 - Perfeito para v2.0.0-beta com tudo implementado!
 
 ---
+
 
