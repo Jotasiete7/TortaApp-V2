@@ -6,6 +6,10 @@ import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/plugin-f
 import { AlertService } from '../services/AlertService';
 import { TradeAlert, FiredAlert, MonitoringStats } from '../types/alerts';
 
+export interface TradeBatch {
+    trades: ParsedTrade[];
+}
+
 interface ParsedTrade {
     timestamp: string;
     nick: string;
@@ -394,8 +398,8 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         checkPerms();
     }, []);
 
-    // --- Listener ---
-        useEffect(() => {
+        // --- Listener (Batch Support) ---
+    useEffect(() => {
         let unlistenFn: (() => void) | undefined;
         let isAborted = false;
 
@@ -403,84 +407,72 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             try {
                 if (typeof window.__TAURI_INTERNALS__ === 'undefined') return;
 
-                const unlisten = await listen<ParsedTrade>('trade-event', (event) => {
-                    const newTrade = event.payload;
+                const unlisten = await listen<TradeBatch>('trade-batch-event', (event) => {
+                    const batchTrades = event.payload.trades;
+                    if (!batchTrades || batchTrades.length === 0) return;
 
-                    // Update trades list (limit to 50)
+                    // Update Trades
                     setTrades(prev => {
-                        // Dedup check: Ignore if timestamp and message identical to last one
-                        if (prev.length > 0) {
-                            const last = prev[prev.length - 1];
-                            if (last.timestamp === newTrade.timestamp && last.message === newTrade.message && last.nick === newTrade.nick) {
-                                return prev;
-                            }
-                        }
-                        const newTrades = [...prev, newTrade];
-                        return newTrades.slice(-50);
+                        const combined = [...prev, ...batchTrades];
+                        return combined.slice(-50);
                     });
 
-                    // Update stats
+                    // Update Stats
                     setStats(prev => {
                         const today = new Date().toISOString().split('T')[0];
+                        let newStats = { ...prev };
                         if (prev.lastReset !== today) {
-                            return {
-                                wts: newTrade.type === 'WTS' ? 1 : 0,
-                                wtb: newTrade.type === 'WTB' ? 1 : 0,
-                                wtt: newTrade.type === 'WTT' ? 1 : 0,
-                                alerts: 0,
-                                lastReset: today
-                            };
+                             newStats = { ...defaultStats, lastReset: today };
                         }
-                        
-                        return {
-                            ...prev,
-                            wts: prev.wts + (newTrade.type === 'WTS' ? 1 : 0),
-                            wtb: prev.wtb + (newTrade.type === 'WTB' ? 1 : 0),
-                            wtt: prev.wtt + (newTrade.type === 'WTT' ? 1 : 0)
-                        };
+                        batchTrades.forEach(t => {
+                            if (t.type === 'WTS') newStats.wts++;
+                            if (t.type === 'WTB') newStats.wtb++;
+                            if (t.type === 'WTT') newStats.wtt++;
+                        });
+                        localStorage.setItem(STATS_KEY, JSON.stringify(newStats));
+                        return newStats;
                     });
-
+                    
                     // Check Alerts
                     const currentAlertsStr = localStorage.getItem(ALERTS_KEY);
                     if (currentAlertsStr) {
                          try {
                             const currentAlerts: TradeAlert[] = JSON.parse(currentAlertsStr);
-                            const matchedAlert = AlertService.checkAlerts(newTrade, currentAlerts);
+                            let alertsTriggered = 0;
+                            let newFired: FiredAlert[] = [];
 
-                            if (matchedAlert) {
-                                const isDnd = AlertService.isDndActive(dndModeRef.current, dndScheduleRef.current);
-                                
-                                if (!isDnd) {
-                                    AlertService.fireAlert(matchedAlert, newTrade);
-                                    
-                                    const firedAlert = AlertService.createFiredAlert(matchedAlert, newTrade);
-                                    setFiredAlerts(prev => {
-                                        const updated = [firedAlert, ...prev].slice(0, 10);
-                                        localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-                                        return updated;
-                                    });
+                            batchTrades.forEach(newTrade => {
+                                 const matchedAlert = AlertService.checkAlerts(newTrade, currentAlerts);
+                                 if (matchedAlert) {
+                                     const isDnd = AlertService.isDndActive(dndModeRef.current, dndScheduleRef.current);
+                                     if (!isDnd) {
+                                         AlertService.fireAlert(matchedAlert, newTrade);
+                                         const fired = AlertService.createFiredAlert(matchedAlert, newTrade);
+                                         newFired.push(fired);
+                                         alertsTriggered++;
+                                     }
+                                 }
+                            });
 
-                                    setStats(prev => {
-                                        const updated = { ...prev, alerts: prev.alerts + 1 };
-                                        localStorage.setItem(STATS_KEY, JSON.stringify(updated));
-                                        return updated;
-                                    });
-                                }
+                            if (newFired.length > 0) {
+                                setFiredAlerts(prev => {
+                                    const updated = [...newFired.reverse(), ...prev].slice(0, 10);
+                                    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+                                    return updated;
+                                });
+                                setStats(prev => {
+                                    const updated = { ...prev, alerts: prev.alerts + alertsTriggered };
+                                    localStorage.setItem(STATS_KEY, JSON.stringify(updated));
+                                    return updated;
+                                });
                             }
-                        } catch (e) { 
-                            console.error('Error checking alerts', e); 
-                        }
+                        } catch (e) { console.error('Error alerts', e); }
                     }
                 });
 
-                if (isAborted) {
-                    unlisten();
-                } else {
-                    unlistenFn = unlisten;
-                }
-            } catch (e) { 
-                console.error('setup failed', e); 
-            }
+                if (isAborted) unlisten();
+                else unlistenFn = unlisten;
+            } catch (e) { console.error('setup failed', e); }
         };
 
         setupListener();
