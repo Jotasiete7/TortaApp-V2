@@ -6,7 +6,7 @@ use std::path::Path;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use tauri::{AppHandle, Emitter, Manager};\n\n// Import advanced parser\nuse crate::parser::AdvancedParser;\n\n// FEATURE FLAG: Toggle between parsers\nconst USE_ADVANCED_PARSING: bool = false;
+use tauri::{AppHandle, Emitter, Manager};
 
 // --- LOGGING HELPER ---
 fn log_debug(msg: &str) {
