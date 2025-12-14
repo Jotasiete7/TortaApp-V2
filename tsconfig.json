@@ -1,1 +1,34 @@
-{"compilerOptions":{"target":"ES2022","experimentalDecorators":true,"useDefineForClassFields":false,"module":"ESNext","lib":["ES2022","DOM","DOM.Iterable"],"skipLibCheck":true,"types":["node"],"moduleResolution":"bundler","isolatedModules":true,"moduleDetection":"force","allowJs":true,"jsx":"react-jsx","paths":{"@/*":["./*"]},"allowImportingTsExtensions":true,"noEmit":true},"exclude":["public","node_modules","dist"]}
+{
+    "compilerOptions": {
+      "target": "ES2022",
+      "experimentalDecorators": true,
+      "useDefineForClassFields": false,
+      "module": "ESNext",
+      "lib": [
+        "ES2022",
+        "DOM",
+        "DOM.Iterable"
+      ],
+      "skipLibCheck": true,
+      "types": [
+        "node"
+      ],
+      "moduleResolution": "bundler",
+      "isolatedModules": true,
+      "moduleDetection": "force",
+      "allowJs": true,
+      "jsx": "react-jsx",
+      "paths": {
+        "@/*": [
+          "./*"
+        ]
+      },
+      "allowImportingTsExtensions": true,
+      "noEmit": true
+    },
+    "exclude": [
+      "node_modules", // <-- Garantindo que esta pasta seja ignorada
+      "public",
+      "dist"          // <-- Opcional: Para excluir a pasta de build, se existir
+    ]
+  }
