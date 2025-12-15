@@ -2,7 +2,7 @@
 import { MarketItem, ChartDataPoint } from '../types';
 import { FileParser } from './fileParser';
 import { sanitizeItemName, sanitizeSeller } from './securityUtils';
-import { getCanonicalName } from './ItemIdentity';
+import { getCanonicalName, getCanonicalId } from './ItemIdentity';
 
 export interface LiveTrade {
     timestamp: string;
@@ -229,9 +229,10 @@ export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
         if (match) rawName = match[1];
     }
 
-    // 3. Canonicalize (Semantics) - Phase 2
-    // Replaces the old regex soup with a clean identity lookup
+    // 3. Identity Layer (Phase 2 Refined)
+    // Uses ItemIdentity to resolve canonical Name and ID
     const name = getCanonicalName(rawName);
+    const itemId = getCanonicalId(rawName);
 
     const safeName = sanitizeItemName(name);
     const safeSeller = sanitizeSeller(trade.nick);
@@ -245,10 +246,12 @@ export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
 
     return {
         id: `live-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        itemId,      // Traceability: Canonical ID
         name: safeName,
+        rawName,     // Traceability: Original String
         seller: safeSeller,
         price: price,
-        quantity: 1, // Quantity extraction could be moved to ItemIdentity too, but ok for now
+        quantity: 1,
         quality: 0,
         rarity: 'Common',
         material: 'Unknown',
