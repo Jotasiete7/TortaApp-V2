@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Terminal, Trash2 } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 
@@ -17,7 +17,18 @@ export const LiveFeed = () => {
     const { trades: contextTrades, isMonitoring } = useTradeEvents();
     const [trades, setTrades] = useState<DisplayTrade[]>([]);
     const scrollEndRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null); // NEW: Container Ref
     const processedCount = useRef(0);
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(true); // NEW: Scroll State
+
+    // NEW: Smart Scroll Handler
+    const handleScroll = () => {
+        if (!containerRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+        // Consider 'at bottom' if within 50px threshold
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+        setShouldAutoScroll(isAtBottom);
+    };
 
     useEffect(() => {
         if (contextTrades.length > processedCount.current) {
@@ -37,24 +48,29 @@ export const LiveFeed = () => {
                         message: '',
                         is_live_marker: true
                     };
-                    return [...prev, marker, ...formattedNewItems].slice(-50);
+                    return [...prev, marker, ...formattedNewItems].slice(-100); // 100 Buffer
                 }
-                return [...prev, ...formattedNewItems].slice(-50);
+                return [...prev, ...formattedNewItems].slice(-100); // 100 Buffer
             });
             processedCount.current = contextTrades.length;
         } else if (contextTrades.length === 0 && processedCount.current > 0) {
             setTrades([]);
             processedCount.current = 0;
+            setShouldAutoScroll(true); // Reset scroll on clear
         }
     }, [contextTrades, isMonitoring]);
 
+    // CONDITIONAL Auto-Scroll
     useEffect(() => {
-        scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [trades]);
+        if (shouldAutoScroll) {
+            scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [trades]); // Only trigger on new trades if permitted
 
     const handleClear = () => {
         setTrades([]);
         processedCount.current = 0;
+        setShouldAutoScroll(true);
     };
 
     return (
@@ -86,7 +102,11 @@ export const LiveFeed = () => {
             <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10" style={{ backgroundSize: "100% 2px, 3px 100%" }}></div>
 
             {/* Content - Bottom stacking like game chat */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-1 relative z-0 scrollbar-thin scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-700 flex flex-col justify-end">
+            <div 
+                ref={containerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto p-4 space-y-1 relative z-0 scrollbar-thin scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-700 flex flex-col justify-end"
+            >
                 {trades.length === 0 && (
                     <div className="flex-1 flex items-center justify-center text-slate-700 animate-pulse text-xs self-center">
                         [WAITING FOR DATA STREAM - Configure o monitor no botão inferior direito]
@@ -119,6 +139,7 @@ export const LiveFeed = () => {
                         </div>
                     )
                 ))}
+                
                 {/* End of Stream Indicator */}
                 {trades.length > 0 && (
                     <div className="pl-2 pt-1 pb-2">
@@ -131,4 +152,3 @@ export const LiveFeed = () => {
         </div>
     );
 };
-
