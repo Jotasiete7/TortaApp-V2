@@ -41,7 +41,34 @@ const IGNORED_TERMS = new Set([
     'rare', 'supreme', 'fantastic',
     'common', 'unfinished', 'bulk',
     'ql', 'wt', 'dmg', 'ea', 'each', 'x',
-    'completed'
+    'completed', 'quality'
+]);
+
+// Prefixes that should not be part of the ID (Mechanical Cleaning)
+const IGNORED_PREFIXES = new Set([
+    'impure',
+    'shattered',
+    'unfinished',
+    'corroded',
+    'broken',
+    'damaged',
+    'crumbling',
+    'rusty'
+]);
+
+// Service terms causing noise
+const SERVICE_TERMS = new Set([
+    'cleaning',
+    'organizing',
+    'sorting',
+    'bulk',
+    'service',
+    'recruitment',
+    'looking for',
+    'hiring',
+    'selling',
+    'buying',
+    'trading'
 ]);
 
 // Materials to strip ONLY if semantic rule applies
@@ -59,20 +86,30 @@ interface ItemIdentity {
 export const resolveItemIdentity = (rawName: string): ItemIdentity => {
     if (!rawName) return { id: 'unknown', displayName: 'Unknown' };
 
+    let cleaned = rawName.toLowerCase().trim();
+
+    // 0. Service Filtering (Fail Fast)
+    // If the message is clearly a service, we shouldn't even try to ID it as an item properly.
+    const hasServiceTerm = cleaned.split(/\s+/).some(w => SERVICE_TERMS.has(w));
+    // We treat service ads as 'unknown' or specific to filter them out?
+    // Let's rely on the token filtering below to strip the service words.
+    // If result is empty, it becomes 'unknown'.
+
     // 1. Basic Cleaning
-    let cleaned = rawName.toLowerCase();
     cleaned = cleaned.replace(/\[.*?\]/g, ''); // Remove brackets
     cleaned = cleaned.replace(/\b(ql|dmg|wt)[:\s]*[\d.]+/g, ''); // Remove metrics
     cleaned = cleaned.replace(/\b\d+ql\b/g, ''); // Remove 90ql
     cleaned = cleaned.replace(/\sx\d+/g, ''); // Remove x30
 
-    // 2. Tokenize
+    // 2. Tokenize & Filter
     const words = cleaned.split(/[\s-]+/);
     const filteredWords: string[] = [];
 
     for (const w of words) {
         if (/^\d+$/.test(w)) continue; // Skip pure numbers
         if (IGNORED_TERMS.has(w)) continue; // Skip noise
+        if (IGNORED_PREFIXES.has(w)) continue; // Skip prefixes (Impure, etc.)
+        if (SERVICE_TERMS.has(w)) continue; // Skip service words
         filteredWords.push(w);
     }
 
@@ -119,6 +156,11 @@ export const resolveItemIdentity = (rawName: string): ItemIdentity => {
     // 6. Final ID Generation (Strict)
     const id = finalName.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     const displayName = toTitleCase(finalName);
+
+    // If empty after cleaning (e.g. "Impure"), return Unknown
+    if (!id || id.length === 0) {
+        return { id: 'unknown', displayName: 'Unknown' };
+    }
 
     return { id, displayName };
 };
