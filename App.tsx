@@ -24,6 +24,7 @@ import { Globe, LogOut, Shield, Eye, EyeOff, User } from 'lucide-react';
 import { IdentityService } from './services/identity';
 import { supabase } from './services/supabase';
 import { sanitizeItemName, sanitizeSeller } from './services/securityUtils';
+import { getCanonicalName, getCanonicalId } from './services/ItemIdentity';
 import { FeedbackWidget } from './components/FeedbackWidget';
 import { UserSettings } from './components/UserSettings';
 import { LevelUpOverlay } from './components/gamification/LevelUpOverlay';
@@ -185,30 +186,31 @@ const App: React.FC = () => {
                                 }
                             }
 
-                            name = name
-                                .replace(/QL:[\d.]+/gi, '')
-                                .replace(/DMG:[\d.]+/gi, '')
-                                .replace(/WT:[\d.]+/gi, '')
-                                .replace(/\bnull\b/gi, '')
-                                .replace(/\bcommon\b/gi, '')
-                                .replace(/\brare\b/gi, '')
-                                .replace(/\bsupreme\b/gi, '')
-                                .replace(/\bfantastic\b/gi, '')
-                                .replace(/^[\d.]+[kx]\s*/i, '')
-                                .replace(/\s+/g, ' ')
-                                .trim();
-                            name = name.charAt(0).toUpperCase() + name.slice(1);
+                            // 🔄 CANONICAL UPGRADE (Phase 2.5): Use Service Consistency
+                            // Smart Parse for Quantity in History (Optional, but good for charts)
+                            let quantity = 1;
+                            const qtyMatch = name.match(/^(\d+)[x\s]/i) || raw.match(/(\d+)\s*x/i);
+                            if (qtyMatch) quantity = parseInt(qtyMatch[1], 10);
 
-                            // 🔒 SECURITY: Sanitize name and seller to remove auth tokens
-                            const safeName = sanitizeItemName(name);
+                            const isTotal = /\b(all|total|bulk|lot)\b/i.test(raw);
+                            if (quantity > 1 && isTotal) {
+                                price = price / quantity;
+                            }
+
+                            const canonicalName = getCanonicalName(name);
+                            const canonicalId = getCanonicalId(name);
+
+                            const safeName = sanitizeItemName(canonicalName);
                             const safeSeller = sanitizeSeller(log.nick || 'Unknown');
 
                             return {
                                 id: String(log.id),
+                                itemId: canonicalId,
                                 name: safeName,
+                                rawName: name, // Preserve original extracted name
                                 seller: safeSeller,
                                 price: price,
-                                quantity: 1,
+                                quantity: quantity,
                                 quality: 0,
                                 rarity: 'Common',
                                 material: 'Unknown',
@@ -334,7 +336,7 @@ const App: React.FC = () => {
             {/* Global News Ticker */}
             <NewsTicker />
             {/* Live Market Ticker (Nasdaq Style) */}
-            <LiveTradeTicker />
+            <LiveTradeTicker rawItems={marketData} />
 
             <Sidebar currentView={currentView} onNavigate={setCurrentView} language={language} />
             <main className="ml-64 p-8 min-h-screen transition-all duration-300 pt-16">

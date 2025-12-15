@@ -6,6 +6,8 @@
 import { MarketItem } from '../types';
 import { Money } from '../src/domain/price/Money';
 import { ParsedTrade, EnrichedTrade } from '../src/domain/trade/Trade';
+import { getCanonicalName, getCanonicalId } from './ItemIdentity';
+import { sanitizeItemName, sanitizeSeller } from './securityUtils';
 
 export interface TradeRecord {
     timestamp: string;
@@ -152,8 +154,8 @@ export const toEnrichedTrade = (parsedTrade: ParsedTrade): EnrichedTrade => {
         item: parsedTrade.item,
         quality: parsedTrade.quality,
         rarity: parsedTrade.rarity,
-        price: parsedTrade.priceCopper !== null 
-            ? Money.fromCopper(parsedTrade.priceCopper) 
+        price: parsedTrade.priceCopper !== null
+            ? Money.fromCopper(parsedTrade.priceCopper)
             : null
     };
 };
@@ -218,20 +220,48 @@ export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
 
                 const records = FileParser.parseRecords(rawRecords);
 
-                // Map to MarketItem
-                const marketItems: MarketItem[] = records.map((r, index) => ({
-                    id: String(index),
-                    name: (r.item_name || 'Unknown'),
-                    price: r.price_copper,
-                    quantity: 1, // Default to 1 if not parsed
-                    quality: r.quality || 50,
-                    seller: (r.sender || 'Unknown'),
-                    timestamp: (r.timestamp ? new Date(r.timestamp).getTime() : Date.now()),
-                    orderType: (r.raw_text ? (r.raw_text.toLowerCase().startsWith('wtb') ? 'WTB' : 'WTS') : 'UNKNOWN'),
-                    rarity: r.rarity || 'Common',
-                    material: 'Unknown',
-                    searchableText: ((r.item_name || '') + ' ' + (r.sender || '') + ' ' + (r.rarity || 'Common') + ' ' + 'Unknown').toLowerCase()
-                }));
+                // Map to MarketItem with Canonical Data & Smart Parsing
+                const marketItems: MarketItem[] = records.map((r, index) => {
+                    const rawName = r.item_name || 'Unknown';
+                    const rawText = r.raw_text || '';
+
+                    // Smart Parsing: Quantity & Unit Price Support for History
+                    let quantity = 1;
+                    // Heuristic: Check item name or raw text for "100x"
+                    const qtyMatch = rawName.match(/^(\d+)[x\s]/i) || rawText.match(/(\d+)\s*x/i);
+                    if (qtyMatch) {
+                        quantity = parseInt(qtyMatch[1], 10);
+                    }
+
+                    // Price Logic: If "bulk/all" keyword in raw text, divide by quantity
+                    let price = r.price_copper;
+                    const isTotal = /\b(all|total|bulk|lot)\b/i.test(rawText);
+                    if (quantity > 1 && isTotal) {
+                        price = price / quantity;
+                    }
+
+                    const canonicalName = getCanonicalName(rawName);
+                    const canonicalId = getCanonicalId(rawName);
+
+                    const safeName = sanitizeItemName(canonicalName);
+                    const safeSeller = sanitizeSeller(r.sender || 'Unknown');
+
+                    return {
+                        id: String(index),
+                        itemId: canonicalId,
+                        name: safeName,
+                        seller: safeSeller,
+                        price: price,
+                        quantity: quantity,
+                        quality: r.quality || 50,
+                        rawName: rawName, // Traceability
+                        timestamp: (r.timestamp ? new Date(r.timestamp).getTime() : Date.now()),
+                        orderType: (rawText ? (rawText.toLowerCase().startsWith('wtb') ? 'WTB' : 'WTS') : 'UNKNOWN'),
+                        rarity: r.rarity || 'Common',
+                        material: 'Unknown',
+                        searchableText: ((canonicalName) + ' ' + (safeSeller) + ' ' + (r.rarity || 'Common')).toLowerCase()
+                    };
+                });
 
                 resolve(marketItems);
 

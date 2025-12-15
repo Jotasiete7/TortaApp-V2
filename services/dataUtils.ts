@@ -219,14 +219,31 @@ export const getSupplyHeatmapData = (items: MarketItem[], itemName: string): Hea
  * Converts a Real-Time Trade (ParsedTrade) into a MarketItem for Charts
  */
 export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
-    // 1. Parse Price
-    const price = FileParser.normalizePrice(trade.message);
-
-    // 2. Extract Name (Heuristic based on App.tsx)
+    // 1. Initial Name Extraction (Heuristic)
     let rawName = trade.message;
     if (trade.message.includes('[')) {
         const match = trade.message.match(/\[(.*?)\]/);
         if (match) rawName = match[1];
+    }
+
+    // 2. Smart Parsing: Quantity & Price
+    // Heuristic: "152x" or "x152"
+    let quantity = 1;
+    const qtyMatch = trade.message.match(/(\d+)\s*x/i) || trade.message.match(/x\s*(\d+)/i);
+    if (qtyMatch) {
+        quantity = parseInt(qtyMatch[1], 10);
+    }
+
+    let price = FileParser.normalizePrice(trade.message);
+
+    // Logic: Is this "Total Price" or "Unit Price"?
+    // Keyword "all", "total", "bulk" -> Total Price
+    // Keyword "ea", "each" -> Unit Price (default)
+    // If ambiguous, we assume Unit Price to avoid false positive 'cheap' alerts
+    const isTotal = /\b(all|total|bulk|lot)\b/i.test(trade.message);
+
+    if (quantity > 1 && isTotal) {
+        price = price / quantity;
     }
 
     // 3. Identity Layer (Phase 2 Refined)
@@ -250,8 +267,8 @@ export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
         name: safeName,
         rawName,     // Traceability: Original String
         seller: safeSeller,
-        price: price,
-        quantity: 1,
+        price: price, // Normalized Unit Price
+        quantity: quantity,
         quality: 0,
         rarity: 'Common',
         material: 'Unknown',
