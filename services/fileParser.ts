@@ -1,4 +1,4 @@
-/**
+﻿/**
  * fileParser.ts
  * Service responsible for parsing and cleaning raw data from Wurm Online logs.
  */
@@ -36,6 +36,10 @@ export class FileParser {
         "fragment",
         // "casket", // Removed to allow caskets
         "clay",
+        "cleaning",
+        "service",
+        "organizing",
+        "delivery"
     ];
 
     /**

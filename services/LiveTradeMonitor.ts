@@ -4,6 +4,7 @@ import localforage from 'localforage';
 import { supabase } from './supabase';
 import { toast } from 'sonner';
 import { Money } from '../src/domain/price/Money';
+import { FileParser } from './fileParser';
 import { AlertService, ExtendedTradeAlert } from './AlertService';
 
 export interface Trade {
@@ -143,7 +144,7 @@ class LiveTradeMonitor {
                 return;
             }
         } catch (err) {
-            toast.error(`Erro ao verificar arquivo: ${err}`);
+            toast.error(Erro ao verificar arquivo: );
             return;
         }
         */
@@ -156,8 +157,8 @@ class LiveTradeMonitor {
             console.log('âœ… Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
-            console.error("âŒ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
-            toast.error(`Falha ao iniciar watcher: ${err}`);
+            console.error("â Œ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
+            toast.error(Falha ao iniciar watcher: );
             return;
         }
 
@@ -165,6 +166,13 @@ class LiveTradeMonitor {
         await listen<{ timestamp: string, nick: string, message: string }>('trade-event', async (event) => {
             console.log("ðŸ“¨ FRONTEND RECEIVED EVENT:", event);
             const raw = event.payload;
+
+            // NEW: Filter Noise before processing
+            if (FileParser.isNoise(raw.message)) {
+                console.warn("ðŸš« Valid Filter: Ignored noise message:", raw.message);
+                return;
+            }
+
             const type = this.parseTradeType(raw.message);
 
             if (!type) return; 
@@ -274,7 +282,7 @@ class LiveTradeMonitor {
 
     private async handleOnline() {
         this.isOnline = true;
-        console.log('ðŸŒ Online: Processing queue...');
+        console.log('ðŸŒ  Online: Processing queue...');
 
         const failedTrades: QueuedTrade[] = [];
         const tempQueue = [...this.offlineQueue];
@@ -293,9 +301,9 @@ class LiveTradeMonitor {
 
             try {
                 await this.submitTradeInternal(trade);
-                console.log(`âœ… Trade submitted after retry`);
+                console.log(âœ… Trade submitted after retry);
             } catch (err) {
-                console.error(`âŒ Retry failed:`, err);
+                console.error(â Œ Retry failed:, err);
                 this.offlineQueue.push(trade);
             }
         }
@@ -303,7 +311,7 @@ class LiveTradeMonitor {
         this.saveOfflineQueue();
 
         if (failedTrades.length > 0) {
-            toast.warning(`${failedTrades.length} trades falharam apÃ³s vÃ¡rias tentativas.`);
+            toast.warning(${failedTrades.length} trades falharam apÃ³s vÃ¡rias tentativas.);
         }
     }
 
@@ -314,4 +322,3 @@ class LiveTradeMonitor {
 }
 
 export const liveTradeMonitor = new LiveTradeMonitor();
-
