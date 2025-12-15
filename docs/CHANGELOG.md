@@ -14,7 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mobile app version
 - Real-time price alerts
 - Trading recommendations
-- Social features (friends, trading groups)
+
+---
+
+## [2.0.0] - 2025-12-15
+
+### Major Architecture Changes
+- **Canonical Item Dictionary:** Migrated from string-based names to `itemId` system. "Sleep Powder" and "Wheat Sleep Powder" now resolve to `sleep_powder`.
+- **Rust Integration:** Replaced legacy JS parser with high-performance Rust `AdvancedParser` via Tauri command.
+- **Impurity Cleaning:** Automatic removal of "Impure", "Shattered", "Corroded" prefixes for consistent data.
+- **Smart Search V2:** Search now returns canonical objects `{id, name}` to prevent chart duplication.
+
+### Added
+- **Live Trade Monitor:** Real-time offline queueing system (trades save locally if internet drops).
+- **Service Filtering:** "Cleaning Service", "Recruitment" messages are now automatically filtered out.
+- **Panic Handler:** Added Rust-side panic hooks for better crash diagnostics.
+
+### Fixed
+- **Sleep Powder Duplication:** Fixed the issue where different names for the same item created multiple chart lines.
+- **Memory Leak:** Optimized file watcher to prevent RAM explosion on large logs.
 
 ---
 

@@ -1,7 +1,7 @@
 # TortaApp - User Manual
 
-**Version:** 0.1.0-beta  
-**Last Updated:** December 2025
+**Version:** 2.0.0 "Venerable Whale"  
+**Last Updated:** December 15, 2025
 
 ---
 
@@ -10,11 +10,12 @@
 1. [Getting Started](#getting-started)
 2. [Account Setup](#account-setup)
 3. [Uploading Trade Logs](#uploading-trade-logs)
-4. [Market Intelligence](#market-intelligence)
-5. [ML Price Predictor](#ml-price-predictor)
-6. [Gamification System](#gamification-system)
-7. [Admin Features](#admin-features)
-8. [Troubleshooting](#troubleshooting)
+4. [Live Trade Monitor](#live-trade-monitor)
+5. [Market Intelligence](#market-intelligence)
+6. [ML Price Predictor](#ml-price-predictor)
+7. [Gamification System](#gamification-system)
+8. [Admin Features](#admin-features)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -63,6 +64,21 @@ To track your trading stats, you need to verify your Wurm character:
 
 ---
 
+## 📡 Live Trade Monitor (V2.0 New!)
+
+TortaApp now watches your log files in real-time.
+
+1. Go to **Dashboard**
+2. Click **Start Live Monitoring**
+3. Select your active `logs/_Trade_names.txt` file.
+
+**Features:**
+- **Zero-Latency:** Trades appear instantly on the ticker.
+- **Offline Queue:** If your internet drops, trades are saved and uploaded automatically when you reconnect.
+- **Panic Protection:** The watcher automatically recovers if the game file lock behaves unexpectedly.
+
+---
+
 ## 📊 Market Intelligence
 
 ### Advanced Search
@@ -78,6 +94,9 @@ iron ore ql>90 price<50
 | `ql>X` | `ql>90` | Quality greater than X |
 | `price<X` | `price<50` | Price less than X copper |
 | `qty>X` | `qty>10` | Quantity greater than X |
+
+### Canonical Identity System
+Search now understands that **"Impure Iron Lump"** is the same item as **"Iron Lump"**. It automatically groups these items to show you accurate price history without clutter.
 
 ---
 
