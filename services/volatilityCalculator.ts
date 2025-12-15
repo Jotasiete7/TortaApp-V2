@@ -11,12 +11,12 @@ export interface VolatilityMetrics {
 /**
  * Calculate volatility metrics for a specific item
  * @param items All market items
- * @param itemName Target item to analyze
+ * @param targetId Target item ID (was itemName)
  * @returns Volatility metrics object
  */
-export function calculateVolatility(items: MarketItem[], itemName: string): VolatilityMetrics {
-    // Filter items for the target item
-    const itemData = items.filter(i => i.name.toLowerCase() === itemName.toLowerCase());
+export function calculateVolatility(items: MarketItem[], targetId: string): VolatilityMetrics {
+    // Filter items for the target item by ID
+    const itemData = items.filter(i => i.itemId === targetId);
 
     if (itemData.length === 0) {
         return {

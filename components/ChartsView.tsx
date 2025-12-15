@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { ComposedChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area } from 'recharts';
 import { ChartDataPoint, MarketItem } from '../types';
 import { formatWurmPrice } from '../services/priceUtils';
-import { Search, BarChart2, TrendingUp, LineChart, CandlestickChart as CandlestickIcon, Calendar } from 'lucide-react';
+import { BarChart2, TrendingUp, LineChart, CandlestickChart as CandlestickIcon, Calendar, Globe, HelpCircle } from 'lucide-react';
 import { VolatilityBadge } from './market/VolatilityBadge';
 import { SmartSearch } from './market/SmartSearch';
 import { CandlestickChart } from './market/CandlestickChart';
@@ -12,7 +13,6 @@ import { MarketHealthDashboard } from './market/MarketHealthDashboard';
 import { PriceForecastPanel } from './market/PriceForecastPanel';
 import { useChartsTranslation } from '../services/chartsTranslations';
 import { ChartsGuide } from './market/ChartsGuide';
-import { HelpCircle, Globe } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 import { useChartsEngine } from '../hooks/useChartsEngine';
 
@@ -25,7 +25,7 @@ type ChartType = 'line' | 'candlestick' | 'heatmap';
 
 export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
     // UI State
-    const [selectedItem, setSelectedItem] = useState<string>('');
+    const [selectedItem, setSelectedItem] = useState<{ id: string, name: string } | null>(null);
     const [chartType, setChartType] = useState<ChartType>('line');
     const [showGuide, setShowGuide] = useState(false);
 
@@ -36,11 +36,10 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
     const { trades: liveTrades } = useTradeEvents();
 
     // --- CHARTS ENGINE ---
-    // Decoupled Logic: The engine handles Merging, Transforms, and Stats.
-    // The View only worries about rendering.
+    // Decoupled Logic: The engine takes selectedItemId.
     const {
         combinedItems,
-        distinctItems,
+        distinctItems, // Now { id, name }[]
         historyData,
         distributionData,
         candlestickData,
@@ -51,17 +50,17 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
     } = useChartsEngine({
         rawItems,
         liveTrades,
-        selectedItem
+        selectedItemId: selectedItem?.id || ''
     });
 
     // Smart Default Selection
     // If no item is selected, try to pick one from the distinct list
     useEffect(() => {
         if (!selectedItem && distinctItems.length > 0) {
-            const common = distinctItems.find(i => i.includes('brick') || i.includes('iron'));
+            const common = distinctItems.find(i => i.name.toLowerCase().includes('iron') || i.name.toLowerCase().includes('block'));
             setSelectedItem(common || distinctItems[0]);
         }
-    }, [distinctItems, selectedItem]); // Note: dependency on selectedItem avoids infinite loop if set
+    }, [distinctItems, selectedItem]);
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
@@ -131,7 +130,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                         <SmartSearch
                             items={distinctItems}
                             rawData={combinedItems}
-                            selectedItem={selectedItem}
+                            selectedItemId={selectedItem?.id || ''}
                             onSelect={setSelectedItem}
                         />
                     </div>
@@ -174,8 +173,10 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                     <div className="mb-6 flex justify-between items-end">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-white capitalize">{selectedItem} History</h3>
-                                {volatilityMetrics && <VolatilityBadge metrics={volatilityMetrics} itemName={selectedItem} />}
+                                <h3 className="text-lg font-semibold text-white capitalize">
+                                    {selectedItem?.name || 'Select Item'} History
+                                </h3>
+                                {volatilityMetrics && <VolatilityBadge metrics={volatilityMetrics} itemName={selectedItem?.name || ''} />}
                             </div>
                             <p className="text-sm text-slate-400">
                                 {chartType === 'line' && 'Unit Price evolution over time'}
@@ -232,11 +233,11 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                         )}
 
                         {chartType === 'candlestick' && (
-                            <CandlestickChart data={candlestickData} itemName={selectedItem} />
+                            <CandlestickChart data={candlestickData} itemName={selectedItem?.name || ''} />
                         )}
 
                         {chartType === 'heatmap' && (
-                            <SupplyHeatmap data={heatmapData} itemName={selectedItem} />
+                            <SupplyHeatmap data={heatmapData} itemName={selectedItem?.name || ''} />
                         )}
                     </div>
                 </div>
@@ -267,11 +268,11 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
 
                     {/* Seller Insights */}
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
-                        <SellerInsights sellers={sellerInsights} itemName={selectedItem} />
+                        <SellerInsights sellers={sellerInsights} itemName={selectedItem?.name || ''} />
                     </div>
                     {/* Price Forecast */}
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
-                        <PriceForecastPanel items={combinedItems} itemName={selectedItem} />
+                        <PriceForecastPanel items={combinedItems} itemName={selectedItem?.name || ''} />
                     </div>
                 </div>
             </div>

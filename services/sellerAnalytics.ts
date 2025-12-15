@@ -1,3 +1,4 @@
+
 import { MarketItem } from '../types';
 
 export interface SellerInsights {
@@ -12,13 +13,13 @@ export interface SellerInsights {
 /**
  * Get top sellers for a specific item
  * @param items All market items
- * @param itemName Target item
+ * @param targetId Target item ID (was itemName)
  * @param limit Number of top sellers to return
  * @returns Array of seller insights
  */
-export function getTopSellers(items: MarketItem[], itemName: string, limit: number = 5): SellerInsights[] {
-    // Filter for target item
-    const itemData = items.filter(i => i.name.toLowerCase() === itemName.toLowerCase());
+export function getTopSellers(items: MarketItem[], targetId: string, limit: number = 5): SellerInsights[] {
+    // Filter for target item by ID
+    const itemData = items.filter(i => i.itemId === targetId);
 
     if (itemData.length === 0) return [];
 
@@ -72,11 +73,11 @@ export function getTopSellers(items: MarketItem[], itemName: string, limit: numb
 /**
  * Calculate market concentration (Herfindahl-Hirschman Index)
  * @param items All market items
- * @param itemName Target item
+ * @param targetId Target item ID (was itemName)
  * @returns HHI score (0-10000, higher = more concentrated)
  */
-export function calculateMarketConcentration(items: MarketItem[], itemName: string): number {
-    const itemData = items.filter(i => i.name.toLowerCase() === itemName.toLowerCase());
+export function calculateMarketConcentration(items: MarketItem[], targetId: string): number {
+    const itemData = items.filter(i => i.itemId === targetId);
 
     if (itemData.length === 0) return 0;
 

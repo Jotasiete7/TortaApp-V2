@@ -13,22 +13,22 @@ import {
 import { formatWurmPrice } from '../../services/priceUtils';
 
 interface SmartSearchProps {
-    items: string[];
+    items: { id: string, name: string }[]; // ARCHITECTURAL CHANGE: Objects
     rawData: MarketItem[];
-    selectedItem: string;
-    onSelect: (item: string) => void;
+    selectedItemId: string; // ID
+    onSelect: (item: { id: string, name: string }) => void; // Pass full object back
 }
 
 export const SmartSearch: React.FC<SmartSearchProps> = ({
     items,
     rawData,
-    selectedItem,
+    selectedItemId,
     onSelect
 }) => {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
-    const [recentSearches, setRecentSearches] = useState<string[]>([]);
+    const [recentSearches, setRecentSearches] = useState<{ id: string, name: string }[]>([]);
 
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -56,26 +56,28 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
         }
 
         // Show recent + popular when empty
-        const recent = recentSearches.map(item => {
-            const itemData = rawData.filter(d => d.name === item);
+        // Recent is already object { id, name }
+        const recent = recentSearches.map(recentItem => {
+            const itemData = rawData.filter(d => d.itemId === recentItem.id);
             return {
-                item,
+                id: recentItem.id,
+                item: recentItem.name,
                 score: 100,
                 avgPrice: itemData.reduce((sum, d) => sum + d.price, 0) / (itemData.length || 1),
                 volume: itemData.length,
                 category: 'Recent'
-            };
+            } as SearchResult;
         });
 
         return recent;
     }, [query, searchResults, recentSearches, rawData]);
 
     // Handle selection
-    const handleSelect = (item: string) => {
+    const handleSelect = (item: { id: string, name: string }) => {
         onSelect(item);
         saveRecentSearch(item);
         setRecentSearches(getRecentSearches());
-        setQuery('');
+        setQuery(''); // Maybe keep query as name? No, clear it.
         setIsOpen(false);
         inputRef.current?.blur();
     };
@@ -103,7 +105,9 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                 break;
             case 'Enter':
                 if (displayItems[highlightedIndex]) {
-                    handleSelect(displayItems[highlightedIndex].item);
+                    // SearchResult has 'item' (name) and 'id'
+                    const { id, item: name } = displayItems[highlightedIndex];
+                    handleSelect({ id, name });
                 }
                 e.preventDefault();
                 break;
@@ -205,8 +209,8 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                             </div>
                             {searchResults.map((result, idx) => (
                                 <button
-                                    key={result.item}
-                                    onClick={() => handleSelect(result.item)}
+                                    key={result.id} // Use ID as Key
+                                    onClick={() => handleSelect({ id: result.id, name: result.item })}
                                     className={`w-full px-3 py-2.5 flex items-center justify-between hover:bg-slate-800 transition-colors ${idx === highlightedIndex ? 'bg-slate-800' : ''
                                         }`}
                                 >
@@ -258,8 +262,8 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                             </div>
                             {displayItems.map((result, idx) => (
                                 <button
-                                    key={result.item}
-                                    onClick={() => handleSelect(result.item)}
+                                    key={result.id}
+                                    onClick={() => handleSelect({ id: result.id, name: result.item })}
                                     className={`w-full px-3 py-2.5 flex items-center justify-between hover:bg-slate-800 transition-colors ${idx === highlightedIndex ? 'bg-slate-800' : ''
                                         }`}
                                 >
@@ -282,20 +286,21 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                                 <TrendingUp className="w-3 h-3" />
                                 Popular Items
                             </div>
-                            {popularItems.slice(0, 5).map((item) => {
-                                const itemData = rawData.filter(d => d.name === item);
+                            {popularItems.slice(0, 5).map((popItem) => {
+                                // PopItem is now { id, name }
+                                const itemData = rawData.filter(d => d.itemId === popItem.id);
                                 const avgPrice = itemData.reduce((sum, d) => sum + d.price, 0) / (itemData.length || 1);
                                 const volume = itemData.length;
 
                                 return (
                                     <button
-                                        key={item}
-                                        onClick={() => handleSelect(item)}
+                                        key={popItem.id}
+                                        onClick={() => handleSelect(popItem)}
                                         className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-slate-800 transition-colors"
                                     >
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
                                             <TrendingUp className="w-4 h-4 text-amber-500" />
-                                            <p className="text-sm text-white truncate">{item}</p>
+                                            <p className="text-sm text-white truncate">{popItem.name}</p>
                                         </div>
                                         <div className="flex flex-col items-end ml-2">
                                             <span className="text-xs font-mono text-emerald-400">

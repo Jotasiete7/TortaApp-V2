@@ -3,9 +3,26 @@
  * 
  * Service responsible for Semantic Normalization of item names.
  * Ensures that "Large Anvil", "large anvil", and "Lg Anvil" are treated as the same entity.
- * Also handles removing material prefixes (e.g. "Iron Lump" -> "Lump") if desired, or normalizing them.
- * For Wurm, usually "Iron Lump" IS the item, but for "Wheat Sleep Powder" vs "Barley Sleep Powder", the core item is "Sleep Powder".
+ * 
+ * ARCHITECTURAL CHANGE (v2.1):
+ * - Separates Identity (ID) from Display Name.
+ * - ID is strictly lowercase alphanumeric + underscores.
+ * - Display Name is title-cased and pretty.
+ * - Semantic rules for items like "Sleep Powder" are explicit.
  */
+
+// 1. Semantic Item Configuration (The "Truth" Table)
+const SEMANTIC_ITEMS: Record<string, { collapseMaterials: boolean, displayName: string }> = {
+    'sleep_powder': {
+        collapseMaterials: true,
+        displayName: 'Sleep Powder'
+    },
+    'healing_cover': {
+        collapseMaterials: true,
+        displayName: 'Healing Cover'
+    }
+    // Add more special cases here
+};
 
 // Known abbreviations map
 const ALIAS_MAP: Record<string, string> = {
@@ -19,14 +36,6 @@ const ALIAS_MAP: Record<string, string> = {
     'farming': 'farm'
 };
 
-// Materials that often prefix items but might fragment identity
-// Add to this list as we discover more fragmentation
-const MATERIALS = new Set([
-    'oat', 'barley', 'wheat', 'rye', 'corn', 'potato', 'pumpkin', 'onion',
-    'iron', 'copper', 'tin', 'zinc', 'lead', 'silver', 'gold', 'steel', 'brass', 'bronze',
-    'maple', 'birch', 'oak', 'pine', 'willow', 'cedar', 'chestnut', 'walnut', 'linden'
-]);
-
 // Words to ignore during normalization (Noise)
 const IGNORED_TERMS = new Set([
     'rare', 'supreme', 'fantastic',
@@ -35,88 +44,94 @@ const IGNORED_TERMS = new Set([
     'completed'
 ]);
 
+// Materials to strip ONLY if semantic rule applies
+const MATERIALS_REGEX = /\b(wheat|barley|oat|rye|corn|potato|pumpkin|onion|iron|copper|tin|zinc|lead|silver|gold|steel|brass|bronze|maple|birch|oak|pine|willow|cedar|chestnut|walnut|linden)\s+/gi;
+
+interface ItemIdentity {
+    id: string;        // The immutable, mechanical ID (e.g., 'sleep_powder')
+    displayName: string; // The human-friendly name (e.g., 'Sleep Powder')
+}
+
 /**
- * Returns the canonical version of an item name.
- * @param rawName The raw string from trade log (e.g. "Rare Large Anvil [90ql]")
+ * Resolves the true identity of an item from a raw string.
+ * This is the SINGLE ENTRY POINT for normalization.
  */
-export const getCanonicalName = (rawName: string): string => {
-    if (!rawName) return "Unknown";
+export const resolveItemIdentity = (rawName: string): ItemIdentity => {
+    if (!rawName) return { id: 'unknown', displayName: 'Unknown' };
 
-    // 1. Lowercase and Basic Cleanup
+    // 1. Basic Cleaning
     let cleaned = rawName.toLowerCase();
+    cleaned = cleaned.replace(/\[.*?\]/g, ''); // Remove brackets
+    cleaned = cleaned.replace(/\b(ql|dmg|wt)[:\s]*[\d.]+/g, ''); // Remove metrics
+    cleaned = cleaned.replace(/\b\d+ql\b/g, ''); // Remove 90ql
+    cleaned = cleaned.replace(/\sx\d+/g, ''); // Remove x30
 
-    // 2. Remove Bracketed Info [10s], [90ql]
-    cleaned = cleaned.replace(/\[.*?\]/g, '');
-
-    // 3. Remove specific metrics (QL:90, DMG:10)
-    cleaned = cleaned.replace(/\b(ql|dmg|wt)[:\s]*[\d.]+/g, '');
-
-    // 4. Remove QL numbers like "90ql"
-    cleaned = cleaned.replace(/\b\d+ql\b/g, '');
-
-    // 5. Remove 'x' followed by digits (suffix quantity) like "Item x30"
-    cleaned = cleaned.replace(/\sx\d+/g, '');
-
-    // 6. Split and Filter
-    const words = cleaned.split(/[\s-]+/); // Split by space or hyphen
+    // 2. Tokenize
+    const words = cleaned.split(/[\s-]+/);
     const filteredWords: string[] = [];
 
     for (const w of words) {
-        // Skip purely numeric words (often quantities or prices leaked in)
-        if (/^\d+$/.test(w)) continue;
-
-        // Skip ignored terms
-        if (IGNORED_TERMS.has(w)) continue;
-
-        // Strip known materials? 
-        // CAREFUL: "Iron Lump" -> "Lump" might be bad. "Wheat Sleep Powder" -> "Sleep Powder" is good.
-        // For now, let's only strip materials if the resulting name is still valid (length > 1 word)
-        // Actually, safer to keep materials for Metal/Wood, but STRIP for Crops on Powders?
-        // User specific request: "Wheat Sleep Powder" -> "Sleep Powder".
-
-        // Heuristic: If word is in MATERIALS, we skip it ONLY if it renders the remaining name meaningful?
-        // Let's rely on ALIAS_MAP for explicit fixes or just strip "crop" materials?
-        // Let's strip ALL defined materials for now to aggressively group, 
-        // but this might merge "Iron Lump" and "Gold Lump".
-        // The user want "Sleep Powder" to group.
-        // Let's allow specific exceptions.
-
+        if (/^\d+$/.test(w)) continue; // Skip pure numbers
+        if (IGNORED_TERMS.has(w)) continue; // Skip noise
         filteredWords.push(w);
     }
 
     let joined = filteredWords.join(' ');
-
-    // 7. Check Alias Map (Whole string check first)
     let trimmed = joined.trim();
+
+    // 3. Alias Resolution
     if (ALIAS_MAP[trimmed]) {
-        return toTitleCase(ALIAS_MAP[trimmed]);
+        trimmed = ALIAS_MAP[trimmed];
     }
 
-    // 8. Specific Cleanup for Sleep Powder cases (Suffix/Prefix removal)
-    // Regex to remove materials JUST for Sleep Powder if needed, or generally?
-    // Let's try to remove materials from the START of the string if it matches a known pattern
+    // 4. GENERATE TENTATIVE ID for Semantic Check
+    // We create a temporary ID to check against our semantic map
+    // e.g. "Wheat Sleep Powder" -> "wheat_sleep_powder"
+    const tentativeId = trimmed.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
-    // Check for "Material + KnownItem" pattern?
-    // Let's just remove the materials from the array if present?
-    // Aggressive approach: Remove ANY material word.
-    // "Gold Lump" -> "Lump" (Bad). "Wheat Sleep Powder" -> "Sleep Powder" (Good).
+    // 5. Semantic Rules Check
+    // Check if the string ENDS with a known semantic type (heuristic)
+    // Or check if the cleaning result matches a semantic key
 
-    // Better Approach: Regex Replacements for specific annoyances
-    trimmed = trimmed.replace(/\b(wheat|barley|oat|rye|corn|potato)\s+/g, ''); // Crop prefixes
+    // Heuristic: Check if it contains "sleep powder"
+    let finalName = trimmed;
 
-    // 9. Initial Qty Check (e.g. "100x Iron Lump")
-    const qtyRegex = /^(\d+)[x\s]+(.+)/;
-    const match = trimmed.match(qtyRegex);
-    if (match) {
-        trimmed = match[2].trim();
+    // Hardcoded Semantic Check (Robust)
+    // This allows identifying "Wheat Sleep Powder" as "Sleep Powder"
+    for (const [key, config] of Object.entries(SEMANTIC_ITEMS)) {
+        const readableKey = key.replace(/_/g, ' ');
+        if (trimmed.includes(readableKey.replace('sleep powder', 'sleep powder'))) { // Simple containment check
+            // Actually, we should check if the NORMALIZED string ends with the key words
+            if (trimmed.endsWith(config.displayName.toLowerCase())) {
+                if (config.collapseMaterials) {
+                    // Strip materials if configured
+                    finalName = config.displayName.toLowerCase(); // Force it to the base name
+                }
+            }
+        }
     }
 
-    // 10. Secondary Alias Check after cleaning
-    if (ALIAS_MAP[trimmed]) {
-        return toTitleCase(ALIAS_MAP[trimmed]);
+    // Specific fix for Sleep Powder to match user request precisely
+    if (trimmed.includes('sleep powder')) {
+        finalName = 'sleep powder';
     }
 
-    return toTitleCase(trimmed);
+    // 6. Final ID Generation (Strict)
+    const id = finalName.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    const displayName = toTitleCase(finalName);
+
+    return { id, displayName };
+};
+
+/**
+ * Legacy Support / Helpers
+ */
+export const getCanonicalName = (rawName: string): string => {
+    return resolveItemIdentity(rawName).displayName;
+};
+
+export const getCanonicalId = (rawName: string): string => {
+    return resolveItemIdentity(rawName).id;
 };
 
 const toTitleCase = (str: string) => {
@@ -126,26 +141,16 @@ const toTitleCase = (str: string) => {
 };
 
 /**
- * Infers the category of an item based on its name.
+ * Infers the category of an item based on its ID.
  */
-export const inferCategory = (canonicalName: string): string => {
-    const lower = canonicalName.toLowerCase();
-
-    if (lower.includes('lump') || lower.includes('bar')) return 'Metals';
-    if (lower.includes('plank') || lower.includes('log')) return 'Wood';
-    if (lower.includes('powder') || lower.includes('shred')) return 'Reagents';
-    if (lower.includes('anvil') || lower.includes('hammer') || lower.includes('whetstone')) return 'Tools';
-    if (lower.includes('helm') || lower.includes('breastplate') || lower.includes('leggings')) return 'Armor';
-    if (lower.includes('sword') || lower.includes('axe') || lower.includes('maul')) return 'Weapons';
+export const inferCategory = (canonicalId: string): string => {
+    // Note: Checking ID is safer than name
+    if (canonicalId.includes('lump') || canonicalId.includes('bar')) return 'Metals';
+    if (canonicalId.includes('plank') || canonicalId.includes('log')) return 'Wood';
+    if (canonicalId.includes('powder') || canonicalId.includes('shred')) return 'Reagents';
+    if (canonicalId.includes('anvil') || canonicalId.includes('hammer') || canonicalId.includes('whetstone')) return 'Tools';
+    if (canonicalId.includes('helm') || canonicalId.includes('breastplate') || canonicalId.includes('leggings')) return 'Armor';
+    if (canonicalId.includes('sword') || canonicalId.includes('axe') || canonicalId.includes('maul')) return 'Weapons';
 
     return 'Misc';
-};
-
-/**
- * Generates a stable canonical ID for database storage.
- * e.g. "Large Anvil" -> "large_anvil"
- */
-export const getCanonicalId = (rawName: string): string => {
-    const canonicalName = getCanonicalName(rawName);
-    return canonicalName.toLowerCase().replace(/\s+/g, '_');
 };
