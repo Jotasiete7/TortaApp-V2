@@ -1,5 +1,14 @@
-﻿
+
 import { MarketItem, ChartDataPoint } from '../types';
+import { FileParser } from './fileParser';
+import { sanitizeItemName, sanitizeSeller } from './securityUtils';
+
+export interface LiveTrade {
+    timestamp: string;
+    nick: string;
+    message: string;
+    type?: 'WTB' | 'WTS' | 'WTT';
+}
 
 export interface ItemHistoryPoint {
     date: string;
@@ -146,7 +155,7 @@ export const generateChartDataFromHistory = (items: MarketItem[]): ChartDataPoin
  */
 export const getCandlestickData = (items: MarketItem[], itemName: string): CandlestickDataPoint[] => {
     const filtered = items.filter(i => i.name.toLowerCase() === itemName.toLowerCase() && i.price > 0);
-    
+
     // Group by date and sort by timestamp within each day
     const dailyData = new Map<string, MarketItem[]>();
     filtered.forEach(item => {
@@ -160,7 +169,7 @@ export const getCandlestickData = (items: MarketItem[], itemName: string): Candl
     const candlesticks: CandlestickDataPoint[] = [];
     dailyData.forEach((dayItems, date) => {
         // Sort by timestamp to get open/close
-        const sorted = dayItems.sort((a, b) => 
+        const sorted = dayItems.sort((a, b) =>
             new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
 
@@ -181,7 +190,7 @@ export const getCandlestickData = (items: MarketItem[], itemName: string): Candl
  */
 export const getSupplyHeatmapData = (items: MarketItem[], itemName: string): HeatmapDataPoint[] => {
     const filtered = items.filter(i => i.name.toLowerCase() === itemName.toLowerCase());
-    
+
     const dailyCounts = new Map<string, { count: number; totalPrice: number }>();
     filtered.forEach(item => {
         const date = new Date(item.timestamp).toISOString().split('T')[0];
@@ -205,3 +214,56 @@ export const getSupplyHeatmapData = (items: MarketItem[], itemName: string): Hea
     return heatmapData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 };
 
+/**
+ * Converts a Real-Time Trade (ParsedTrade) into a MarketItem for Charts
+ */
+export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
+    // 1. Parse Price
+    const price = FileParser.normalizePrice(trade.message);
+
+    // 2. Extract Name (Heuristic based on App.tsx)
+    let name = trade.message;
+    if (trade.message.includes('[')) {
+        const match = trade.message.match(/\[(.*?)\]/);
+        if (match) name = match[1];
+    }
+
+    // Clean string
+    name = name
+        .replace(/QL:[\d.]+/gi, '')
+        .replace(/DMG:[\d.]+/gi, '')
+        .replace(/WT:[\d.]+/gi, '')
+        .replace(/\bnull\b/gi, '')
+        .replace(/\bcommon\b/gi, '')
+        .replace(/\brare\b/gi, '')
+        .replace(/\bsupreme\b/gi, '')
+        .replace(/\bfantastic\b/gi, '')
+        .replace(/^[\d.]+[kx]\s*/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const safeName = sanitizeItemName(name.charAt(0).toUpperCase() + name.slice(1));
+    const safeSeller = sanitizeSeller(trade.nick);
+
+    // 3. Handle Date (Live trades come as HH:mm:ss)
+    // We assume current date for live trades because logs reset mostly or we read from today
+    const today = new Date();
+    const parts = trade.timestamp.split(':');
+    if (parts.length >= 2) {
+        today.setHours(Number(parts[0]), Number(parts[1]), Number(parts[2] || 0));
+    }
+
+    return {
+        id: `live-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        name: safeName,
+        seller: safeSeller,
+        price: price,
+        quantity: 1,
+        quality: 0,
+        rarity: 'Common',
+        material: 'Unknown',
+        orderType: trade.type || 'UNKNOWN',
+        location: 'Unknown',
+        timestamp: today.toISOString()
+    };
+};

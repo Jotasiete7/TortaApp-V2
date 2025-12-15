@@ -1,7 +1,7 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ComposedChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area } from 'recharts';
 import { ChartDataPoint, MarketItem, VolatilityMetrics, SellerInsights as SellerInsightsType } from '../types';
-import { getDistinctItems, getItemHistory, getPriceDistribution, getCandlestickData, getSupplyHeatmapData } from '../services/dataUtils';
+import { getDistinctItems, getItemHistory, getPriceDistribution, getCandlestickData, getSupplyHeatmapData, convertLiveTradeToMarketItem } from '../services/dataUtils';
 import { formatWurmPrice } from '../services/priceUtils';
 import { Search, BarChart2, TrendingUp, LineChart, CandlestickChart as CandlestickIcon, Calendar } from 'lucide-react';
 import { VolatilityBadge } from './market/VolatilityBadge';
@@ -16,10 +16,11 @@ import { ChartsGuide } from './market/ChartsGuide';
 import { HelpCircle, Globe } from 'lucide-react';
 import { calculateVolatility } from '../services/volatilityCalculator';
 import { getTopSellers } from '../services/sellerAnalytics';
+import { useTradeEvents } from '../contexts/TradeEventContext';
 
 interface ChartsViewProps {
     data: ChartDataPoint[]; // Legacy prop, kept for compatibility but unused
-    rawItems?: MarketItem[]; // Added raw items for detailed analysis
+    rawItems?: MarketItem[]; // Used as historical base
 }
 
 type ChartType = 'line' | 'candlestick' | 'heatmap';
@@ -31,7 +32,20 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
     const { t, language, toggleLanguage } = useChartsTranslation();
     const [showGuide, setShowGuide] = useState(false);
 
-    const distinctItems = useMemo(() => getDistinctItems(rawItems), [rawItems]);
+    // LIVE DATA INTEGRATION
+    const { trades: liveTrades } = useTradeEvents();
+
+    // Merge Historical (rawItems) with Real-Time (liveTrades)
+    const combinedItems = useMemo(() => {
+        if (!liveTrades || liveTrades.length === 0) return rawItems;
+        const liveMarketItems = liveTrades.map(convertLiveTradeToMarketItem);
+        // Combine arrays. Note: liveItems are appended, order might need sorting by timestamp if items are not strictly chronological
+        // but dataUtils sort functions usually handle it. 
+        return [...rawItems, ...liveMarketItems];
+    }, [rawItems, liveTrades]);
+
+    // Use combinedItems for all downstream calculations instead of rawItems
+    const distinctItems = useMemo(() => getDistinctItems(combinedItems), [combinedItems]);
 
     // Set default item if none selected and items exist
     useMemo(() => {
@@ -44,33 +58,33 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
 
     const historyData = useMemo(() => {
         if (!selectedItem) return [];
-        return getItemHistory(rawItems, selectedItem);
-    }, [selectedItem, rawItems]);
+        return getItemHistory(combinedItems, selectedItem);
+    }, [selectedItem, combinedItems]);
 
     const distributionData = useMemo(() => {
         if (!selectedItem) return [];
-        return getPriceDistribution(rawItems, selectedItem);
-    }, [selectedItem, rawItems]);
+        return getPriceDistribution(combinedItems, selectedItem);
+    }, [selectedItem, combinedItems]);
 
     const candlestickData = useMemo(() => {
         if (!selectedItem) return [];
-        return getCandlestickData(rawItems, selectedItem);
-    }, [selectedItem, rawItems]);
+        return getCandlestickData(combinedItems, selectedItem);
+    }, [selectedItem, combinedItems]);
 
     const heatmapData = useMemo(() => {
         if (!selectedItem) return [];
-        return getSupplyHeatmapData(rawItems, selectedItem);
-    }, [selectedItem, rawItems]);
+        return getSupplyHeatmapData(combinedItems, selectedItem);
+    }, [selectedItem, combinedItems]);
 
     const volatilityMetrics = useMemo(() => {
         if (!selectedItem) return null;
-        return calculateVolatility(rawItems, selectedItem);
-    }, [selectedItem, rawItems]);
+        return calculateVolatility(combinedItems, selectedItem);
+    }, [selectedItem, combinedItems]);
 
     const sellerInsights = useMemo(() => {
         if (!selectedItem) return [];
-        return getTopSellers(rawItems, selectedItem, 5);
-    }, [selectedItem, rawItems]);
+        return getTopSellers(combinedItems, selectedItem, 5);
+    }, [selectedItem, combinedItems]);
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
@@ -92,7 +106,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
         return null;
     };
 
-    if (rawItems.length === 0) {
+    if (combinedItems.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-[50vh] text-slate-500">
                 <BarChart2 className="w-16 h-16 opacity-20 mb-4" />
@@ -108,6 +122,11 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                     <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                         <TrendingUp className="text-amber-500 w-6 h-6" />
                         {t('market_trends')}
+                        {liveTrades.length > 0 && (
+                            <span className="ml-2 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded border border-emerald-500/30 animate-pulse">
+                                LIVE UPDATES
+                            </span>
+                        )}
                     </h2>
                     <p className="text-slate-400 text-sm">{t('analyze_text')}</p>
                 </div>
@@ -134,7 +153,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                     <div className="w-full sm:w-80">
                         <SmartSearch
                             items={distinctItems}
-                            rawData={rawItems}
+                            rawData={combinedItems}
                             selectedItem={selectedItem}
                             onSelect={setSelectedItem}
                         />
@@ -167,11 +186,11 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                 </div>
             </div>
 
-            
-      {/* Market Health Dashboard */}
-      <MarketHealthDashboard rawData={rawItems} />
 
-      <ChartsGuide isOpen={showGuide} onClose={() => setShowGuide(false)} lang={language} />
+            {/* Market Health Dashboard */}
+            <MarketHealthDashboard rawData={combinedItems} />
+
+            <ChartsGuide isOpen={showGuide} onClose={() => setShowGuide(false)} lang={language} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Chart Area */}
                 <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
@@ -273,13 +292,12 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
                         <SellerInsights sellers={sellerInsights} itemName={selectedItem} />
                     </div>
-          {/* Price Forecast */}
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
-            <PriceForecastPanel items={rawItems} itemName={selectedItem} />
-          </div>
+                    {/* Price Forecast */}
+                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
+                        <PriceForecastPanel items={combinedItems} itemName={selectedItem} />
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
-
