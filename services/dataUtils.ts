@@ -2,6 +2,7 @@
 import { MarketItem, ChartDataPoint } from '../types';
 import { FileParser } from './fileParser';
 import { sanitizeItemName, sanitizeSeller } from './securityUtils';
+import { getCanonicalName } from './ItemIdentity';
 
 export interface LiveTrade {
     timestamp: string;
@@ -222,31 +223,20 @@ export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
     const price = FileParser.normalizePrice(trade.message);
 
     // 2. Extract Name (Heuristic based on App.tsx)
-    let name = trade.message;
+    let rawName = trade.message;
     if (trade.message.includes('[')) {
         const match = trade.message.match(/\[(.*?)\]/);
-        if (match) name = match[1];
+        if (match) rawName = match[1];
     }
 
-    // Clean string
-    name = name
-        .replace(/QL:[\d.]+/gi, '')
-        .replace(/DMG:[\d.]+/gi, '')
-        .replace(/WT:[\d.]+/gi, '')
-        .replace(/\bnull\b/gi, '')
-        .replace(/\bcommon\b/gi, '')
-        .replace(/\brare\b/gi, '')
-        .replace(/\bsupreme\b/gi, '')
-        .replace(/\bfantastic\b/gi, '')
-        .replace(/^[\d.]+[kx]\s*/i, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+    // 3. Canonicalize (Semantics) - Phase 2
+    // Replaces the old regex soup with a clean identity lookup
+    const name = getCanonicalName(rawName);
 
-    const safeName = sanitizeItemName(name.charAt(0).toUpperCase() + name.slice(1));
+    const safeName = sanitizeItemName(name);
     const safeSeller = sanitizeSeller(trade.nick);
 
-    // 3. Handle Date (Live trades come as HH:mm:ss)
-    // We assume current date for live trades because logs reset mostly or we read from today
+    // 4. Handle Date
     const today = new Date();
     const parts = trade.timestamp.split(':');
     if (parts.length >= 2) {
@@ -258,7 +248,7 @@ export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
         name: safeName,
         seller: safeSeller,
         price: price,
-        quantity: 1,
+        quantity: 1, // Quantity extraction could be moved to ItemIdentity too, but ok for now
         quality: 0,
         rarity: 'Common',
         material: 'Unknown',
