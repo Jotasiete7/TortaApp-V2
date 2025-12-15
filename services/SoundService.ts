@@ -9,18 +9,18 @@ export class SoundService {
     private static loadedSounds = new Map<string, HTMLAudioElement>();
     private static activeAudios: HTMLAudioElement[] = [];
 
-    // Real sound files from docs folder
+    // Real sound files from public/sounds folder
     private static filePaths: Record<string, string> = {
         // Mapped to meaningful names
-        click: '/docs/mixkit-page-turn-chime-1106.wav',          // Light chime for clicks
-        notification: '/docs/mixkit-toy-drums-and-bell-ding-560.wav', // Bell ding for notifications
-        coin: '/docs/mixkit-clinking-coins-1993.wav',           // Coin clink
-        coins: '/docs/mixkit-coins-handling-1939.wav',          // Multiple coins
-        alarm: '/docs/mixkit-tribal-dry-drum-558.wav',          // Drum for alarms
-        magic: '/docs/mixkit-page-turn-chime-1106.wav',         // Chime for magic
-        success: '/docs/mixkit-toy-drums-and-bell-ding-560.wav', // Bell for success
-        drumroll: '/docs/mixkit-drum-roll-566.wav',             // Drum roll
-        unlock: '/docs/mixkit-door-key-in-door-lock-2842.wav',  // Key unlock sound
+        click: '/sounds/mixkit-page-turn-chime-1106.wav',          // Light chime for clicks
+        notification: '/sounds/mixkit-toy-drums-and-bell-ding-560.wav', // Bell ding for notifications
+        coin: '/sounds/mixkit-clinking-coins-1993.wav',           // Coin clink
+        coins: '/sounds/mixkit-coins-handling-1939.wav',          // Multiple coins
+        alarm: '/sounds/mixkit-tribal-dry-drum-558.wav',          // Drum for alarms
+        magic: '/sounds/mixkit-page-turn-chime-1106.wav',         // Chime for magic
+        success: '/sounds/mixkit-toy-drums-and-bell-ding-560.wav', // Bell for success
+        drumroll: '/sounds/mixkit-drum-roll-566.wav',             // Drum roll
+        unlock: '/sounds/mixkit-door-key-in-door-lock-2842.wav',  // Key unlock sound
     };
 
     static initialize() {
@@ -47,12 +47,12 @@ export class SoundService {
             }
 
             const path = this.filePaths[soundName as string];
-            
+
             if (!path) {
                 console.warn(`Sound not found: ${soundName}`);
                 return;
             }
-            
+
             let audio: HTMLAudioElement;
 
             // Check if already loaded
@@ -62,7 +62,7 @@ export class SoundService {
             } else {
                 // Load for first time
                 audio = new Audio(path);
-                
+
                 audio.onerror = (e) => {
                     console.error(`Failed to load sound: ${soundName} from ${path}`, e);
                 };
@@ -94,7 +94,7 @@ export class SoundService {
             localStorage.setItem(this.STORAGE_KEY, this.volume.toString());
         }
     }
-    
+
     static getVolume() {
         return this.volume;
     }
