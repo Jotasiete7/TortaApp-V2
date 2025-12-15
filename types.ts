@@ -1,7 +1,8 @@
-﻿
+
 // Data Models based on the implied Python structure
 export interface MarketItem {
     id: string;
+    itemId: string; // Canonical ID (e.g. 'sleep_powder')
     name: string;
     material: string;
     quality: number;
@@ -11,7 +12,7 @@ export interface MarketItem {
     orderType: 'WTB' | 'WTS' | 'UNKNOWN';
     seller: string;
     location: string;
-    timestamp: string;
+    timestamp: string | number; // Updated to support both ISO string (Live) and Epoch (Parser)
     searchableText?: string; // Optional: Pre-computed search text for SearchEngine
 }
 
@@ -131,4 +132,3 @@ export interface HeatmapDataPoint {
     count: number;
     avgPrice: number;
 }
-
