@@ -43,7 +43,7 @@ function normalizeItemName(item: string): string {
 // Removed: convertToCopper function - now using Money class
 
 async function generateTradeHash(trade: Trade): Promise<string> {
-    const timestampMs = new Date().getTime(); 
+    const timestampMs = new Date().getTime();
     const normalized = {
         server: trade.server.toLowerCase().trim(),
         seller: trade.nick.toLowerCase().trim(),
@@ -55,12 +55,12 @@ async function generateTradeHash(trade: Trade): Promise<string> {
     return sha256(JSON.stringify(normalized));
 }
 
-class LiveTradeMonitor {
+export class LiveTradeMonitor {
     private offlineQueue: QueuedTrade[] = [];
     private isOnline = navigator.onLine;
     private readonly MAX_RETRIES = 3;
     private readonly RETRY_DELAY = 1000;
-    private currentServer = 'Cadence'; 
+    private currentServer = 'Cadence';
     private currentUserId: string | null = null;
     private alerts: ExtendedTradeAlert[] = [];
 
@@ -84,7 +84,7 @@ class LiveTradeMonitor {
         this.currentUserId = data.user?.id || null;
     }
 
-    
+
     private async loadAlerts() {
         const saved = await this.store.getItem<ExtendedTradeAlert[]>('trade_alerts');
         if (saved) {
@@ -110,18 +110,18 @@ class LiveTradeMonitor {
         if (upper.includes('WTB')) return 'WTB';
         if (upper.includes('WTS')) return 'WTS';
         if (upper.includes('WTT')) return 'WTT';
-        return null; 
+        return null;
     }
 
     private parseItemAndPrice(message: string): { item: string, price: string } {
         const priceRegex = /(\d+s\d+c|\d+s|\d+c)/i;
         const priceMatch = message.match(priceRegex);
-        const price = priceMatch ? priceMatch[0] : '0c'; 
+        const price = priceMatch ? priceMatch[0] : '0c';
 
         let item = message
             .replace(/wts|wtb|wtt/gi, '')
-            .replace(priceRegex, '') 
-            .replace(/\bfor\b/gi, '') 
+            .replace(priceRegex, '')
+            .replace(/\bfor\b/gi, '')
             .trim();
 
         return { item, price };
@@ -134,7 +134,7 @@ class LiveTradeMonitor {
         /*
         // 1. Check Permissions (DISABLED)
         */
-        
+
         // BYPASS: Permissions check commented out to prevent freeze
         /*
         try {
@@ -153,7 +153,7 @@ class LiveTradeMonitor {
         // 2. Start Watcher (Backend)
         try {
             console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
-            const res = await invoke('start_trade_watcher', { path: filePath }); 
+            const res = await invoke('start_trade_watcher', { path: filePath });
             console.log('✅ Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
@@ -175,7 +175,7 @@ class LiveTradeMonitor {
 
             const type = this.parseTradeType(raw.message);
 
-            if (!type) return; 
+            if (!type) return;
 
             const { item, price } = this.parseItemAndPrice(raw.message);
 
@@ -190,7 +190,7 @@ class LiveTradeMonitor {
                 raw: JSON.stringify(raw)
             };
 
-            
+
             // Check Alerts
             try {
                 // Refresh alerts occasionally or assume synced? For now assume synced via localforage sharing the same store name?
@@ -200,9 +200,9 @@ class LiveTradeMonitor {
                 // Let's assume for now we use 'trade_alerts' key on default instance.
                 // Re-instantiate a default store for reading alerts to be safe?
                 // Or just use localforage (global) since AlertsManager imported it globally.
-                
+
                 const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
-                
+
                 // Prepare object for alert check (needs Money price)
                 const checkObj = {
                     timestamp: trade.timestamp,
@@ -229,7 +229,7 @@ class LiveTradeMonitor {
         if (!this.currentUserId) {
             const { data } = await supabase.auth.getUser();
             this.currentUserId = data.user?.id || null;
-            if (!this.currentUserId) return; 
+            if (!this.currentUserId) return;
         }
 
         if (!this.isOnline) {
