@@ -1,239 +1,113 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Activity, Zap, AlertCircle } from 'lucide-react';
+import { calculateMarketHealth } from '../../services/marketHealthCalculator';
 import { MarketItem } from '../../types';
-import { formatWurmPrice } from '../../services/priceUtils';
+import { Activity, TrendingUp, TrendingDown, Target, Shield, AlertTriangle } from 'lucide-react';
+import { useChartsTranslation } from '../../services/chartsTranslations';
 
-interface MarketHealthProps {
+interface MarketHealthDashboardProps {
     rawData: MarketItem[];
+    itemName?: string; // Optional: specific item analysis
 }
 
-interface ItemStats {
-    name: string;
-    currentAvg: number;
-    previousAvg: number;
-    change: number;
-    changePercent: number;
-    volume: number;
-}
+/**
+ * MarketHealthDashboard
+ * Visualizes the 0-100 Market Stability Index (MSI).
+ * Shows "Thriving", "Healthy", "Stable", "Poor", "Critical" states.
+ */
+export const MarketHealthDashboard: React.FC<MarketHealthDashboardProps> = ({ rawData, itemName }) => {
+    const { t } = useChartsTranslation();
 
-export const MarketHealthDashboard: React.FC<MarketHealthProps> = ({ rawData }) => {
-    // Calculate market metrics
-    const marketMetrics = useMemo(() => {
-        if (rawData.length === 0) {
-            return {
-                totalVolume24h: 0,
-                totalVolume7d: 0,
-                volumeChange: 0,
-                topGainers: [],
-                topLosers: [],
-                mostActive: [],
-                marketPulse: 'neutral' as 'bullish' | 'bearish' | 'neutral'
-            };
-        }
+    const metrics = useMemo(() => {
+        // If no specific item is selected, we could calculate a global market index (avg of top 50?)
+        // For MVP, we only show this if an item is selected, or show a placeholder.
+        if (!itemName) return null;
+        return calculateMarketHealth(rawData, itemName);
+    }, [rawData, itemName]);
 
-        const now = Date.now();
-        const oneDayAgo = now - (24 * 60 * 60 * 1000);
-        const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
-        const fourteenDaysAgo = now - (14 * 24 * 60 * 60 * 1000);
-
-        // Volume calculations
-        const last24h = rawData.filter(i => new Date(i.timestamp).getTime() > oneDayAgo);
-        const last7d = rawData.filter(i => new Date(i.timestamp).getTime() > sevenDaysAgo);
-        const prev7d = rawData.filter(i => {
-            const time = new Date(i.timestamp).getTime();
-            return time > fourteenDaysAgo && time <= sevenDaysAgo;
-        });
-
-        const totalVolume24h = last24h.length;
-        const totalVolume7d = last7d.length;
-        const volumeChange = prev7d.length > 0
-            ? ((totalVolume7d - prev7d.length) / prev7d.length) * 100
-            : 0;
-
-        // Calculate price changes per item
-        const itemChanges = new Map<string, ItemStats>();
-
-        // Get unique items
-        const uniqueItems = Array.from(new Set(rawData.map(i => i.name)));
-
-        uniqueItems.forEach(itemName => {
-            const allItemData = rawData.filter(i => i.name === itemName);
-            const recentData = allItemData.filter(i => new Date(i.timestamp).getTime() > sevenDaysAgo);
-            const oldData = allItemData.filter(i => {
-                const time = new Date(i.timestamp).getTime();
-                return time > fourteenDaysAgo && time <= sevenDaysAgo;
-            });
-
-            if (recentData.length > 0 && oldData.length > 0) {
-                const currentAvg = recentData.reduce((sum, i) => sum + i.price, 0) / recentData.length;
-                const previousAvg = oldData.reduce((sum, i) => sum + i.price, 0) / oldData.length;
-                const change = currentAvg - previousAvg;
-                const changePercent = (change / previousAvg) * 100;
-
-                itemChanges.set(itemName, {
-                    name: itemName,
-                    currentAvg,
-                    previousAvg,
-                    change,
-                    changePercent,
-                    volume: recentData.length
-                });
-            }
-        });
-
-        // Top gainers and losers
-        const sortedByChange = Array.from(itemChanges.values())
-            .filter(i => i.volume >= 5) // Minimum volume filter
-            .sort((a, b) => b.changePercent - a.changePercent);
-
-        const topGainers = sortedByChange.slice(0, 5);
-        const topLosers = sortedByChange.slice(-5).reverse();
-
-        // Most active items
-        const mostActive = Array.from(itemChanges.values())
-            .sort((a, b) => b.volume - a.volume)
-            .slice(0, 5);
-
-        // Market pulse (overall sentiment)
-        const avgChange = sortedByChange.reduce((sum, i) => sum + i.changePercent, 0) / sortedByChange.length;
-        const marketPulse: 'bullish' | 'bearish' | 'neutral' =
-            avgChange > 5 ? 'bullish' : avgChange < -5 ? 'bearish' : 'neutral';
-
-        return {
-            totalVolume24h,
-            totalVolume7d,
-            volumeChange,
-            topGainers,
-            topLosers,
-            mostActive,
-            marketPulse
-        };
-    }, [rawData]);
-
-    const getPulseColor = (pulse: string) => {
-        switch (pulse) {
-            case 'bullish': return 'text-emerald-400';
-            case 'bearish': return 'text-red-400';
-            default: return 'text-slate-400';
-        }
-    };
-
-    const getPulseIcon = (pulse: string) => {
-        switch (pulse) {
-            case 'bullish': return <TrendingUp className="w-5 h-5" />;
-            case 'bearish': return <TrendingDown className="w-5 h-5" />;
-            default: return <Activity className="w-5 h-5" />;
-        }
-    };
-
-    if (rawData.length === 0) {
+    if (!itemName || !metrics) {
         return (
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                    <Activity className="w-5 h-5 text-purple-500" />
-                    <h3 className="text-lg font-semibold text-white">Market Health</h3>
-                </div>
-                <p className="text-slate-500 text-sm">No market data available</p>
+            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 text-center animate-fade-in">
+                <Shield className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-slate-400">Select an item to analyze Market Health</h3>
             </div>
         );
     }
 
+    const { msi, health, liquidityScore, volatilityScore, trend } = metrics;
+
+    let color = 'text-emerald-500';
+    let bgColor = 'bg-emerald-500/10';
+    let borderColor = 'border-emerald-500/20';
+
+    if (health === 'Thriving') { color = 'text-purple-400'; bgColor = 'bg-purple-500/20'; borderColor = 'border-purple-500/30'; }
+    if (health === 'Healthy') { color = 'text-emerald-400'; bgColor = 'bg-emerald-500/20'; borderColor = 'border-emerald-500/30'; }
+    if (health === 'Stable') { color = 'text-blue-400'; bgColor = 'bg-blue-500/20'; borderColor = 'border-blue-500/30'; }
+    if (health === 'Poor') { color = 'text-amber-400'; bgColor = 'bg-amber-500/20'; borderColor = 'border-amber-500/30'; }
+    if (health === 'Critical') { color = 'text-red-400'; bgColor = 'bg-red-500/20'; borderColor = 'border-red-500/30'; }
+
     return (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-purple-500" />
-                    <h3 className="text-lg font-semibold text-white">Market Health</h3>
-                </div>
-                <div className={`flex items-center gap-2 ${getPulseColor(marketMetrics.marketPulse)}`}>
-                    {getPulseIcon(marketMetrics.marketPulse)}
-                    <span className="text-sm font-bold capitalize">{marketMetrics.marketPulse}</span>
-                </div>
-            </div>
+        <div className={`rounded-xl border ${borderColor} ${bgColor} p-6 mb-6 animate-fade-in relative overflow-hidden backdrop-blur-sm`}>
+            {/* Background Glow */}
+            <div className={`absolute -right-10 -top-10 w-40 h-40 ${bgColor} rounded-full blur-3xl opacity-30`} />
 
-            {/* Volume Stats */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <p className="text-xs text-slate-500 mb-1">24h Volume</p>
-                    <p className="text-xl font-bold text-white">{marketMetrics.totalVolume24h.toLocaleString()}</p>
-                </div>
-                <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <p className="text-xs text-slate-500 mb-1">7d Volume</p>
-                    <p className="text-xl font-bold text-white">{marketMetrics.totalVolume7d.toLocaleString()}</p>
-                </div>
-                <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
-                    <p className="text-xs text-slate-500 mb-1">7d Change</p>
-                    <p className={`text-xl font-bold ${marketMetrics.volumeChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {marketMetrics.volumeChange >= 0 ? '+' : ''}{marketMetrics.volumeChange.toFixed(1)}%
-                    </p>
-                </div>
-            </div>
-
-            {/* Top Movers */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Top Gainers */}
-                <div className="bg-slate-900/50 rounded-lg p-4 border border-emerald-500/20">
-                    <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="w-4 h-4 text-emerald-500" />
-                        <h4 className="text-sm font-semibold text-emerald-400">Top Gainers (7d)</h4>
-                    </div>
-                    <div className="space-y-2">
-                        {marketMetrics.topGainers.slice(0, 3).map((item, idx) => (
-                            <div key={item.name} className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <span className="text-slate-600 font-bold">#{idx + 1}</span>
-                                    <span className="text-white truncate">{item.name}</span>
-                                </div>
-                                <span className="text-emerald-400 font-bold">+{item.changePercent.toFixed(1)}%</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Top Losers */}
-                <div className="bg-slate-900/50 rounded-lg p-4 border border-red-500/20">
-                    <div className="flex items-center gap-2 mb-3">
-                        <TrendingDown className="w-4 h-4 text-red-500" />
-                        <h4 className="text-sm font-semibold text-red-400">Top Losers (7d)</h4>
-                    </div>
-                    <div className="space-y-2">
-                        {marketMetrics.topLosers.slice(0, 3).map((item, idx) => (
-                            <div key={item.name} className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <span className="text-slate-600 font-bold">#{idx + 1}</span>
-                                    <span className="text-white truncate">{item.name}</span>
-                                </div>
-                                <span className="text-red-400 font-bold">{item.changePercent.toFixed(1)}%</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Most Active */}
-            <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50">
-                <div className="flex items-center gap-2 mb-3">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <h4 className="text-sm font-semibold text-white">Most Active (7d)</h4>
-                </div>
-                <div className="space-y-2">
-                    {marketMetrics.mostActive.slice(0, 3).map((item, idx) => (
-                        <div key={item.name} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="text-slate-600 font-bold">#{idx + 1}</span>
-                                <span className="text-white truncate">{item.name}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-slate-400">{item.volume} trades</span>
-                                <span className={`font-bold ${item.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(1)}%
-                                </span>
-                            </div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                {/* Main Score */}
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <svg className="w-20 h-20 transform -rotate-90">
+                            <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
+                            <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="8" fill="transparent"
+                                strokeDasharray={226}
+                                strokeDashoffset={226 - (226 * msi) / 100}
+                                className={`${color} transition-all duration-1000 ease-out`}
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center flex-col">
+                            <span className={`text-2xl font-bold ${color}`}>{msi}</span>
+                            <span className="text-[9px] text-slate-400 uppercase tracking-widest">MSI</span>
                         </div>
-                    ))}
+                    </div>
+
+                    <div>
+                        <h3 className={`text-2xl font-bold ${color} flex items-center gap-2`}>
+                            {health} Market
+                            {health === 'Critical' && <AlertTriangle className="w-5 h-5 animate-pulse" />}
+                        </h3>
+                        <p className="text-slate-400 text-sm flex items-center gap-2">
+                            {itemName} is currently {trend}
+                            {trend === 'improving' ? <TrendingUp className="w-4 h-4 text-emerald-500" /> :
+                                trend === 'deteriorating' ? <TrendingDown className="w-4 h-4 text-red-500" /> :
+                                    <Activity className="w-4 h-4 text-blue-500" />}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="flex-1 w-full md:w-auto grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-slate-700/50 pt-4 md:pt-0 md:pl-6">
+                    <MetricPill label="Liquidity" value={liquidityScore} icon={<Activity className="w-4 h-4" />} />
+                    <MetricPill label="Stability" value={volatilityScore} icon={<Shield className="w-4 h-4" />} />
+                    <MetricPill label="Price Reliability" value={metrics.priceScore} icon={<Target className="w-4 h-4" />} />
                 </div>
             </div>
+        </div>
+    );
+};
+
+const MetricPill = ({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) => {
+    // calculate color based on value 0-100
+    let color = 'bg-slate-700 text-slate-300';
+    if (value >= 80) color = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    else if (value >= 50) color = 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    else if (value >= 20) color = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+    else color = 'bg-red-500/20 text-red-400 border-red-500/30';
+
+    return (
+        <div className={`flex flex-col items-center justify-center p-2 rounded-lg border ${color} border-opacity-50 transition-all hover:bg-opacity-30`}>
+            <div className="flex items-center gap-1 mb-1 opacity-80">
+                {icon}
+                <span className="text-[10px] uppercase font-bold tracking-wider">{label}</span>
+            </div>
+            <span className="text-xl font-mono font-bold">{Math.round(value)}</span>
         </div>
     );
 };
