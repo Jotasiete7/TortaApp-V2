@@ -702,6 +702,10 @@ TortaApp-V2/
 - **Status:** Closed Beta
 - **Release Date:** December 2025
 
+> [!IMPORTANT]
+> **NEXT VERSION RULE:** The next release MUST be tagged 2.0.1 (or higher).
+> Do NOT use 2.0.0 again to prevent tag collision.
+
 ### Version Naming Scheme
 
 **Pattern:** Wurm Online themed names (materials, creatures, items)
@@ -1020,5 +1024,6 @@ Codename: Torta Dragon Hatchling
 - Perfeito para v2.0.0-beta com tudo implementado!
 
 ---
+
 
 
