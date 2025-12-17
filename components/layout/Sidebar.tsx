@@ -91,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
             <div className="p-4 border-t border-slate-800 bg-slate-950">
                 <button
                     onClick={() => onNavigate(ViewState.SETTINGS)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${currentView === ViewState.SETTINGS ? 'text-amber-500 bg-amber-500/10' : 'text-slate-400 hover:text-slate-200'
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${currentView === ViewState.SETTINGS ? 'text-amber-500 bg-amber-500/10' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                         }`}
                 >
                     <Settings className="w-5 h-5" />

@@ -257,7 +257,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isProcessing}
-                            className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed h-full"
                         >
                             <div className="flex justify-between items-start mb-1">
                                 <div className="font-medium text-white">
@@ -270,7 +270,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             </div>
                         </button>
 
-                        <button className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-all opacity-50 cursor-not-allowed">
+                        <button className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-all opacity-50 cursor-not-allowed h-full">
                             <div className="font-medium text-white mb-1">Run Predictions</div>
                             <div className="text-xs text-slate-400">Requires Loaded Data</div>
                         </button>

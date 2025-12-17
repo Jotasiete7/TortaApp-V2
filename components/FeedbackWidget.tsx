@@ -36,7 +36,7 @@ export const FeedbackWidget: React.FC = () => {
             {/* Floating Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className={`fixed bottom-6 right-6 p-4 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full shadow-lg transition-all duration-300 z-50 hover:scale-110 ${isOpen ? 'rotate-90 scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+                className={`fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full shadow-lg transition-all duration-300 z-50 hover:scale-110 ${isOpen ? 'rotate-90 scale-0 opacity-0' : 'scale-100 opacity-100'}`}
                 title="Send Feedback"
             >
                 <MessageSquarePlus className="w-6 h-6" />

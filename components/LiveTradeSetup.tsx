@@ -302,7 +302,7 @@ export const LiveTradeSetup = () => {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className={`fixed bottom-24 right-6 p-3 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-12 hover:w-auto overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-12 hover:w-auto overflow-hidden'}`}
+                className={`fixed bottom-24 right-6 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden'}`}
                 title="Configurar Live Monitor (Ctrl+M)"
             >
                 {isWatching ? (
