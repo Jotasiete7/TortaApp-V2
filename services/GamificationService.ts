@@ -1,5 +1,6 @@
 ﻿import { supabase } from './supabase';
 import { UserStreak, DailyClaimResult } from '../types';
+import { ACHIEVEMENTS, Achievement } from '../constants/gamification';
 
 export const GamificationService = {
     /**
@@ -34,6 +35,94 @@ export const GamificationService = {
             throw error;
         }
         return data as DailyClaimResult;
+    }
+
+    /**
+     * Check user's progress towards achievements
+     */
+    async checkAchievements(userId: string): Promise<Achievement[]> {
+        try {
+            // Get user stats
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('total_trades')
+                .eq('user_id', userId)
+                .single();
+
+            const { count: totalTrades } = await supabase
+                .from('trade_logs')
+                .select('*', { count: 'exact', head: true });
+
+            const databaseSizeMB = ((totalTrades || 0) * 250) / (1024 * 1024);
+
+            // Check which achievements are unlocked
+            const unlockedAchievements: Achievement[] = [];
+
+            for (const achievement of ACHIEVEMENTS) {
+                let isUnlocked = false;
+
+                switch (achievement.requirement.type) {
+                    case 'trades':
+                        isUnlocked = (profile?.total_trades || 0) >= achievement.requirement.value;
+                        break;
+                    case 'db_size':
+                        isUnlocked = databaseSizeMB >= achievement.requirement.value;
+                        break;
+                    // Add more types as needed
+                }
+
+                if (isUnlocked) {
+                    unlockedAchievements.push(achievement);
+                }
+            }
+
+            return unlockedAchievements;
+        } catch (error) {
+            console.error('Error checking achievements:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get user's unlocked achievements from database
+     */
+    async getUserAchievements(userId: string): Promise<string[]> {
+        try {
+            const { data, error } = await supabase
+                .from('user_achievements')
+                .select('achievement_id')
+                .eq('user_id', userId);
+
+            if (error) throw error;
+            return data?.map(a => a.achievement_id) || [];
+        } catch (error) {
+            console.error('Error fetching user achievements:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Unlock an achievement for a user
+     */
+    async unlockAchievement(userId: string, achievementId: string): Promise<boolean> {
+        try {
+            const { error } = await supabase
+                .from('user_achievements')
+                .insert({ user_id: userId, achievement_id: achievementId });
+
+            if (error) {
+                if (error.code === '23505') {
+                    // Already unlocked
+                    return false;
+                }
+                throw error;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error unlocking achievement:', error);
+            return false;
+        }
     }
 };
 

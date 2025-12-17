@@ -13,6 +13,7 @@ import { UserBadge } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { emojiService } from '../services/emojiService';
 import { GamificationRules } from './gamification/GamificationRules';
+import { AchievementPanel } from './gamification/AchievementPanel';
 import { LEVELS, XP_PER_TRADE } from '../constants/gamification';
 import {
     IntelligenceService,
@@ -348,7 +349,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
 
             {/* TABS */}
             <div className="flex gap-4 border-b border-slate-700">
-                {['overview', 'history', 'shouts'].map(tab => (
+                {['overview', 'history', 'shouts', 'achievements'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab as any)}
@@ -357,7 +358,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                             : 'text-slate-400 hover:text-white'
                             }`}
                     >
-                        {tab === 'shouts' ? 'My Shouts' : tab === 'history' ? 'Trade History' : 'Overview & Metrics'}
+                        {tab === 'achievements' ? 'Achievements' : tab === 'shouts' ? 'My Shouts' : tab === 'history' ? 'Trade History' : 'Overview & Metrics'}
                     </button>
                 ))}
             </div>

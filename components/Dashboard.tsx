@@ -5,6 +5,7 @@ import { Leaderboard } from './gamification/Leaderboard';
 import { PlayerProfile } from './PlayerProfile';
 import { NickVerification } from './auth/NickVerification';
 import { ShoutBox } from './gamification/ShoutBox';
+import { DatabaseStatsCard } from './gamification/DatabaseStatsCard';
 import { LiveTradeSetup } from './LiveTradeSetup';
 import { LiveFeed } from './LiveFeed';
 import { MarketItem, Language } from '../types';
