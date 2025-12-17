@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import { Megaphone, Award } from 'lucide-react';
 import { emojiService } from '../../services/emojiService';
+import { tipsService } from '../../services/TipsService';
 
 // Tipos estendidos para incluir novos campos
 interface TickerMessageExtended {
@@ -80,25 +81,34 @@ const parseAndMerge = (text: string) => {
 export const NewsTicker: React.FC = () => {
     const [messages, setMessages] = useState<TickerMessageExtended[]>([]);
     const [emojisLoaded, setEmojisLoaded] = useState(false);
+    const [currentTipIndex, setCurrentTipIndex] = useState(0);
+    const [tipJustChanged, setTipJustChanged] = useState(false);
     const [speed, setSpeed] = useState<number>(() => {
         const saved = localStorage.getItem('ticker_speed');
         return saved ? parseFloat(saved) : 1;
     });
-    const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
-    // Rotate tips every 10 minutes
-    useEffect(() => {
-        const tipInterval = setInterval(() => {
-            setCurrentTipIndex(prev => (prev + 1) % ROTATING_TIPS.length);
-        }, 10 * 60 * 1000); // 10 minutes
-
-        return () => clearInterval(tipInterval);
-    }, []);
 
 
     useEffect(() => {
         emojiService.loadEmojis().then(() => setEmojisLoaded(true));
         fetchMessages();
+
+        // Rotate tips every 10 minutes
+        const tipsSettings = tipsService.getSettings();
+        if (tipsSettings.enabled) {
+            const tipInterval = setInterval(() => {
+                setCurrentTipIndex(prev => {
+                    const enabledTips = tipsService.getEnabledTips('en');
+                    return (prev + 1) % enabledTips.length;
+                });
+                setTipJustChanged(true);
+                // Fade back to normal after 1 minute
+                setTimeout(() => setTipJustChanged(false), 60000);
+            }, tipsSettings.intervalMinutes * 60 * 1000);
+
+            return () => clearInterval(tipInterval);
+        }
 
         // Realtime subscription
         const channel = supabase
@@ -159,6 +169,26 @@ export const NewsTicker: React.FC = () => {
         return null;
     }
 
+    // Get current tip based on language
+    const tipsSettings = tipsService.getSettings();
+    const enabledTips = tipsSettings.enabled ? tipsService.getEnabledTips('en') : []; // TODO: Use actual language from props
+    const currentTip = enabledTips[currentTipIndex] || '';
+
+    // Inject tip as synthetic message
+    const tipMessage = currentTip ? {
+        id: 'rotating-tip',
+        text: currentTip,
+        color: 'purple' as const,
+        paid: false,
+        created_at: new Date().toISOString(),
+        expires_at: null,
+        created_by: null,
+        created_by_nick: null,
+        user_first_badge_id: null
+    } : null;
+
+    const messagesWithTip = tipMessage ? [...messages, tipMessage] : messages;
+
     const colorMap = {
         green: 'text-emerald-400',
         red: 'text-rose-400',
@@ -167,20 +197,6 @@ export const NewsTicker: React.FC = () => {
         purple: 'text-purple-400'
     };
 
-    
-        // Inject rotating tip as a synthetic message
-        const currentTip: TickerMessageExtended = {
-            id: 'rotating-tip',
-            text: ROTATING_TIPS[currentTipIndex],
-            color: 'cyan',
-            paid: false,
-            created_at: new Date().toISOString(),
-            expires_at: null,
-            created_by: null,
-            created_by_nick: null,
-            user_first_badge_id: null
-        };
-        const messagesWithTip = [...messages, currentTip];
 
         return (
             <div className="fixed top-0 left-0 right-0 h-8 bg-black border-b border-slate-800 z-[100] overflow-hidden">
@@ -215,7 +231,7 @@ export const NewsTicker: React.FC = () => {
                                 )}
 
                                 {/* Mensagem */}
-                                <div className={`${colorMap[msg.color]} font-medium text-sm flex items-center h-full`}>
+                                <div className={`${colorMap[msg.color]} font-medium text-sm flex items-center h-full ${msg.id === 'rotating-tip' && tipJustChanged ? 'animate-pulse' : ''}`}>
                                     {parseAndMerge(msg.text).map((part, i) => (
                                         typeof part === 'string' ? (
                                             <span key={i}>
