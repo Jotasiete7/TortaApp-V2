@@ -206,7 +206,11 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                                             {linkifyMessage(trade.message)}
                                         </span>
 
-                                        <span className="text-slate-700 text-xs">•</span>
+                                        {idx === displayTrades.length - 1 ? (
+                                            <span className="text-2xl opacity-70">🥧</span>
+                                        ) : (
+                                            <span className="text-slate-700 text-xs">•</span>
+                                        )}
                                     </div>
                                 );
                             })}

@@ -361,7 +361,7 @@ const App: React.FC = () => {
                             <div className="flex flex-col items-end">
                                 {/* Nick Display - Larger & Prominent */}
                                 {myVerifiedNick ? (
-                                    <div className="text-2xl font-bold text-white flex items-center gap-2">
+                                    <div className="text-2xl font-bold text-white flex items-center gap-2 mb-2">
                                         <span className="text-emerald-400 flex items-center gap-1">
                                             <Shield className="w-4 h-4" /> {myVerifiedNick}
                                         </span>
@@ -373,11 +373,11 @@ const App: React.FC = () => {
                                         </span>
                                     </div>
                                 ) : (
-                                    <div className="text-lg font-bold text-slate-400">Guest User</div>
+                                    <div className="text-lg font-bold text-slate-400 mb-2">Guest User</div>
                                 )}
 
                                 {/* Email Display - Hidden by default with Toggle */}
-                                <div className="flex items-center gap-2 mt-1 bg-slate-800/50 px-2 py-1 rounded border border-slate-700/50">
+                                <div className="flex items-center gap-2 mt-1 bg-slate-800/50 px-3 py-2 rounded border border-slate-700/50">
                                     <span className="text-xs text-slate-400 font-mono tracking-wide">
                                         {showEmail ? user.email : '••••••••••••••'}
                                     </span>

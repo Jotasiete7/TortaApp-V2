@@ -190,7 +190,11 @@ export const NewsTicker: React.FC = () => {
 
                                 {/* Separador */}
                                 {index < messages.length * 2 - 1 && (
-                                    <span className="ml-8 text-slate-600 flex items-center h-full">•</span>
+                                    index === messages.length - 1 ? (
+                                        <span className="ml-8 text-2xl flex items-center h-full">🥧</span>
+                                    ) : (
+                                        <span className="ml-8 text-slate-600 flex items-center h-full">•</span>
+                                    )
                                 )}
                             </div>
                         ))}
