@@ -73,9 +73,28 @@ export const LiveFeed = () => {
         setShouldAutoScroll(true);
     };
 
-        const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
-        // Could add a toast here, but for now just copy
+            const handleCopy = (nick: string, message: string) => {
+        // Default format
+        let format = '/t {nick} {message}';
+        // Try to get saved config from LiveTradeMonitor settings (if available via localStorage)
+        const savedConfig = localStorage.getItem('torta_live_monitor_config');
+        if (savedConfig) {
+            try {
+                const config = JSON.parse(savedConfig);
+                if (config.quickMessageFormat) {
+                    format = config.quickMessageFormat;
+                }
+            } catch (e) {
+                console.error('Failed to parse monitor config', e);
+            }
+        }
+
+        const formatted = format
+            .replace('{nick}', nick)
+            .replace('{message}', message);
+
+        navigator.clipboard.writeText(formatted);
+        // Could add a toast here
     };
 
     return (
@@ -128,7 +147,7 @@ export const LiveFeed = () => {
                     ) : (
                         <div
                             key={trade.id}
-                            onDoubleClick={() => handleCopy(trade.message)}
+                            onDoubleClick={() => handleCopy(trade.nick, trade.message)}
                             title="Double-click to copy message"
                             className="flex items-start gap-3 hover:bg-white/5 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in cursor-pointer"
                         >
