@@ -2,16 +2,11 @@ import React, { useState } from 'react';
 import { Settings, ChevronDown, FileText, Info } from 'lucide-react';
 import { LogUploader } from './LogProcessor/LogUploader';
 
-interface AdvancedToolsProps {
-    onFileUpload: (file: File) => void;
-    isProcessing: boolean;
-}
-
-export const AdvancedTools: React.FC<AdvancedToolsProps> = ({ onFileUpload, isProcessing }) => {
+export const AdvancedTools: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden mt-8">
             {/* Header - Collapsible */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -55,7 +50,11 @@ export const AdvancedTools: React.FC<AdvancedToolsProps> = ({ onFileUpload, isPr
                         <p className="text-sm text-slate-400 mb-4">
                             Upload raw Wurm Online log files (.txt) to import historical trade data.
                         </p>
-                        <LogUploader onFileUpload={onFileUpload} isProcessing={isProcessing} />
+                        <LogUploader 
+                            onProcessingComplete={(records) => {
+                                console.log("Historic logs processed:", records.length);
+                            }}
+                        />
                     </div>
                 </div>
             )}

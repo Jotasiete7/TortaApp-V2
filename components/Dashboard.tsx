@@ -295,18 +295,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <Leaderboard />
             </div>
 
-            {/* Advanced Data Tools - Full Width */}
-            <div className="mt-8">
-                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Database className="w-5 h-5 text-amber-500" />
-                    Advanced Data Tools
-                </h2>
-                <LogUploader
-                    onProcessingComplete={(records) => {
-                        if (import.meta.env.DEV) console.log("Processed RAW logs:", records);
-                    }}
-                />
-            </div>
+            {/* Advanced Data Tools (Collapsible) */}
+            <AdvancedTools />
         </div>
     );
 };
