@@ -15,6 +15,25 @@ interface TickerMessageExtended {
     created_by_nick?: string | null;
     user_first_badge_id?: string | null;
 }
+// Rotating Tips - Helpful advice shown every 10 minutes
+const ROTATING_TIPS = [
+    "💡 Tip: Double-click any trade in the Live Feed to copy a quick message!",
+    "🎯 Tip: Use the Smart Search with filters to find the best deals instantly!",
+    "🏆 Tip: Complete achievements to unlock exclusive badges and level up faster!",
+    "📊 Tip: Check Market Intelligence for price trends and trading insights!",
+    "⚡ Tip: Enable Live Monitor to auto-feed trades - no manual uploads needed!",
+    "🔐 Tip: Verify your nick with the @TORTA token for auto-verification!",
+    "🎮 Tip: Reach Level 50 'Legendary Whale' by processing 10M+ trades!",
+    "💰 Tip: Smart Alerts highlight underpriced items automatically!",
+    "📈 Tip: Use Charts Engine to visualize price history and market trends!",
+    "🌟 Tip: Paid Shouts appear in the ticker - support the community!",
+    "🥧 Tip: The pie emoji 🥧 shows when the ticker completes a full loop!",
+    "🔍 Tip: Search debounce prevents lag - type freely without freezing!",
+    "🎨 Tip: Customize ticker speed in Settings for your preferred reading pace!",
+    "📱 Tip: Advanced Tools section has manual log upload for historic data!",
+    "🚀 Tip: Auto-updater keeps your app fresh - check for updates regularly!"
+];
+
 
 // Helper para renderizar texto com links
 const renderMessageWithLinks = (text: string): React.ReactNode[] => {
@@ -65,6 +84,17 @@ export const NewsTicker: React.FC = () => {
         const saved = localStorage.getItem('ticker_speed');
         return saved ? parseFloat(saved) : 1;
     });
+    const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+    // Rotate tips every 10 minutes
+    useEffect(() => {
+        const tipInterval = setInterval(() => {
+            setCurrentTipIndex(prev => (prev + 1) % ROTATING_TIPS.length);
+        }, 10 * 60 * 1000); // 10 minutes
+
+        return () => clearInterval(tipInterval);
+    }, []);
+
 
     useEffect(() => {
         emojiService.loadEmojis().then(() => setEmojisLoaded(true));
@@ -137,8 +167,23 @@ export const NewsTicker: React.FC = () => {
         purple: 'text-purple-400'
     };
 
-    return (
-        <div className="fixed top-0 left-0 right-0 h-8 bg-black border-b border-slate-800 z-[100] overflow-hidden">
+    
+        // Inject rotating tip as a synthetic message
+        const currentTip: TickerMessageExtended = {
+            id: 'rotating-tip',
+            text: ROTATING_TIPS[currentTipIndex],
+            color: 'cyan',
+            paid: false,
+            created_at: new Date().toISOString(),
+            expires_at: null,
+            created_by: null,
+            created_by_nick: null,
+            user_first_badge_id: null
+        };
+        const messagesWithTip = [...messages, currentTip];
+
+        return (
+            <div className="fixed top-0 left-0 right-0 h-8 bg-black border-b border-slate-800 z-[100] overflow-hidden">
             <div className="flex items-center h-full">
                 {/* Ícone fixo à esquerda */}
                 <div className="flex-shrink-0 px-3 bg-amber-600 h-full flex items-center justify-center z-20">
@@ -189,11 +234,11 @@ export const NewsTicker: React.FC = () => {
                                 </div>
 
                                 {/* Separador */}
-                                {index < messages.length * 2 - 1 && (
-                                    index === messages.length - 1 ? (
-                                        <span className="ml-8 text-2xl flex items-center h-full">🥧</span>
+                                {index < messagesWithTip.length * 2 - 1 && (
+                                    index === messagesWithTip.length - 1 ? (
+                                        <span className="mx-8 text-xl flex items-center h-full">🥧</span>
                                     ) : (
-                                        <span className="ml-8 text-slate-600 flex items-center h-full">•</span>
+                                        <span className="mx-8 text-slate-600 flex items-center h-full">•</span>
                                     )
                                 )}
                             </div>
