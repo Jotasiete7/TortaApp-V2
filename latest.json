@@ -1,5 +1,5 @@
 {
-    "version": "2.0.0",
+    "version": "2.0.0-beta.1",
     "notes": "Initial beta release - Torta Venerable Whale 🐋\n\nFeatures:\n- Market Intelligence (100k+ records)\n- ML Price Predictor\n- Gamification System\n- Admin Panel\n- Auto-Updater\n\nKnown Issues:\n- XP updates every ~5 minutes\n- ML predictions require historical data\n- File upload limited to 50MB",
     "pub_date": "2025-12-08T20:00:00Z",
     "platforms": {
@@ -8,4 +8,4 @@
             "url": "https://github.com/Jotasiete7/TortaApp-V2/releases/download/v2.0.0-beta/TortaApp_2.0.0_x64-setup.exe"
         }
     }
-}
+}\n
