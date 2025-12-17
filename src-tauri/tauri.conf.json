@@ -42,7 +42,7 @@
             "endpoints": [
                 "https://github.com/Jotasiete7/TortaApp-V2/releases/latest/download/latest.json"
             ],
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVFRTFCRTk5MUM1RUQwQjgKUldTNDBGNGNtYjdoN2lYWGZRckpwVVN6cTZoc2h1U2lWRm9scmRvTzVpTm1hVUMzOVpJNHBjV1EK"
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXkgQUY0NjYwMEMyM0FBQUE1NApSV1JVcXFvakRHQkdyd1paTHZ1bTVxemZQYVcrbno3cVpJQVF3dlpTQjBpeXV1ZU5Bbm80VTdRUA=="
         },
         "deep-link": {
             "verbose": true,

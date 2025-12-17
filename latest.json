@@ -4,7 +4,7 @@
     "pub_date": "2025-12-08T20:00:00Z",
     "platforms": {
         "windows-x86_64": {
-            "signature": "",
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIG1pbmlzaWduIHNlY3JldCBrZXkKUlVSVXFxb2pER0JHcjRRa25zc3BuN1dLMW1XSWdlSG9sTnN4aWNicHFDOFVXSzl2NW1xRCtDbkZ4eG95T3l3RURnTXpZbGtZYnA3bXljbVBYV21BUjR2dFhOSkNwL1JDSVFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY1OTk2MTcwCWZpbGU6dGFyZ2V0L3JlbGVhc2UvYnVuZGxlL25zaXMvVG9ydGFBcHBfMi4wLjBfeDY0LXNldHVwLmV4ZQloYXNoZWQKM0lZelJNdkMrbkRoNHZncExsYTZKOEVPQjgreVRKSzFOT2xxSGY2UzRVS09MRnk3dWFrdldoR1RCN3dMdy9NOXJsUHI0OWJiSi9CVExteUhOa2RVRFE9PQ==",
             "url": "https://github.com/Jotasiete7/TortaApp-V2/releases/download/v2.0.0-beta/TortaApp_2.0.0_x64-setup.exe"
         }
     }
