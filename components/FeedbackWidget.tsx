@@ -36,7 +36,7 @@ export const FeedbackWidget: React.FC = () => {
             {/* Floating Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className={`fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full shadow-lg transition-all duration-300 z-50 hover:scale-110 ${isOpen ? 'rotate-90 scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+                className={`fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full shadow-lg transition-all duration-300 z-50 hover:scale-110 pointer-events-auto ${isOpen ? 'rotate-90 scale-0 opacity-0' : 'scale-100 opacity-100'}`}
                 title="Send Feedback"
             >
                 <MessageSquarePlus className="w-6 h-6" />
@@ -44,7 +44,7 @@ export const FeedbackWidget: React.FC = () => {
 
             {/* Popup Form */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-10 fade-in duration-200 overflow-hidden">
+                <div className="fixed bottom-6 right-6 w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-10 fade-in duration-200 overflow-hidden pointer-events-auto">
                     {/* Header */}
                     <div className="flex justify-between items-center p-4 bg-slate-900/50 border-b border-slate-700">
                         <h3 className="text-white font-bold flex items-center gap-2">

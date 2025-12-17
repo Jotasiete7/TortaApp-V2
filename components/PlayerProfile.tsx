@@ -13,6 +13,7 @@ import { UserBadge } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { emojiService } from '../services/emojiService';
 import { GamificationRules } from './gamification/GamificationRules';
+import { LEVELS, XP_PER_TRADE } from '../constants/gamification';
 import {
     IntelligenceService,
     PlayerStatsAdvanced,
@@ -78,15 +79,7 @@ const BADGE_STYLES: Record<string, string> = {
     slate: "text-slate-400 bg-slate-500/10 border-slate-500/50",
 };
 
-// LEVELING CONSTANTS
-const XP_PER_TRADE = 10;
-const LEVELS = [
-    { level: 1, name: 'Novice', minTrades: 0, maxTrades: 50 },
-    { level: 2, name: 'Apprentice', minTrades: 50, maxTrades: 150 },
-    { level: 3, name: 'Merchant', minTrades: 150, maxTrades: 500 },
-    { level: 4, name: 'Veteran', minTrades: 500, maxTrades: 1000 },
-    { level: 5, name: 'Tycoon', minTrades: 1000, maxTrades: 9999999 }
-];
+// LEVELING CONSTANTS (now imported from constants/gamification.ts)
 
 export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) => {
     const [stats, setStats] = useState<PlayerStatsAdvanced | null>(null);

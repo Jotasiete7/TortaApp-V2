@@ -94,7 +94,7 @@ export const AdCooldownWidget = () => {
 
     return (
         <div 
-            className={`fixed z-[100] bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-xl p-3 w-36 transition-all select-none ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-default'}`}
+            className={`fixed z-[100] bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-xl shadow-xl p-3 w-36 transition-all select-none pointer-events-auto ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-default'}`}
             style={{ left: position.x, top: position.y }}
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}

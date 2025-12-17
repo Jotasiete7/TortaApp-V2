@@ -26,6 +26,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
     onSelect
 }) => {
     const [query, setQuery] = useState('');
+    const [debouncedQuery, setDebouncedQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [recentSearches, setRecentSearches] = useState<{ id: string, name: string }[]>([]);
@@ -51,7 +52,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
 
     // Items to display in dropdown
     const displayItems = useMemo(() => {
-        if (query.trim()) {
+        if (debouncedQuery.trim()) {
             return searchResults;
         }
 
