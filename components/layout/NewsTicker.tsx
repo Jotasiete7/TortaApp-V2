@@ -83,6 +83,8 @@ export const NewsTicker: React.FC = () => {
     const [emojisLoaded, setEmojisLoaded] = useState(false);
     const [currentTipIndex, setCurrentTipIndex] = useState(0);
     const [tipJustChanged, setTipJustChanged] = useState(false);
+    const [tipsLoaded, setTipsLoaded] = useState(false);
+    const [enabledTips, setEnabledTips] = useState<string[]>([]);
     const [speed, setSpeed] = useState<number>(() => {
         const saved = localStorage.getItem('ticker_speed');
         return saved ? parseFloat(saved) : 1;
@@ -92,6 +94,16 @@ export const NewsTicker: React.FC = () => {
 
     useEffect(() => {
         emojiService.loadEmojis().then(() => setEmojisLoaded(true));
+        
+        // Load tips from JSON
+        const loadTips = async () => {
+            await tipsService.loadTips();
+            const tips = tipsService.getEnabledTips('en');
+            setEnabledTips(tips);
+            setTipsLoaded(true);
+        };
+        loadTips();
+
         fetchMessages();
 
         // Rotate tips every 10 minutes
@@ -99,8 +111,8 @@ export const NewsTicker: React.FC = () => {
         if (tipsSettings.enabled) {
             const tipInterval = setInterval(() => {
                 setCurrentTipIndex(prev => {
-                    const enabledTips = tipsService.getEnabledTips('en');
-                    return (prev + 1) % enabledTips.length;
+                    const length = enabledTips.length || 1;
+                    return (prev + 1) % length;
                 });
                 setTipJustChanged(true);
                 // Fade back to normal after 1 minute
@@ -165,30 +177,25 @@ export const NewsTicker: React.FC = () => {
         }
     };
 
-    if (!emojisLoaded || messages.length === 0) {
+    if (!emojisLoaded) {
         return null;
     }
 
-    // Get current tip based on language
-    const tipsSettings = tipsService.getSettings();
-    const enabledTips = tipsSettings.enabled ? tipsService.getEnabledTips('en') : []; // TODO: Use actual language from props
-    const currentTip = enabledTips[currentTipIndex] || '';
-
-    // Inject tip as synthetic message
-    const tipMessage = currentTip ? {
+   // Inject tip as synthetic message
+    const currentTip = tipsLoaded && enabledTips.length > 0 ? enabledTips[currentTipIndex % enabledTips.length] : '';
+    const tipMessage: TickerMessageExtended = {
         id: 'rotating-tip',
         text: currentTip,
-        color: 'purple' as const,
+        color: 'purple',
         paid: false,
         created_at: new Date().toISOString(),
         expires_at: null,
         created_by: null,
         created_by_nick: null,
         user_first_badge_id: null
-    } : null;
-
-    const messagesWithTip = tipMessage ? [...messages, tipMessage] : messages;
-
+    };
+    const messagesWithTip = [...messages, tipMessage];
+    
     const colorMap = {
         green: 'text-emerald-400',
         red: 'text-rose-400',
@@ -199,7 +206,7 @@ export const NewsTicker: React.FC = () => {
 
 
         return (
-            <div className="fixed top-0 left-0 right-0 h-8 bg-black border-b border-slate-800 z-[100] overflow-hidden">
+            <div className="fixed top-0 left-0 right-0 h-8 bg-black border-b border-slate-800 z-[60] overflow-hidden">
             <div className="flex items-center h-full">
                 {/* Ícone fixo à esquerda */}
                 <div className="flex-shrink-0 px-3 bg-amber-600 h-full flex items-center justify-center z-20">
@@ -210,7 +217,7 @@ export const NewsTicker: React.FC = () => {
                 <div className="flex-1 overflow-hidden relative h-full flex items-center">
                     {/* Alinhamento corrigido: flex items-center para centralizar verticalmente */}
                     <div className="animate-marquee whitespace-nowrap flex items-center h-full">
-                        {[...messages, ...messages].map((msg, index) => (
+                        {[...messagesWithTip, ...messagesWithTip].map((msg, index) => (
                             <div key={`${msg.id}-${index}`} className="flex items-center mx-8 h-full">
                                 {/* Badge/Label */}
                                 {msg.paid && (

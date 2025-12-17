@@ -33,14 +33,16 @@ class TipsService {
     }
 
     async loadTips(): Promise<void> {
+        console.log('🔍 TipsService: Loading tips...');
         if (this.loaded) return;
         try {
             const response = await fetch('/data/tips.json');
             const data = await response.json();
             this.tips = data.tips || [];
+            console.log('✅ TipsService: Loaded ' + this.tips.length + ' tips.');
             this.loaded = true;
         } catch (e) {
-            console.error('Failed to load tips.json', e);
+            console.error('❌ TipsService: Failed to load tips.json', e);
             this.tips = [];
         }
     }
