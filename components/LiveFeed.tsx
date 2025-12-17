@@ -73,6 +73,11 @@ export const LiveFeed = () => {
         setShouldAutoScroll(true);
     };
 
+        const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text);
+        // Could add a toast here, but for now just copy
+    };
+
     return (
         <div className="w-full bg-[#0a0f14] border-t border-slate-800 shadow-2xl flex flex-col font-mono text-sm h-64 relative overflow-hidden group">
             {/* Terminal Header */}
@@ -123,7 +128,9 @@ export const LiveFeed = () => {
                     ) : (
                         <div
                             key={trade.id}
-                            className="flex items-start gap-3 hover:bg-white/5 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in"
+                            onDoubleClick={() => handleCopy(trade.message)}
+                            title="Double-click to copy message"
+                            className="flex items-start gap-3 hover:bg-white/5 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in cursor-pointer"
                         >
                             <span className="text-slate-500 text-xs shrink-0 font-light">
                                 [{trade.timestamp}]
