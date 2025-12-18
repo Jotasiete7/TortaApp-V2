@@ -162,66 +162,62 @@ export class LiveTradeMonitor {
             return;
         }
 
-        // 3. Listen for Events
-        await listen<{ timestamp: string, nick: string, message: string }>('trade-event', async (event) => {
-            console.log("📨 FRONTEND RECEIVED EVENT:", event);
-            const raw = event.payload;
+        // 3. Listen for Events (Fixed to listen for BATCHES)
+        await listen<{ trades: { timestamp: string, nick: string, message: string }[] }>('trade-batch-event', async (event) => {
+            console.log("📨 FRONTEND RECEIVED BATCH:", event);
+            const batch = event.payload.trades;
 
-            // NEW: Filter Noise before processing
-            if (FileParser.isNoise(raw.message)) {
-                console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
-                return;
-            }
+            if (!batch || batch.length === 0) return;
 
-            const type = this.parseTradeType(raw.message);
+            for (const raw of batch) {
+                // FILTER NOISE
+                if (FileParser.isNoise(raw.message)) {
+                    // console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
+                    continue;
+                }
 
-            if (!type) return;
+                const type = this.parseTradeType(raw.message);
 
-            const { item, price } = this.parseItemAndPrice(raw.message);
+                if (!type) continue;
 
-            const trade: Trade = {
-                timestamp: raw.timestamp,
-                nick: raw.nick,
-                message: raw.message,
-                type,
-                item,
-                price,
-                server: this.currentServer,
-                raw: JSON.stringify(raw)
-            };
+                const { item, price } = this.parseItemAndPrice(raw.message);
 
-
-            // Check Alerts
-            try {
-                // Refresh alerts occasionally or assume synced? For now assume synced via localforage sharing the same store name?
-                // Actually LiveTradeMonitor sets store name 'TortaApp_OfflineQueue', AlertsManager uses default or distinct.
-                // AlertsManager uses default 'localforage'.
-                // We should fix this: AlertsManager should use specific store or LiveMonitor should access default.
-                // Let's assume for now we use 'trade_alerts' key on default instance.
-                // Re-instantiate a default store for reading alerts to be safe?
-                // Or just use localforage (global) since AlertsManager imported it globally.
-
-                const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
-
-                // Prepare object for alert check (needs Money price)
-                const checkObj = {
-                    timestamp: trade.timestamp,
-                    nick: trade.nick,
-                    message: trade.message,
-                    type: trade.type,
-                    price: Money.fromString(trade.price)
+                const trade: Trade = {
+                    timestamp: raw.timestamp,
+                    nick: raw.nick,
+                    message: raw.message,
+                    type,
+                    item,
+                    price,
+                    server: this.currentServer,
+                    raw: JSON.stringify(raw)
                 };
 
-                const matched = AlertService.checkAlerts(checkObj, alerts);
-                if (matched) {
-                    console.log('🔔 Alert Triggered:', matched.term);
-                    AlertService.fireAlert(matched, checkObj);
-                }
-            } catch (err) {
-                console.error('Error checking alerts:', err);
-            }
 
-            await this.submitTrade(trade);
+                // Check Alerts
+                try {
+                    const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
+
+                    // Prepare object for alert check (needs Money price)
+                    const checkObj = {
+                        timestamp: trade.timestamp,
+                        nick: trade.nick,
+                        message: trade.message,
+                        type: trade.type,
+                        price: Money.fromString(trade.price)
+                    };
+
+                    const matched = AlertService.checkAlerts(checkObj, alerts);
+                    if (matched) {
+                        console.log('🔔 Alert Triggered:', matched.term);
+                        AlertService.fireAlert(matched, checkObj);
+                    }
+                } catch (err) {
+                    console.error('Error checking alerts:', err);
+                }
+
+                await this.submitTrade(trade);
+            }
         });
     }
 

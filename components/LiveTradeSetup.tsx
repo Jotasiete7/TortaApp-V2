@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { liveTradeMonitor } from '../services/LiveTradeMonitor';
@@ -22,13 +22,16 @@ export const LiveTradeSetup = () => {
         stats, resetStats,
         dndMode, setDndMode, dndSchedule, setDndSchedule,
         exportConfig, importConfig,
-        trades
+        trades,
+        startMonitoring,
+        stopMonitoring,
+        isMonitoring
     } = useTradeEvents();
 
     // Monitor State
     const [consent, setConsent] = useState(false);
     const [filePath, setFilePath] = useState('');
-    const [isWatching, setIsWatching] = useState(false);
+    // const [isWatching, setIsWatching] = useState(false); // REMOVED: Use context isMonitoring
     const [showPathHelp, setShowPathHelp] = useState(false);
     const [fileExists, setFileExists] = useState<boolean | null>(null);
 
@@ -40,7 +43,7 @@ export const LiveTradeSetup = () => {
     // Alert Input
     const [newAlertTerm, setNewAlertTerm] = useState('');
     const [newAlertSound, setNewAlertSound] = useState('notification');
-    const [newAlertTypes, setNewAlertTypes] = useState<('WTB'|'WTS'|'WTT')[]>([]);
+    const [newAlertTypes, setNewAlertTypes] = useState<('WTB' | 'WTS' | 'WTT')[]>([]);
     const [availableSounds, setAvailableSounds] = useState<string[]>([]);
 
     // Ads Input
@@ -163,7 +166,7 @@ export const LiveTradeSetup = () => {
 
     const handleClearFile = () => {
         setFilePath('');
-        setIsWatching(false);
+        stopMonitoring(); // Use context
         setFileExists(null);
         localStorage.removeItem('wurm_log_path');
     };
@@ -180,21 +183,22 @@ export const LiveTradeSetup = () => {
 
         if (typeof window.__TAURI_INTERNALS__ === 'undefined') {
             toast.warning("Modo Browser Detectado: O monitoramento só funciona no App Desktop.");
-            setIsWatching(true);
+            // Mock for browser if needed or just simulate
+            // startMonitoring(filePath).catch(console.error); 
             setIsOpen(false);
             return;
         }
 
         try {
+            let path = filePath;
             if (filePath.includes('"')) {
-                const cleanPath = filePath.replace(/"/g, '');
-                setFilePath(cleanPath);
-                await liveTradeMonitor.startWatching(cleanPath);
-            } else {
-                await liveTradeMonitor.startWatching(filePath);
+                path = filePath.replace(/"/g, '');
+                setFilePath(path);
             }
 
-            setIsWatching(true);
+            // Use Context to start (Updates UI state + LocalStorage + Invokes Backend)
+            await startMonitoring(path);
+
             setIsOpen(false);
             toast.success("Monitoramento iniciado! Acompanhe o Live Feed.");
         } catch (error) {
@@ -223,16 +227,16 @@ export const LiveTradeSetup = () => {
             message: `WTS ${alert.term} 50s`,
             type: 'WTS' as const
         };
-        
+
         toast.info(`Testando alerta: ${alert.term}`);
-        
+
         import('@tauri-apps/plugin-notification').then(({ sendNotification }) => {
             sendNotification({
                 title: `TortaApp: ${alert.term}`,
                 body: `${mockTrade.nick}: ${mockTrade.message}`,
             });
         });
-        
+
         SoundService.play(alert.sound || 'notification');
     };
 
@@ -281,7 +285,7 @@ export const LiveTradeSetup = () => {
             if (file) {
                 try {
                     await importConfig(file);
-                    toast.success("CONFIGURAÇÕESso!");
+                    toast.success("CONFIGURAÇÕES salvas com sucesso!");
                 } catch (error) {
                     toast.error("Erro ao importar CONFIGURAÇÕES");
                 }
@@ -290,9 +294,9 @@ export const LiveTradeSetup = () => {
         input.click();
     };
 
-    const toggleTradeType = (type: 'WTB'|'WTS'|'WTT') => {
-        setNewAlertTypes(prev => 
-            prev.includes(type) 
+    const toggleTradeType = (type: 'WTB' | 'WTS' | 'WTT') => {
+        setNewAlertTypes(prev =>
+            prev.includes(type)
                 ? prev.filter(t => t !== type)
                 : [...prev, type]
         );
@@ -302,10 +306,10 @@ export const LiveTradeSetup = () => {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className={`fixed bottom-24 right-6 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden'}`}
+                className={`fixed bottom-24 right-6 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isMonitoring ? 'bg-emerald-600 hover:bg-emerald-700 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden'}`}
                 title="Configurar Live Monitor (Ctrl+M)"
             >
-                {isWatching ? (
+                {isMonitoring ? (
                     <div className="flex items-center gap-2 px-1">
                         <span className="relative flex h-3 w-3 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
@@ -382,21 +386,21 @@ export const LiveTradeSetup = () => {
                     {activeTab === 'monitor' && (
                         <div className="space-y-6">
                             {/* Status Display with Stats */}
-                            <div className={`p-4 rounded-lg border flex items-center justify-between transition-all ${isWatching ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-slate-800 border-slate-700'}`}>
+                            <div className={`p-4 rounded-lg border flex items-center justify-between transition-all ${isMonitoring ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-slate-800 border-slate-700'}`}>
                                 <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-full ${isWatching ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
-                                        <Play size={20} className={isWatching ? 'animate-pulse' : ''} />
+                                    <div className={`p-2 rounded-full ${isMonitoring ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
+                                        <Play size={20} className={isMonitoring ? 'animate-pulse' : ''} />
                                     </div>
                                     <div>
-                                        <h4 className={`font-bold ${isWatching ? 'text-emerald-400' : 'text-slate-300'}`}>
-                                            {isWatching ? 'Monitoramento Ativo' : 'Monitor Desligado'}
+                                        <h4 className={`font-bold ${isMonitoring ? 'text-emerald-400' : 'text-slate-300'}`}>
+                                            {isMonitoring ? 'Monitoramento Ativo' : 'Monitor Desligado'}
                                         </h4>
                                         <p className="text-xs text-slate-500">
-                                            {isWatching ? (
+                                            {isMonitoring ? (
                                                 tradesProcessed > 0 ? (
                                                     <>✅ {tradesProcessed} trades processados{lastTradeTime && ` • Último: ${lastTradeTime}`}</>
                                                 ) : (
-                                                    'â³ Aguardando trades...'
+                                                    'â ³ Aguardando trades...'
                                                 )
                                             ) : (
                                                 'Configure abaixo para iniciar'
@@ -487,7 +491,7 @@ export const LiveTradeSetup = () => {
                                     : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                                     }`}
                             >
-                                {isWatching ? (
+                                {isMonitoring ? (
                                     <>
                                         <RefreshCw className="animate-spin" size={20} />
                                         Reiniciar Monitoramento
@@ -711,13 +715,7 @@ export const LiveTradeSetup = () => {
                                             value={timerConfig.color}
                                             onChange={(e) => setTimerConfig({ ...timerConfig, color: e.target.value as any })}
                                             className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm outline-none focus:border-rose-500"
-                                        >
-                                            <option value="emerald">Emerald</option>
-                                            <option value="amber">Amber</option>
-                                            <option value="rose">Rose</option>
-                                            <option value="blue">Blue</option>
-                                            <option value="purple">Purple</option>
-                                        </select>
+                                        />
                                     </div>
                                     <div className="flex items-end pb-1 gap-2">
                                         <button
@@ -726,10 +724,10 @@ export const LiveTradeSetup = () => {
                                         >
                                             {timerConfig.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />} Som
                                         </button>
-                                         <div className="w-1/2 flex flex-col justify-end">
+                                        <div className="w-1/2 flex flex-col justify-end">
                                             <label className="text-[9px] uppercase font-bold text-slate-500 mb-1">Volume</label>
-                                            <input 
-                                                type="range" 
+                                            <input
+                                                type="range"
                                                 min="0" max="1" step="0.1"
                                                 value={volume}
                                                 onChange={(e) => setVolume(parseFloat(e.target.value))}
@@ -964,7 +962,7 @@ export const LiveTradeSetup = () => {
 
                             {/* Keyboard Shortcuts Info */}
                             <div className="bg-blue-900/10 p-3 rounded-lg border border-blue-500/20">
-                                <h4 className="text-xs font-bold text-blue-400 mb-2">⌨️ Atalhos de Teclado</h4>
+                                <h4 className="text-xs font-bold text-blue-400 mb-2">⌨️  Atalhos de Teclado</h4>
                                 <div className="space-y-1 text-[10px] text-blue-200">
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+M</kbd> Abrir/Fechar Monitor</p>
                                     <p><kbd className="bg-blue-500/20 px-1 rounded">Ctrl+T</kbd> Testar Último Alerta</p>
@@ -979,5 +977,3 @@ export const LiveTradeSetup = () => {
         </div>
     );
 };
-
-
