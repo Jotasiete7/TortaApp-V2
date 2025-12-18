@@ -169,7 +169,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                     {trades.length === 0 ? (
                         <div className="flex items-center gap-2 px-4 h-full text-xs font-mono text-slate-500 animate-pulse">
                             <Radio size={12} />
-                            <</span>WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)</span>
+                            <span>WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)</span>
                         </div>
                     ) : (
                         <div
