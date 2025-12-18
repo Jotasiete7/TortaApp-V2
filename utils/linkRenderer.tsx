@@ -1,10 +1,10 @@
 ﻿// utils/linkRenderer.tsx
-// Helper para transformar URLs em links clicÃ¡veis
+// Helper para transformar URLs em links clicáveis
 
 import React from 'react';
 
 /**
- * Renderiza texto transformando URLs em links clicÃ¡veis
+ * Renderiza texto transformando URLs em links clicáveis
  * @param text - Texto que pode conter URLs
  * @returns Array de elementos React (text + links)
  */
@@ -16,7 +16,7 @@ export const renderMessageWithLinks = (text: string): React.ReactNode[] => {
     const parts = text.split(urlRegex);
 
     return parts.map((part, index) => {
-        // Se a parte Ã© uma URL
+        // Se a parte é uma URL
         if (part.match(urlRegex)) {
             return (
                 <a
@@ -32,14 +32,14 @@ export const renderMessageWithLinks = (text: string): React.ReactNode[] => {
             );
         }
 
-        // Se Ã© texto normal
+        // Se é texto normal
         return <span key={index}>{part}</span>;
     });
 };
 
 /**
- * VersÃ£o simplificada que retorna apenas string com classe
- * Ãštil para preview ou cases onde React nodes nÃ£o sÃ£o aceitos
+ * Versão simplificada que retorna apenas string com classe
+ * Ãštil para preview ou cases onde React nodes não são aceitos
  */
 export const hasLinks = (text: string): boolean => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -47,7 +47,7 @@ export const hasLinks = (text: string): boolean => {
 };
 
 /**
- * Sanitiza URL para garantir seguranÃ§a
+ * Sanitiza URL para garantir segurança
  * Remove protocolos perigosos
  */
 export const sanitizeUrl = (url: string): string => {

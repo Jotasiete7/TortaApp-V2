@@ -18,7 +18,7 @@ export const AdminUserManager: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    // Modal de confirmaÃ§Ã£o
+    // Modal de confirmação
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -57,7 +57,7 @@ export const AdminUserManager: React.FC = () => {
     const confirmDelete = async () => {
         if (!userToDelete) return;
         if (deleteConfirmText !== 'DELETAR') {
-            alert('VocÃª precisa digitar "DELETAR" para confirmar');
+            alert('Você precisa digitar "DELETAR" para confirmar');
             return;
         }
 
@@ -69,7 +69,7 @@ export const AdminUserManager: React.FC = () => {
         if (error) {
             alert(`Erro ao deletar: ${error.message}`);
         } else {
-            alert('âœ… UsuÃ¡rio deletado com sucesso');
+            alert('âœ… Usuário deletado com sucesso');
             fetchUsers();
         }
 
@@ -92,7 +92,7 @@ export const AdminUserManager: React.FC = () => {
         if (error) {
             alert(`Erro: ${error.message}`);
         } else {
-            alert('âœ… AÃ§Ã£o realizada com sucesso');
+            alert('âœ… Ação realizada com sucesso');
             fetchUsers();
         }
         setActionLoading(null);
@@ -106,7 +106,7 @@ export const AdminUserManager: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            {/* Modal de ConfirmaÃ§Ã£o de Delete */}
+            {/* Modal de Confirmação de Delete */}
             {showDeleteModal && userToDelete && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
                     <div className="bg-slate-800 rounded-2xl border-2 border-red-500 max-w-md w-full p-6 shadow-2xl">
@@ -118,7 +118,7 @@ export const AdminUserManager: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-white">âš ï¸ ATENÃ‡ÃƒO</h3>
-                                    <p className="text-sm text-red-400">AÃ§Ã£o IrreversÃ­vel</p>
+                                    <p className="text-sm text-red-400">Ação Irreversível</p>
                                 </div>
                             </div>
                             <button
@@ -132,12 +132,12 @@ export const AdminUserManager: React.FC = () => {
                         {/* Warning */}
                         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
                             <p className="text-red-300 text-sm font-semibold mb-2">
-                                VocÃª estÃ¡ prestes a DELETAR permanentemente:
+                                Você está prestes a DELETAR permanentemente:
                             </p>
                             <div className="bg-slate-900 rounded p-3 space-y-1">
-                                <p className="text-white font-mono text-sm">ðŸ“§ {userToDelete.email}</p>
+                                <p className="text-white font-mono text-sm">🎯 {userToDelete.email}</p>
                                 {userToDelete.game_nick && (
-                                    <p className="text-slate-300 text-sm">ðŸŽ® {userToDelete.game_nick}</p>
+                                    <p className="text-slate-300 text-sm">🎯 {userToDelete.game_nick}</p>
                                 )}
                                 <p className="text-slate-500 text-xs">ID: {userToDelete.id.slice(0, 8)}...</p>
                             </div>
@@ -145,16 +145,16 @@ export const AdminUserManager: React.FC = () => {
 
                         {/* Consequences */}
                         <div className="bg-slate-900 rounded-lg p-4 mb-4">
-                            <p className="text-white font-semibold mb-2 text-sm">O que serÃ¡ deletado:</p>
+                            <p className="text-white font-semibold mb-2 text-sm">O que será deletado:</p>
                             <ul className="text-slate-300 text-xs space-y-1">
-                                <li>âŒ Conta do usuÃ¡rio</li>
+                                <li>âŒ Conta do usuário</li>
                                 <li>âŒ Todos os trades</li>
                                 <li>âŒ Badges e XP</li>
                                 <li>âŒ Mensagens do ticker</li>
-                                <li>âŒ HistÃ³rico completo</li>
+                                <li>âŒ Histórico completo</li>
                             </ul>
                             <p className="text-yellow-400 text-xs mt-3">
-                                âš ï¸ O usuÃ¡rio PODERÃ criar uma nova conta depois
+                                âš ï¸ O usuário PODERÃ criar uma nova conta depois
                             </p>
                         </div>
 
@@ -186,7 +186,7 @@ export const AdminUserManager: React.FC = () => {
                                 disabled={deleteConfirmText !== 'DELETAR'}
                                 className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                                ðŸ—‘ï¸ DELETAR
+                                🎯 DELETAR
                             </button>
                         </div>
                     </div>
@@ -323,7 +323,7 @@ export const AdminUserManager: React.FC = () => {
                                                         onClick={() => openDeleteModal(user)}
                                                         disabled={!!actionLoading}
                                                         className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                                                        title="Deletar UsuÃ¡rio (Permanente)"
+                                                        title="Deletar Usuário (Permanente)"
                                                     >
                                                         <Trash className="w-4 h-4" />
                                                     </button>

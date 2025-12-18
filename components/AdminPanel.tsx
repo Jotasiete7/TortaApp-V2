@@ -47,7 +47,7 @@ const AdminPanelContent: React.FC = () => {
         return saved ? parseFloat(saved) : 1;
     });
 
-    // NOVOS ESTADOS - ModeraÃ§Ã£o
+    // NOVOS ESTADOS - Moderação
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<'all' | 'admin' | 'shout'>('all');
     const [cleanupLoading, setCleanupLoading] = useState(false);
@@ -539,14 +539,14 @@ const AdminPanelContent: React.FC = () => {
                         </form>
                     </div>
 
-                    {/* NOVA SEÃ‡ÃƒO - ModeraÃ§Ã£o de Mensagens */}
+                    {/* NOVA SEÃ‡ÃƒO - Moderação de Mensagens */}
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-bold text-white">
                                 Message Moderation
                             </h3>
 
-                            {/* BotÃ£o Cleanup */}
+                            {/* Botão Cleanup */}
                             <button
                                 onClick={handleCleanupExpired}
                                 disabled={cleanupLoading || stats.expired === 0}
@@ -557,7 +557,7 @@ const AdminPanelContent: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* EstatÃ­sticas */}
+                        {/* Estatísticas */}
                         <div className="grid grid-cols-4 gap-4 mb-6">
                             <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-3">
                                 <div className="text-2xl font-bold text-white">{stats.total}</div>

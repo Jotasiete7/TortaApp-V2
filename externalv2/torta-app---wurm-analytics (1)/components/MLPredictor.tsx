@@ -147,7 +147,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
   const [selectedBulk, setSelectedBulk] = useState<number>(1);
   const [showBulks, setShowBulks] = useState(false);
 
-  // 1. ExtraÃ§Ã£o DinÃ¢mica de Materiais
+  // 1. Extração Dinâmica de Materiais
   const availableMaterials = useMemo(() => {
       if (data.length === 0) return ['Iron', 'Wood', 'Cotton'];
       const mats = new Set<string>();
@@ -160,7 +160,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
       return Array.from(mats).sort();
   }, [data]);
 
-  // 2. ExtraÃ§Ã£o DinÃ¢mica de Nomes
+  // 2. Extração Dinâmica de Nomes
   const availableItemNames = useMemo(() => {
       if (data.length === 0) return [];
       const names = new Set<string>();
@@ -200,17 +200,17 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
           return;
       }
 
-      // 2. AnÃ¡lise de Bulks
+      // 2. Análise de Bulks
       const analysis = analyzeBulks(relevantItems);
       setBulkAnalysis(analysis);
       setShowBulks(analysis.hasBulks);
 
-      // 3. AnÃ¡lise EstatÃ­stica (Baseada em Unit Price inicialmente)
+      // 3. Análise Estatística (Baseada em Unit Price inicialmente)
       const unitPrices = relevantItems.map(i => i.price);
       const stats = analyzePriceSet(unitPrices);
       setMarketStats(stats);
 
-      // 4. ProjeÃ§Ã£o Inicial (UnitÃ¡rio)
+      // 4. Projeção Inicial (Unitário)
       const basePredictedPrice = stats.mean;
 
       let confidence = 0.9;
@@ -257,7 +257,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
       // We should apply that factor.
       
       // To avoid double counting if the mean already includes cheap bulks, let's just project linear first.
-      // User requested: "Calcular preÃ§os considerando o bulk selecionado"
+      // User requested: "Calcular preços considerando o bulk selecionado"
       
       // If I select 1000x, I want to see the price for 1000 items.
       const multiplierFactor = selectedBulk > 1 && bulkIndex >= 0 ? specificMultiplier : 1;

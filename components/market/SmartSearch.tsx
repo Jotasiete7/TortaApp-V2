@@ -206,7 +206,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                     {query.trim() && searchResults.length > 0 && (
                         <div>
                             <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-800/50 sticky top-0 z-10">
-                                ðŸ”Ž Search Results ({searchResults.length})
+                                🎯 Search Results ({searchResults.length})
                             </div>
                             {searchResults.map((result, idx) => (
                                 <button

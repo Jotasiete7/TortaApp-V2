@@ -379,7 +379,7 @@ const App: React.FC = () => {
                                 {/* Email Display - Hidden by default with Toggle */}
                                 <div className="flex items-center gap-2 mt-1 bg-slate-800/50 px-3 py-2 rounded border border-slate-700/50">
                                     <span className="text-xs text-slate-400 font-mono tracking-wide">
-                                        {showEmail ? user.email : 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}
+                                        {showEmail ? user.email : '••••••••••••••'}
                                     </span>
                                     <button
                                         onClick={(e) => {

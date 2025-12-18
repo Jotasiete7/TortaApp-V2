@@ -26,7 +26,7 @@ const linkifyMessage = (message: string) => {
                 </a>
             );
         }
-        return <span key={idx}>{part}</span>;
+        return <span key={idx}>{part}</</span>;
     });
 };
 
@@ -154,7 +154,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                     title="Clique para ver mensagens recentes"
                 >
                     <Activity size={14} className={isMonitoring ? "text-emerald-400 animate-pulse" : "text-slate-500"} />
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase hidden sm:block" style={{ letterSpacing: '0.1em' }}>Live Feed</span>
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase hidden sm:block" style={{ letterSpacing: '0.1em' }}>Live Feed</</span>
                 </div>
 
                 <div
@@ -169,7 +169,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                     {trades.length === 0 ? (
                         <div className="flex items-center gap-2 px-4 h-full text-xs font-mono text-slate-500 animate-pulse">
                             <Radio size={12} />
-                            <span>WAITING FOR SIGNAL... (Configure o monitor no botÃ£o inferior direito)</span>
+                            <</span>WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)</</span>
                         </div>
                     ) : (
                         <div
@@ -190,26 +190,26 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                                         key={idx}
                                         className={`flex items-center gap-2 shrink-0 group px-2 py-1 rounded cursor-pointer transition-colors border-y border-transparent ${isOpportunity ? 'bg-amber-500/10 border-amber-500/50' : 'hover:bg-white/5'}`}
                                         onDoubleClick={() => handleTradeDoubleClick(trade.nick)}
-                                        title={isOpportunity ? `ðŸ”¥ Smart Buy! ${alert?.discountPercent}% Discount detected!` : "Double-click para copiar mensagem rÃ¡pida"}
+                                        title={isOpportunity ? `🎯 Smart Buy! ${alert?.discountPercent}% Discount detected!` : "Double-click para copiar mensagem rápida"}
                                     >
                                         {isOpportunity && <Flame size={12} className="text-amber-500 animate-pulse" />}
 
                                         <span className="text-slate-600 font-mono text-[10px]">
                                             [{trade.timestamp}]
-                                        </span>
+                                        </</span>
 
                                         <span className="text-blue-400 font-bold text-xs group-hover:text-blue-300">
                                             {trade.nick}
-                                        </span>
+                                        </</span>
 
                                         <span className={`text-xs font-medium group-hover:text-white ${isOpportunity ? 'text-amber-200' : 'text-slate-300'}`}>
                                             {linkifyMessage(trade.message)}
-                                        </span>
+                                        </</span>
 
                                         {idx === displayTrades.length - 1 ? (
-                                            <span className="mx-4 text-base opacity-70">ðŸ¥§</span>
+                                            <span className="mx-4 text-base opacity-70">🎯</</span>
                                         ) : (
-                                            <span className="text-slate-700 text-xs">â€¢</span>
+                                            <span className="text-slate-700 text-xs">•</</span>
                                         )}
                                     </div>
                                 );

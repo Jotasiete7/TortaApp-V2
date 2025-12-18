@@ -18,21 +18,21 @@ interface TickerMessageExtended {
 }
 // Rotating Tips - Helpful advice shown every 10 minutes
 const ROTATING_TIPS = [
-    "ðŸ’¡ Tip: Double-click any trade in the Live Feed to copy a quick message!",
-    "ðŸŽ¯ Tip: Use the Smart Search with filters to find the best deals instantly!",
-    "ðŸ† Tip: Complete achievements to unlock exclusive badges and level up faster!",
-    "ðŸ“Š Tip: Check Market Intelligence for price trends and trading insights!",
+    "🛡️ip: Double-click any trade in the Live Feed to copy a quick message!",
+    "🎯 Tip: Use the Smart Search with filters to find the best deals instantly!",
+    "🎯 Tip: Complete achievements to unlock exclusive badges and level up faster!",
+    "🎯 Tip: Check Market Intelligence for price trends and trading insights!",
     "âš¡ Tip: Enable Live Monitor to auto-feed trades - no manual uploads needed!",
-    "ðŸ” Tip: Verify your nick with the @TORTA token for auto-verification!",
-    "ðŸŽ® Tip: Reach Level 50 'Legendary Whale' by processing 10M+ trades!",
-    "ðŸ’° Tip: Smart Alerts highlight underpriced items automatically!",
-    "ðŸ“ˆ Tip: Use Charts Engine to visualize price history and market trends!",
-    "ðŸŒŸ Tip: Paid Shouts appear in the ticker - support the community!",
-    "ðŸ¥§ Tip: The pie emoji ðŸ¥§ shows when the ticker completes a full loop!",
-    "ðŸ” Tip: Search debounce prevents lag - type freely without freezing!",
-    "ðŸŽ¨ Tip: Customize ticker speed in Settings for your preferred reading pace!",
-    "ðŸ“± Tip: Advanced Tools section has manual log upload for historic data!",
-    "ðŸš€ Tip: Auto-updater keeps your app fresh - check for updates regularly!"
+    "🎯 Tip: Verify your nick with the @TORTA token for auto-verification!",
+    "🎯 Tip: Reach Level 50 'Legendary Whale' by processing 10M+ trades!",
+    "💰 Tip: Smart Alerts highlight underpriced items automatically!",
+    "🎯 Tip: Use Charts Engine to visualize price history and market trends!",
+    "🎯 Tip: Paid Shouts appear in the ticker - support the community!",
+    "🎯 Tip: The pie emoji 🎯 shows when the ticker completes a full loop!",
+    "🎯 Tip: Search debounce prevents lag - type freely without freezing!",
+    "🎯 Tip: Customize ticker speed in Settings for your preferred reading pace!",
+    "🎯 Tip: Advanced Tools section has manual log upload for historic data!",
+    "🎯 Tip: Auto-updater keeps your app fresh - check for updates regularly!"
 ];
 
 
@@ -138,7 +138,7 @@ export const NewsTicker: React.FC = () => {
             )
             .subscribe();
 
-        // ðŸ”„ AUTO-REFRESH: Polling a cada 60 segundos (backup + garantia)
+        // 🎯 AUTO-REFRESH: Polling a cada 60 segundos (backup + garantia)
         const refreshInterval = setInterval(() => {
             fetchMessages();
         }, 60000); // 60 segundos
@@ -259,9 +259,9 @@ export const NewsTicker: React.FC = () => {
                                 {/* Separador */}
                                 {index < messagesWithTip.length * 2 - 1 && (
                                     index === messagesWithTip.length - 1 ? (
-                                        <span className="mx-8 text-xl flex items-center h-full">ðŸ¥§</span>
+                                        <span className="mx-8 text-xl flex items-center h-full">🎯span>
                                     ) : (
-                                        <span className="mx-8 text-slate-600 flex items-center h-full">â€¢</span>
+                                        <span className="mx-8 text-slate-600 flex items-center h-full">•</span>
                                     )
                                 )}
                             </div>
@@ -277,7 +277,7 @@ export const NewsTicker: React.FC = () => {
         }
         .animate-marquee {
           animation: marquee ${60 / speed}s linear infinite;
-          /* Garante que o conteÃºdo nÃ£o quebre linha e tenha largura suficiente */
+          /* Garante que o conteúdo não quebre linha e tenha largura suficiente */
           width: max-content;
         }
         .animate-marquee:hover {

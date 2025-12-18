@@ -121,7 +121,7 @@ export const Leaderboard = () => {
                             nick={t.nick}
                             value={t.wts_count}
                             subValue="WTS Posts"
-                            badge="ðŸ”¥ Trader"
+                            badge="🎯 Trader"
                         />
                     ))}
                 </RankingCard>
@@ -135,7 +135,7 @@ export const Leaderboard = () => {
                             nick={s.nick}
                             value={s.wts_count}
                             subValue="Listings"
-                            badge="ðŸ“¦ Merchant"
+                            badge="🎯 Merchant"
                         />
                     ))}
                 </RankingCard>
@@ -149,7 +149,7 @@ export const Leaderboard = () => {
                             nick={b.nick}
                             value={b.wtb_count}
                             subValue="Requests"
-                            badge="ðŸ’° Investor"
+                            badge="💰 Investor"
                         />
                     ))}
                 </RankingCard>
@@ -163,7 +163,7 @@ export const Leaderboard = () => {
                             nick={pc.nick}
                             value={pc.pc_count}
                             subValue="Checks"
-                            badge="ðŸ” Expert"
+                            badge="🎯 Expert"
                         />
                     ))}
                 </RankingCard>

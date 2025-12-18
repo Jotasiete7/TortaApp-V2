@@ -126,7 +126,7 @@ const App: React.FC = () => {
                                 onClick={() => setLanguage('pt')}
                                 className={`py-2 text-sm font-medium rounded-md transition-all ${language === 'pt' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
                             >
-                                PortuguÃªs
+                                Português
                             </button>
                         </div>
                     </div>

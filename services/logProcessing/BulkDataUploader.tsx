@@ -68,8 +68,8 @@ export const BulkDataUploader: React.FC = () => {
                     <h2 className="text-xl font-bold text-white">Upload em Massa (Admin)</h2>
                 </div>
                 <p className="text-slate-400 text-sm">
-                    FaÃ§a upload de arquivos NDJSON prÃ©-limpos (CLEAN2025) diretamente para o banco de dados.
-                    Os dados serÃ£o persistidos permanentemente no Supabase.
+                    Faça upload de arquivos NDJSON pré-limpos (CLEAN2025) diretamente para o banco de dados.
+                    Os dados serão persistidos permanentemente no Supabase.
                 </p>
             </div>
             {/* File Selection */}
@@ -166,7 +166,7 @@ export const BulkDataUploader: React.FC = () => {
                 <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-4">
                     <div className="flex items-center gap-3 mb-4">
                         <CheckCircle className="w-6 h-6 text-emerald-500" />
-                        <h3 className="text-lg font-bold text-white">Upload ConcluÃ­do!</h3>
+                        <h3 className="text-lg font-bold text-white">Upload Concluído!</h3>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">

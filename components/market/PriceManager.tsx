@@ -73,7 +73,7 @@ export const PriceManager: React.FC<PriceManagerProps> = ({ prices, onUpdatePric
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <span className="text-3xl">ðŸ’°</span> Price Manager
+                        <span className="text-3xl">💰</span> Price Manager
                     </h2>
                     <p className="text-slate-400">Manage reference prices to evaluate fair trades.</p>
                 </div>

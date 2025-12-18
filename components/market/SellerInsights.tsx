@@ -107,7 +107,7 @@ export const SellerInsights: React.FC<SellerInsightsProps> = ({ sellers, itemNam
                                     <p className="text-sm font-medium text-white truncate">{seller.seller}</p>
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <span className="text-[10px] text-slate-500">{seller.totalListings} listings</span>
-                                        <span className="text-[10px] text-slate-600">â€¢</span>
+                                        <span className="text-[10px] text-slate-600">•</span>
                                         <span className="text-[10px] text-purple-400 font-mono">{seller.marketShare.toFixed(1)}%</span>
                                     </div>
                                 </div>

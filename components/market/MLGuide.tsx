@@ -21,43 +21,43 @@ export const MLGuide: React.FC<MLGuideProps> = ({ isOpen, onClose, lang }) => {
                     title: lang === 'en' ? '1. Enter Item Name' : '1. Digite o Nome do Item',
                     desc: lang === 'en'
                         ? 'Type the item you want to analyze (e.g., "Stone Brick"). The system will search through all trade history.'
-                        : 'Digite o item que deseja analisar (ex: "Tijolo de Pedra"). O sistema vai buscar em todo o histÃ³rico de negociaÃ§Ãµes.'
+                        : 'Digite o item que deseja analisar (ex: "Tijolo de Pedra"). O sistema vai buscar em todo o histórico de negociações.'
                 },
                 {
                     title: lang === 'en' ? '2. Select Material (Optional)' : '2. Selecione o Material (Opcional)',
                     desc: lang === 'en'
                         ? 'Filter by specific material type (Iron, Wood, etc.) or leave as "Any" for all materials.'
-                        : 'Filtre por tipo de material especÃ­fico (Ferro, Madeira, etc.) ou deixe como "Qualquer" para todos os materiais.'
+                        : 'Filtre por tipo de material específico (Ferro, Madeira, etc.) ou deixe como "Qualquer" para todos os materiais.'
                 },
                 {
                     title: lang === 'en' ? '3. Click Calculate' : '3. Clique em Calcular',
                     desc: lang === 'en'
                         ? 'The system will analyze all matching trades, remove outliers, and calculate the fair market value.'
-                        : 'O sistema vai analisar todas as negociaÃ§Ãµes correspondentes, remover outliers e calcular o valor justo de mercado.'
+                        : 'O sistema vai analisar todas as negociações correspondentes, remover outliers e calcular o valor justo de mercado.'
                 }
             ]
         },
         metrics: {
-            title: lang === 'en' ? 'Understanding Metrics' : 'Entendendo as MÃ©tricas',
+            title: lang === 'en' ? 'Understanding Metrics' : 'Entendendo as Métricas',
             icon: <TrendingUp className="w-5 h-5" />,
             items: [
                 {
                     title: lang === 'en' ? 'Fair Market Value' : 'Valor Justo de Mercado',
                     desc: lang === 'en'
                         ? 'The median price after removing statistical outliers. This is the most reliable price estimate based on actual trades.'
-                        : 'O preÃ§o mediano apÃ³s remover outliers estatÃ­sticos. Esta Ã© a estimativa de preÃ§o mais confiÃ¡vel baseada em negociaÃ§Ãµes reais.'
+                        : 'O preço mediano após remover outliers estatísticos. Esta é a estimativa de preço mais confiável baseada em negociações reais.'
                 },
                 {
-                    title: lang === 'en' ? 'Confidence Score' : 'Score de ConfianÃ§a',
+                    title: lang === 'en' ? 'Confidence Score' : 'Score de Confiança',
                     desc: lang === 'en'
                         ? 'How reliable the prediction is (0-100%). Higher confidence means more data and less volatility. >70% is good.'
-                        : 'QuÃ£o confiÃ¡vel Ã© a previsÃ£o (0-100%). Maior confianÃ§a significa mais dados e menos volatilidade. >70% Ã© bom.'
+                        : 'Quão confiável é a previsão (0-100%). Maior confiança significa mais dados e menos volatilidade. >70% é bom.'
                 },
                 {
                     title: lang === 'en' ? 'Volatility' : 'Volatilidade',
                     desc: lang === 'en'
                         ? 'Standard deviation of prices. High volatility means prices fluctuate a lot - riskier but potentially more profitable.'
-                        : 'Desvio padrÃ£o dos preÃ§os. Alta volatilidade significa que os preÃ§os flutuam muito - mais arriscado mas potencialmente mais lucrativo.'
+                        : 'Desvio padrão dos preços. Alta volatilidade significa que os preços flutuam muito - mais arriscado mas potencialmente mais lucrativo.'
                 }
             ]
         },
@@ -66,46 +66,46 @@ export const MLGuide: React.FC<MLGuideProps> = ({ isOpen, onClose, lang }) => {
             icon: <TrendingUp className="w-5 h-5" />,
             items: [
                 {
-                    title: lang === 'en' ? 'ðŸŸ¢ Buy Zone (<P25)' : 'ðŸŸ¢ Zona de Compra (<P25)',
+                    title: lang === 'en' ? '🎯 Buy Zone (<P25)' : '🎯 Zona de Compra (<P25)',
                     desc: lang === 'en'
                         ? 'Prices below the 25th percentile. These are below-average prices - good opportunities to buy and resell at fair value.'
-                        : 'PreÃ§os abaixo do percentil 25. SÃ£o preÃ§os abaixo da mÃ©dia - boas oportunidades para comprar e revender pelo valor justo.'
+                        : 'Preços abaixo do percentil 25. São preços abaixo da média - boas oportunidades para comprar e revender pelo valor justo.'
                 },
                 {
-                    title: lang === 'en' ? 'ðŸ’° Fair Value (P25-P75)' : 'ðŸ’° Valor Justo (P25-P75)',
+                    title: lang === 'en' ? '💰 Fair Value (P25-P75)' : '💰 Valor Justo (P25-P75)',
                     desc: lang === 'en'
                         ? 'Prices in the middle 50% range. This is the normal trading range where most transactions happen.'
-                        : 'PreÃ§os na faixa intermediÃ¡ria de 50%. Esta Ã© a faixa normal de negociaÃ§Ã£o onde a maioria das transaÃ§Ãµes acontece.'
+                        : 'Preços na faixa intermediária de 50%. Esta é a faixa normal de negociação onde a maioria das transações acontece.'
                 },
                 {
-                    title: lang === 'en' ? 'ðŸ”´ Sell Zone (>P75)' : 'ðŸ”´ Zona de Venda (>P75)',
+                    title: lang === 'en' ? '🎯 Sell Zone (>P75)' : '🎯 Zona de Venda (>P75)',
                     desc: lang === 'en'
                         ? 'Prices above the 75th percentile. These are above-average prices - good opportunities to sell if you have stock.'
-                        : 'PreÃ§os acima do percentil 75. SÃ£o preÃ§os acima da mÃ©dia - boas oportunidades para vender se vocÃª tiver estoque.'
+                        : 'Preços acima do percentil 75. São preços acima da média - boas oportunidades para vender se você tiver estoque.'
                 }
             ]
         },
         bulk: {
-            title: lang === 'en' ? 'Bulk Analysis' : 'AnÃ¡lise de Lote',
+            title: lang === 'en' ? 'Bulk Analysis' : 'Análise de Lote',
             icon: <Layers className="w-5 h-5" />,
             items: [
                 {
-                    title: lang === 'en' ? 'What are Bulks?' : 'O que sÃ£o Lotes?',
+                    title: lang === 'en' ? 'What are Bulks?' : 'O que são Lotes?',
                     desc: lang === 'en'
                         ? 'Bulks are items sold in batches (e.g., 10x, 50x, 100x). Often they have different unit prices than single items.'
-                        : 'Lotes sÃ£o itens vendidos em pacotes (ex: 10x, 50x, 100x). Frequentemente tÃªm preÃ§os unitÃ¡rios diferentes de itens Ãºnicos.'
+                        : 'Lotes são itens vendidos em pacotes (ex: 10x, 50x, 100x). Frequentemente têm preços unitários diferentes de itens únicos.'
                 },
                 {
                     title: lang === 'en' ? 'Best Value Indicator' : 'Indicador de Melhor Valor',
                     desc: lang === 'en'
-                        ? 'The bulk size with a golden dot (ðŸŸ¡) has the lowest unit price - best value for money when buying in quantity.'
-                        : 'O tamanho de lote com ponto dourado (ðŸŸ¡) tem o menor preÃ§o unitÃ¡rio - melhor custo-benefÃ­cio ao comprar em quantidade.'
+                        ? 'The bulk size with a golden dot (🛡️has the lowest unit price - best value for money when buying in quantity.'
+                        : 'O tamanho de lote com ponto dourado (🛡️tem o menor preço unitário - melhor custo-benefício ao comprar em quantidade.'
                 },
                 {
                     title: lang === 'en' ? 'Multiplier Icons' : 'Ãcones de Multiplicador',
                     desc: lang === 'en'
-                        ? 'ðŸ’¸ = Cheaper than single | âœ“ = Similar price | âš ï¸ = More expensive than single'
-                        : 'ðŸ’¸ = Mais barato que Ãºnico | âœ“ = PreÃ§o similar | âš ï¸ = Mais caro que Ãºnico'
+                        ? '🎯 = Cheaper than single | âœ“ = Similar price | âš ï¸ = More expensive than single'
+                        : '🎯 = Mais barato que único | âœ“ = Preço similar | âš ï¸ = Mais caro que único'
                 }
             ]
         }
@@ -126,7 +126,7 @@ export const MLGuide: React.FC<MLGuideProps> = ({ isOpen, onClose, lang }) => {
                                 {lang === 'en' ? 'ML Predictor Guide' : 'Guia do ML Predictor'}
                             </h2>
                             <p className="text-sm text-slate-400">
-                                {lang === 'en' ? 'Learn how to use the price predictor' : 'Aprenda a usar o preditor de preÃ§os'}
+                                {lang === 'en' ? 'Learn how to use the price predictor' : 'Aprenda a usar o preditor de preços'}
                             </p>
                         </div>
                     </div>

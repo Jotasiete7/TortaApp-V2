@@ -121,11 +121,11 @@ describe('LiveTradeMonitor', () => {
 
         expect(mocks.rpcMock).not.toHaveBeenCalled();
         expect(mocks.toastInfoMock).toHaveBeenCalledWith(
-            'Modo Offline: Trades serÃ£o salvas.' // Updated message match
+            'Modo Offline: Trades serão salvas.' // Updated message match
         );
     });
 
-    it('processa a fila quando a conexÃ£o volta (evento online)', async () => {
+    it('processa a fila quando a conexão volta (evento online)', async () => {
         setNavigatorOnline(false);
 
         mocks.getItemMock.mockImplementation((key) => {
@@ -182,11 +182,11 @@ describe('LiveTradeMonitor', () => {
 
         expect(mocks.rpcMock).toHaveBeenCalledTimes(3);
 
-        // Fila final vazia apÃ³s sucesso
+        // Fila final vazia após sucesso
         expect(mocks.setItemMock).toHaveBeenLastCalledWith('queue', []);
     });
 
-    it('re-enfileira o trade se falhar mesmo apÃ³s tentar online', async () => {
+    it('re-enfileira o trade se falhar mesmo após tentar online', async () => {
         setNavigatorOnline(true);
 
         mocks.rpcMock.mockResolvedValue({ error: new Error('always fails') });

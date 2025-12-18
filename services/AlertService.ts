@@ -126,7 +126,7 @@ export class AlertService {
         }
 
         await sendNotification({
-            title: `�� TortaApp: ${alert.term}`,
+            title: `💰 TortaApp: ${alert.term}`,
             body: `${trade.nick}: ${trade.message}${priceText}`,
         });
 

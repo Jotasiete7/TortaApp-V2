@@ -140,7 +140,7 @@ export class LiveTradeMonitor {
         try {
             // const allowed = await invoke<boolean>('check_file_access', { path: filePath });
             // if (!allowed) {
-            //    toast.error('Sem permissÃ£o de leitura no arquivo.');
+            //    toast.error('Sem permissão de leitura no arquivo.');
             //    return;
             // }
         } catch (err) {
@@ -311,13 +311,13 @@ export class LiveTradeMonitor {
         this.saveOfflineQueue();
 
         if (failedTrades.length > 0) {
-            toast.warning(`${failedTrades.length} trades falharam apÃ³s vÃ¡rias tentativas.`);
+            toast.warning(`${failedTrades.length} trades falharam após várias tentativas.`);
         }
     }
 
     private handleOffline() {
         this.isOnline = false;
-        toast.info('Modo Offline: Trades serÃ£o salvas.');
+        toast.info('Modo Offline: Trades serão salvas.');
     }
 }
 

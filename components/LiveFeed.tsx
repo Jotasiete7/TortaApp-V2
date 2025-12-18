@@ -133,7 +133,7 @@ export const LiveFeed = () => {
             >
                 {trades.length === 0 && (
                     <div className="flex-1 flex items-center justify-center text-slate-700 animate-pulse text-xs self-center">
-                        [WAITING FOR DATA STREAM - Configure o monitor no botÃ£o inferior direito]
+                        [WAITING FOR DATA STREAM - Configure o monitor no botão inferior direito]
                     </div>
                 )}
 

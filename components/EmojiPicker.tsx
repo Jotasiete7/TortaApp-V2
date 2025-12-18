@@ -35,7 +35,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Carregar Ã­ndice de emojis
+        // Carregar índice de emojis
         fetch('/openmoji/openmoji-index.json')
             .then(async res => {
                 if (!res.ok) throw new Error(`Failed to load emojis: ${res.statusText}`);
