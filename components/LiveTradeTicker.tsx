@@ -207,7 +207,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                                         </</span>
 
                                         {idx === displayTrades.length - 1 ? (
-                                            <span className="mx-4 text-base opacity-70">🎯</</span>
+                                            <span className="mx-4 text-base opacity-70">🎯</</</span>
                                         ) : (
                                             <span className="text-slate-700 text-xs">•</</span>
                                         )}
