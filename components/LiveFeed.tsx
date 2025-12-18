@@ -149,7 +149,7 @@ export const LiveFeed = () => {
                             key={trade.id}
                             onDoubleClick={() => handleCopy(trade.nick, trade.message)}
                             title="Double-click to copy message"
-                            className="flex items-start gap-3 hover:bg-white/5 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in cursor-pointer"
+                            className="flex items-start gap-3 hover:bg-slate-700 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in cursor-pointer"
                         >
                             <span className="text-slate-500 text-xs shrink-0 font-light">
                                 [{trade.timestamp}]
