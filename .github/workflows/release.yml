@@ -1,4 +1,4 @@
-﻿name: Release
+name: Release
 on:
   push:
     tags:
@@ -35,6 +35,12 @@ jobs:
 
       - name: Install frontend dependencies
         run: npm install
+
+      - name: Debug Secrets
+        run: |
+          if ($env:TAURI_KEY_DEBUG) { Write-Host "DEBUG: Key Found" } else { Write-Host "DEBUG: Key Missing" }
+        env:
+          TAURI_KEY_DEBUG: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
 
       - name: Build and Create Release
         uses: tauri-apps/tauri-action@v0
