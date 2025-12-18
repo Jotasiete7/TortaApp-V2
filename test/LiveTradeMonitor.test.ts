@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LiveTradeMonitor, Trade } from '../services/LiveTradeMonitor';
 
 /* ------------------------------------------------------------------ */
@@ -121,11 +121,11 @@ describe('LiveTradeMonitor', () => {
 
         expect(mocks.rpcMock).not.toHaveBeenCalled();
         expect(mocks.toastInfoMock).toHaveBeenCalledWith(
-            'Modo Offline: Trades serão salvas.' // Updated message match
+            'Modo Offline: Trades serÃ£o salvas.' // Updated message match
         );
     });
 
-    it('processa a fila quando a conexão volta (evento online)', async () => {
+    it('processa a fila quando a conexÃ£o volta (evento online)', async () => {
         setNavigatorOnline(false);
 
         mocks.getItemMock.mockImplementation((key) => {
@@ -148,7 +148,7 @@ describe('LiveTradeMonitor', () => {
         expect(mocks.setItemMock).toHaveBeenLastCalledWith('queue', []);
     });
 
-    it('faz retry com back-off exponencial e tem sucesso na 3ª tentativa', async () => {
+    it('faz retry com back-off exponencial e tem sucesso na 3Âª tentativa', async () => {
         setNavigatorOnline(true);
 
         // 2 falhas, 1 sucesso
@@ -169,11 +169,11 @@ describe('LiveTradeMonitor', () => {
 
         window.dispatchEvent(new Event('online'));
 
-        // Retry 1 → 1s
+        // Retry 1 â†’ 1s
         await vi.advanceTimersByTimeAsync(1000);
-        // Retry 2 → 2s
+        // Retry 2 â†’ 2s
         await vi.advanceTimersByTimeAsync(2000);
-        // Retry 3 → 4s
+        // Retry 3 â†’ 4s
         // To be safe, advance logic flow
         await vi.advanceTimersByTimeAsync(4000);
 
@@ -182,11 +182,11 @@ describe('LiveTradeMonitor', () => {
 
         expect(mocks.rpcMock).toHaveBeenCalledTimes(3);
 
-        // Fila final vazia após sucesso
+        // Fila final vazia apÃ³s sucesso
         expect(mocks.setItemMock).toHaveBeenLastCalledWith('queue', []);
     });
 
-    it('re-enfileira o trade se falhar mesmo após tentar online', async () => {
+    it('re-enfileira o trade se falhar mesmo apÃ³s tentar online', async () => {
         setNavigatorOnline(true);
 
         mocks.rpcMock.mockResolvedValue({ error: new Error('always fails') });

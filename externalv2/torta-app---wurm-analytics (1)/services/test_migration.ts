@@ -1,4 +1,4 @@
-
+﻿
 import { normalizePrice, isNoise } from './fileParser';
 import { calculateZScores, calculateStandardDeviation, calculateMean } from './mlEngine';
 
@@ -8,16 +8,16 @@ import { calculateZScores, calculateStandardDeviation, calculateMean } from './m
  */
 
 export const runVerificationTests = () => {
-    console.group("🚀 Running Migration Verification Tests");
+    console.group("ðŸš€ Running Migration Verification Tests");
     let passed = 0;
     let failed = 0;
 
     const assert = (condition: boolean, msg: string) => {
         if (condition) {
-            console.log(`✅ PASSED: ${msg}`);
+            console.log(`âœ… PASSED: ${msg}`);
             passed++;
         } else {
-            console.error(`❌ FAILED: ${msg}`);
+            console.error(`âŒ FAILED: ${msg}`);
             failed++;
         }
     };
@@ -52,6 +52,6 @@ export const runVerificationTests = () => {
     const zScores = calculateZScores(sample);
     assert(zScores.length === sample.length, "Z-Scores count should match input");
 
-    console.log(`🎉 Tests Completed. Passed: ${passed}, Failed: ${failed}`);
+    console.log(`ðŸŽ‰ Tests Completed. Passed: ${passed}, Failed: ${failed}`);
     console.groupEnd();
 };

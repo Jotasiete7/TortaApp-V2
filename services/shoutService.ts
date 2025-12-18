@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 import { ShoutBalance } from '../types';
 
 export const ShoutService = {

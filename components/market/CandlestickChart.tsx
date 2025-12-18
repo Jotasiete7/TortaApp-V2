@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ResponsiveContainer, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar } from 'recharts';
 import { CandlestickDataPoint } from '../../types';
 import { formatWurmPrice } from '../../services/priceUtils';

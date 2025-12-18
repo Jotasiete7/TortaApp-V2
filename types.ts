@@ -1,4 +1,4 @@
-
+﻿
 // Data Models based on the implied Python structure
 export interface MarketItem {
     id: string;

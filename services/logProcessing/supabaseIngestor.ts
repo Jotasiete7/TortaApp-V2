@@ -1,4 +1,4 @@
-/**
+﻿/**
  * supabaseIngestor.ts
  * Handles batch submission of cleaned logs to Supabase
  */
@@ -47,7 +47,7 @@ export async function submitLogsBatch(
         }));
 
         try {
-            // 2. INGESTÃO OTIMIZADA COM DEDUPLICAÇÃO:
+            // 2. INGESTÃƒO OTIMIZADA COM DEDUPLICAÃ‡ÃƒO:
             // Usamos 'upsert' com 'ignoreDuplicates: true' e 'onConflict'
             const { data, error } = await supabase
                 .from('trade_logs')

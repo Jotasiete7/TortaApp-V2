@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GamificationService } from '../services/GamificationService';
 
 // Use vi.hoisted to allow access inside vi.mock

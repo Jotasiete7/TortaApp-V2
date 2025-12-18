@@ -1,4 +1,4 @@
-
+﻿
 import { MarketItem, ChartDataPoint, ItemHistoryPoint, PriceDistributionPoint, CandlestickDataPoint, HeatmapDataPoint } from '../types';
 import { FileParser } from './fileParser';
 import { sanitizeItemName, sanitizeSeller } from './securityUtils';

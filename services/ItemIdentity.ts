@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ItemIdentity.ts
  * 
  * Service responsible for Semantic Normalization of item names.

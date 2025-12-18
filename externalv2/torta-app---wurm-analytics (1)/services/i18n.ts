@@ -1,4 +1,4 @@
-
+﻿
 export type Language = 'en' | 'pt';
 
 export const translations = {
@@ -42,25 +42,25 @@ export const translations = {
   },
   pt: {
     // Sidebar
-    overview: 'Visão Geral',
+    overview: 'VisÃ£o Geral',
     tradeMaster: 'Mestre de Trocas',
-    chartsEngine: 'Gráficos',
+    chartsEngine: 'GrÃ¡ficos',
     mlPredictor: 'Preditor IA',
-    priceManager: 'Gerenciador de Preços',
-    settings: 'Configurações',
-    analyticsModule: 'Módulo de Análise',
+    priceManager: 'Gerenciador de PreÃ§os',
+    settings: 'ConfiguraÃ§Ãµes',
+    analyticsModule: 'MÃ³dulo de AnÃ¡lise',
     
     // Dashboard
-    dashboardOverview: 'Visão Geral do Painel',
-    realTimeStats: 'Estatísticas em tempo real dos logs',
+    dashboardOverview: 'VisÃ£o Geral do Painel',
+    realTimeStats: 'EstatÃ­sticas em tempo real dos logs',
     dataLoaded: 'Dados Carregados',
     awaitingData: 'Aguardando Dados',
     totalVolume: 'Volume Total de Trocas',
     itemsIndexed: 'Itens Indexados',
-    avgPrice: 'Preço Médio',
+    avgPrice: 'PreÃ§o MÃ©dio',
     systemStatus: 'Status do Sistema',
     recentLogs: 'Logs Recentes',
-    quickActions: 'Ações Rápidas',
+    quickActions: 'AÃ§Ãµes RÃ¡pidas',
     uploadDump: 'Carregar Arquivo',
     processing: 'Processando...',
     uploadHint: 'Importar .txt / .csv',
@@ -70,10 +70,10 @@ export const translations = {
     noData: 'Sem Dados',
     
     // Settings
-    appSettings: 'Configurações do Aplicativo',
+    appSettings: 'ConfiguraÃ§Ãµes do Aplicativo',
     language: 'Language / Idioma',
     dataSource: 'Fonte de Dados',
-    version: 'Versão',
+    version: 'VersÃ£o',
     
     // Common
     loading: 'Carregando...'

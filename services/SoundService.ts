@@ -1,4 +1,4 @@
-export class SoundService {
+﻿export class SoundService {
     private static audioContext: AudioContext | null = null;
     private static volume: number = 0.5;
     private static muted: boolean = false;

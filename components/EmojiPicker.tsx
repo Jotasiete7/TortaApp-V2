@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Smile, Car, Leaf, Dog, Pizza, Gamepad2, Hash, Flag, Package, X } from 'lucide-react';
 
 interface Emoji {
@@ -35,7 +35,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Carregar índice de emojis
+        // Carregar Ã­ndice de emojis
         fetch('/openmoji/openmoji-index.json')
             .then(async res => {
                 if (!res.ok) throw new Error(`Failed to load emojis: ${res.statusText}`);

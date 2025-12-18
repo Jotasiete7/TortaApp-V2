@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { MarketTable } from './components/market/MarketTable';
@@ -157,7 +157,7 @@ const App: React.FC = () => {
             // Only load from DB if no file data exists
             if (marketData.length === 0 && dataSource === 'NONE') {
                 try {
-                    // 📊 ENVIRONMENT-BASED LIMIT: Dev (5k) vs Production (50k)
+                    // ðŸ“Š ENVIRONMENT-BASED LIMIT: Dev (5k) vs Production (50k)
                     // Dev: Lighter load for local browser testing
                     // Production: Full data for installed Tauri app
                     const limit = import.meta.env.DEV ? 5000 : 50000;
@@ -170,7 +170,7 @@ const App: React.FC = () => {
                         return;
                     }
 
-                    if (import.meta.env.DEV) console.log('📊 DIRECT CALL: Supabase retornou', logs?.length || 0, 'logs');
+                    if (import.meta.env.DEV) console.log('ðŸ“Š DIRECT CALL: Supabase retornou', logs?.length || 0, 'logs');
 
                     if (logs && logs.length > 0) {
                         const converted: MarketItem[] = logs.map((log: any) => {
@@ -186,7 +186,7 @@ const App: React.FC = () => {
                                 }
                             }
 
-                            // 🔄 CANONICAL UPGRADE (Phase 2.5): Use Service Consistency
+                            // ðŸ”„ CANONICAL UPGRADE (Phase 2.5): Use Service Consistency
                             // Smart Parse for Quantity in History (Optional, but good for charts)
                             let quantity = 1;
                             const qtyMatch = name.match(/^(\d+)[x\s]/i) || raw.match(/(\d+)\s*x/i);
@@ -221,7 +221,7 @@ const App: React.FC = () => {
                         });
                         setMarketData(converted);
                         setDataSource('DATABASE');
-                        if (import.meta.env.DEV) console.log(`✅ Loaded ${logs.length} records from database (Cleaned & Secured)`);
+                        if (import.meta.env.DEV) console.log(`âœ… Loaded ${logs.length} records from database (Cleaned & Secured)`);
                     }
                 } catch (error) {
                     console.error('Failed to load from database:', error);
@@ -379,7 +379,7 @@ const App: React.FC = () => {
                                 {/* Email Display - Hidden by default with Toggle */}
                                 <div className="flex items-center gap-2 mt-1 bg-slate-800/50 px-3 py-2 rounded border border-slate-700/50">
                                     <span className="text-xs text-slate-400 font-mono tracking-wide">
-                                        {showEmail ? user.email : '••••••••••••••'}
+                                        {showEmail ? user.email : 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}
                                     </span>
                                     <button
                                         onClick={(e) => {

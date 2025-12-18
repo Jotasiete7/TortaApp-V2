@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Trophy, Lock } from 'lucide-react';
 import { ACHIEVEMENTS, Achievement } from '../../constants/gamification';
 import { GamificationService } from '../../services/GamificationService';

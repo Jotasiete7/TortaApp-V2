@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { HelpCircle } from 'lucide-react';
 
 export const InfoTooltip = ({ text }: { text: string }) => {

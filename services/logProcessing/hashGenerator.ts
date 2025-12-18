@@ -1,4 +1,4 @@
-/**
+﻿/**
  * hashGenerator.ts
  * CRC32 hash generation for log deduplication
  */

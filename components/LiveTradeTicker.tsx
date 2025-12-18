@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { Activity, Radio, Flame } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 import { toast } from 'sonner';
@@ -169,7 +169,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                     {trades.length === 0 ? (
                         <div className="flex items-center gap-2 px-4 h-full text-xs font-mono text-slate-500 animate-pulse">
                             <Radio size={12} />
-                            <span>WAITING FOR SIGNAL... (Configure o monitor no botão inferior direito)</span>
+                            <span>WAITING FOR SIGNAL... (Configure o monitor no botÃ£o inferior direito)</span>
                         </div>
                     ) : (
                         <div
@@ -190,7 +190,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                                         key={idx}
                                         className={`flex items-center gap-2 shrink-0 group px-2 py-1 rounded cursor-pointer transition-colors border-y border-transparent ${isOpportunity ? 'bg-amber-500/10 border-amber-500/50' : 'hover:bg-white/5'}`}
                                         onDoubleClick={() => handleTradeDoubleClick(trade.nick)}
-                                        title={isOpportunity ? `🔥 Smart Buy! ${alert?.discountPercent}% Discount detected!` : "Double-click para copiar mensagem rápida"}
+                                        title={isOpportunity ? `ðŸ”¥ Smart Buy! ${alert?.discountPercent}% Discount detected!` : "Double-click para copiar mensagem rÃ¡pida"}
                                     >
                                         {isOpportunity && <Flame size={12} className="text-amber-500 animate-pulse" />}
 
@@ -207,9 +207,9 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                                         </span>
 
                                         {idx === displayTrades.length - 1 ? (
-                                            <span className="mx-4 text-base opacity-70">🥧</span>
+                                            <span className="mx-4 text-base opacity-70">ðŸ¥§</span>
                                         ) : (
-                                            <span className="text-slate-700 text-xs">•</span>
+                                            <span className="text-slate-700 text-xs">â€¢</span>
                                         )}
                                     </div>
                                 );

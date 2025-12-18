@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Shield, Key, Copy, CheckCircle, AlertCircle, RefreshCw, User, Lock } from 'lucide-react';
 import { IdentityService, UserNick } from '../../services/identity';
 

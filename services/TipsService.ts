@@ -1,4 +1,4 @@
-// TipsService.ts - Rotating tips with JSON backend
+﻿// TipsService.ts - Rotating tips with JSON backend
 // Edit tips in public/data/tips.json
 
 export interface TipTranslations {
@@ -33,16 +33,16 @@ class TipsService {
     }
 
     async loadTips(): Promise<void> {
-        console.log('🔍 TipsService: Loading tips...');
+        console.log('ðŸ” TipsService: Loading tips...');
         if (this.loaded) return;
         try {
             const response = await fetch('/data/tips.json');
             const data = await response.json();
             this.tips = data.tips || [];
-            console.log('✅ TipsService: Loaded ' + this.tips.length + ' tips.');
+            console.log('âœ… TipsService: Loaded ' + this.tips.length + ' tips.');
             this.loaded = true;
         } catch (e) {
-            console.error('❌ TipsService: Failed to load tips.json', e);
+            console.error('âŒ TipsService: Failed to load tips.json', e);
             this.tips = [];
         }
     }

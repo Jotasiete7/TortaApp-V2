@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { BadgeService } from '../../services/badgeService';
 import { supabase } from '../../services/supabase';
 import { Badge } from '../../types';
@@ -18,18 +18,18 @@ const IconMap: Record<string, React.ElementType> = {
 };
 
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '🛡️',
-    'Award': '🎖️',
-    'Star': '🌟',
-    'Heart': '💜',
-    'Gift': '🎁',
-    'Beaker': '🧪',
-    'TrendingUp': '📈',
-    'Trophy': '🏆',
-    'Moon': '🌙',
-    'Sunrise': '🌅',
-    'Ghost': '👻',
-    'Sparkles': '✨'
+    'Shield': 'ðŸ›¡ï¸',
+    'Award': 'ðŸŽ–ï¸',
+    'Star': 'ðŸŒŸ',
+    'Heart': 'ðŸ’œ',
+    'Gift': 'ðŸŽ',
+    'Beaker': 'ðŸ§ª',
+    'TrendingUp': 'ðŸ“ˆ',
+    'Trophy': 'ðŸ†',
+    'Moon': 'ðŸŒ™',
+    'Sunrise': 'ðŸŒ…',
+    'Ghost': 'ðŸ‘»',
+    'Sparkles': 'âœ¨'
 };
 
 const LEVEL_TABLE = [

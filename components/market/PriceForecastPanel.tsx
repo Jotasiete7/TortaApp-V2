@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Activity, Brain, AlertCircle } from 'lucide-react';
 import { MarketItem } from '../../types';
 import { predictPrice, generateForecastData, getTrendDisplay } from '../../services/predictiveAnalytics';
@@ -135,7 +135,7 @@ export const PriceForecastPanel: React.FC<PriceForecastProps> = ({ items, itemNa
                                 style={{ width: `${forecast.confidence}%` }}
                             ></div>
                         </div>
-                        <span className="text-xs text-slate-400">R²: {forecast.rSquared.toFixed(2)}</span>
+                        <span className="text-xs text-slate-400">RÂ²: {forecast.rSquared.toFixed(2)}</span>
                     </div>
                 </div>
             </div>

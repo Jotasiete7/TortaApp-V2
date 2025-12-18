@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../services/supabase';
 import { LogIn, Mail, Lock, AlertCircle, Info, KeyRound } from 'lucide-react';
@@ -20,17 +20,17 @@ export const Login: React.FC = () => {
         try {
             if (isSignUp) {
                 await signUp(email, password);
-                setError('✅ Conta criada! Verifique seu email para confirmar.');
+                setError('âœ… Conta criada! Verifique seu email para confirmar.');
             } else {
                 await signIn(email, password);
             }
         } catch (err: any) {
             // Traduzir erros comuns
-            let errorMsg = err.message || 'Falha na autenticação';
+            let errorMsg = err.message || 'Falha na autenticaÃ§Ã£o';
             if (errorMsg.includes('Invalid login credentials')) {
-                errorMsg = '❌ Email ou senha incorretos. Verifique e tente novamente.';
+                errorMsg = 'âŒ Email ou senha incorretos. Verifique e tente novamente.';
             } else if (errorMsg.includes('Email not confirmed')) {
-                errorMsg = '⚠️ Email não confirmado. Verifique sua caixa de entrada.';
+                errorMsg = 'âš ï¸ Email nÃ£o confirmado. Verifique sua caixa de entrada.';
             }
             setError(errorMsg);
         } finally {
@@ -60,7 +60,7 @@ export const Login: React.FC = () => {
                         <LogIn className="w-8 h-8 text-amber-500" />
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-2">WurmForge</h1>
-                    <p className="text-slate-400 text-sm">Análise de Mercado para Wurm Online</p>
+                    <p className="text-slate-400 text-sm">AnÃ¡lise de Mercado para Wurm Online</p>
                 </div>
 
                 {/* Info Box for New Users */}
@@ -69,14 +69,14 @@ export const Login: React.FC = () => {
                         <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <div className="text-sm">
                             <p className="font-semibold mb-1">Primeira vez aqui?</p>
-                            <p className="text-xs text-blue-300">Após criar sua conta, você receberá um email de confirmação. Clique no link para ativar sua conta.</p>
+                            <p className="text-xs text-blue-300">ApÃ³s criar sua conta, vocÃª receberÃ¡ um email de confirmaÃ§Ã£o. Clique no link para ativar sua conta.</p>
                         </div>
                     </div>
                 )}
 
                 {/* Error/Success Message */}
                 {error && (
-                    <div className={`mb-4 p-3 rounded-lg flex items-start gap-2 ${error.includes('✅')
+                    <div className={`mb-4 p-3 rounded-lg flex items-start gap-2 ${error.includes('âœ…')
                         ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
                         : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
                         }`}>
@@ -111,13 +111,13 @@ export const Login: React.FC = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                             required
                             minLength={6}
                             className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder:text-slate-600 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition"
                         />
                         {isSignUp && (
-                            <p className="text-xs text-slate-500">Mínimo de 6 caracteres</p>
+                            <p className="text-xs text-slate-500">MÃ­nimo de 6 caracteres</p>
                         )}
                     </div>
 
@@ -126,7 +126,7 @@ export const Login: React.FC = () => {
                         disabled={loading}
                         className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-900/20"
                     >
-                        {loading ? 'Carregando...' : isSignUp ? '✨ Criar Conta' : '🔓 Entrar'}
+                        {loading ? 'Carregando...' : isSignUp ? 'âœ¨ Criar Conta' : 'ðŸ”“ Entrar'}
                     </button>
                 </form>
 
@@ -145,7 +145,7 @@ export const Login: React.FC = () => {
                                 <p className="mb-2">Para resetar sua senha:</p>
                                 <ol className="list-decimal list-inside space-y-1 text-slate-400">
                                     <li>Entre em contato com o suporte</li>
-                                    <li>Ou use a opção "Esqueci a senha" no Supabase</li>
+                                    <li>Ou use a opÃ§Ã£o "Esqueci a senha" no Supabase</li>
                                 </ol>
                             </div>
                         )}
@@ -161,7 +161,7 @@ export const Login: React.FC = () => {
                     }}
                     className="w-full text-sm text-slate-400 hover:text-amber-400 transition mb-4 font-medium"
                 >
-                    {isSignUp ? '👤 Já tem uma conta? Entrar' : '✨ Não tem conta? Criar agora'}
+                    {isSignUp ? 'ðŸ‘¤ JÃ¡ tem uma conta? Entrar' : 'âœ¨ NÃ£o tem conta? Criar agora'}
                 </button>
 
                 {/* Divider */}
@@ -191,7 +191,7 @@ export const Login: React.FC = () => {
 
                 {/* Footer */}
                 <div className="mt-6 text-center text-xs text-slate-500">
-                    <p>Ao entrar, você concorda com nossos Termos de Serviço</p>
+                    <p>Ao entrar, vocÃª concorda com nossos Termos de ServiÃ§o</p>
                 </div>
                 {/* Manual Token Fallback */}
                 <div className="mt-4 pt-4 border-t border-slate-700/50">

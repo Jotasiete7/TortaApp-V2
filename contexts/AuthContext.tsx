@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, Profile } from '../services/supabase';
 import { User } from '@supabase/supabase-js';
 import { open } from '@tauri-apps/plugin-shell';

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { Upload, FileText, AlertCircle, CheckCircle, XCircle, Loader2, Database, Save } from 'lucide-react';
 import { processLogFile } from '../../services/logProcessing';
 import { submitLogsBatch } from '../../services/logProcessing/supabaseIngestor';

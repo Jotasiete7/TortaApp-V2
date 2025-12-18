@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
     Trophy, TrendingUp, User, Activity, Calendar,
     ShoppingCart, Tag, Hash, Clock, ArrowLeft, Server,
@@ -43,26 +43,26 @@ const BadgeIconMap: Record<string, React.ElementType> = {
 
 // Map Lucide Interface Names -> Emoji Characters for Vivid SVGs
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '🛡️',
-    'Award': '🎖️',
-    'Star': '⭐',
-    'Heart': '❤️',
-    'Gift': '🎁',
-    'Beaker': '🧪',
-    'TrendingUp': '📈',
-    'Trophy': '🏆',
-    'Flame': '🔥',
-    'Zap': '⚡',
-    'Crown': '👑',
-    'Diamond': '💎',
-    'Swords': '⚔️',
-    'Scroll': '📜',
-    'Map': '🗺️',
-    'Compass': '🧭',
-    'Anchor': '⚓',
-    'Hammer': '🔨',
-    'Axe': '🪓',
-    'Pickaxe': '⛏️'
+    'Shield': 'ðŸ›¡ï¸',
+    'Award': 'ðŸŽ–ï¸',
+    'Star': 'â­',
+    'Heart': 'â¤ï¸',
+    'Gift': 'ðŸŽ',
+    'Beaker': 'ðŸ§ª',
+    'TrendingUp': 'ðŸ“ˆ',
+    'Trophy': 'ðŸ†',
+    'Flame': 'ðŸ”¥',
+    'Zap': 'âš¡',
+    'Crown': 'ðŸ‘‘',
+    'Diamond': 'ðŸ’Ž',
+    'Swords': 'âš”ï¸',
+    'Scroll': 'ðŸ“œ',
+    'Map': 'ðŸ—ºï¸',
+    'Compass': 'ðŸ§­',
+    'Anchor': 'âš“',
+    'Hammer': 'ðŸ”¨',
+    'Axe': 'ðŸª“',
+    'Pickaxe': 'â›ï¸'
 };
 
 // VIBRANT BADGE STYLES
@@ -310,7 +310,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                             </div>
                             {/* XP Tooltip on Hover */}
                             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 text-xs px-2 py-1 rounded border border-slate-700 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
-                                {currentXP} / {isMaxLevel ? '∞' : nextLevelXP} XP ({Math.round(progressPercent)}%)
+                                {currentXP} / {isMaxLevel ? 'âˆž' : nextLevelXP} XP ({Math.round(progressPercent)}%)
                             </div>
                         </div>
 

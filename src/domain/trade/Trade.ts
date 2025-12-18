@@ -1,4 +1,4 @@
-import { Money } from '../price/Money';
+﻿import { Money } from '../price/Money';
 
 /**
  * Represents a trade parsed directly from the Advanced Parser (Rust backend)

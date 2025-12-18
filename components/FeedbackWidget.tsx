@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import { FeedbackService, FeedbackData } from '../services/FeedbackService';
 

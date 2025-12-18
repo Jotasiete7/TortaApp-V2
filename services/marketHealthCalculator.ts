@@ -1,4 +1,4 @@
-import { MarketItem } from '../types';
+﻿import { MarketItem } from '../types';
 import { calculateVolatility } from './volatilityCalculator';
 
 export interface MarketHealthMetrics {

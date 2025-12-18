@@ -1,4 +1,4 @@
-interface Emoji {
+﻿interface Emoji {
     hexcode: string;
     emoji: string;
     name: string;

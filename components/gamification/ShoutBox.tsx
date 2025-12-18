@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Megaphone, Send, Loader2, AlertCircle, CheckCircle2, Info, X, Clock, Coins, Crown, Shield, Palette } from 'lucide-react';
 import { ShoutService } from '../../services/shoutService';
 import { ShoutBalance } from '../../types';
@@ -75,8 +75,8 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                     <Info className="w-6 h-6 text-amber-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">ℹ️ Como Funciona o Sistema de Shouts</h3>
-                                    <p className="text-sm text-slate-400">Tudo que você precisa saber</p>
+                                    <h3 className="text-xl font-bold text-white">â„¹ï¸ Como Funciona o Sistema de Shouts</h3>
+                                    <p className="text-sm text-slate-400">Tudo que vocÃª precisa saber</p>
                                 </div>
                             </div>
                             <button
@@ -89,23 +89,23 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
 
                         {/* Content */}
                         <div className="p-6 space-y-6">
-                            {/* Duração dos Tickers */}
+                            {/* DuraÃ§Ã£o dos Tickers */}
                             <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Clock className="w-5 h-5 text-cyan-400" />
-                                    <h4 className="font-semibold text-white">⏱️ Duração dos Tickers</h4>
+                                    <h4 className="font-semibold text-white">â±ï¸ DuraÃ§Ã£o dos Tickers</h4>
                                 </div>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex items-center justify-between p-2 bg-slate-800 rounded">
-                                        <span className="text-slate-300">🆓 Shout Grátis (Free)</span>
+                                        <span className="text-slate-300">ðŸ†“ Shout GrÃ¡tis (Free)</span>
                                         <span className="text-cyan-400 font-semibold">24 horas</span>
                                     </div>
                                     <div className="flex items-center justify-between p-2 bg-slate-800 rounded">
-                                        <span className="text-slate-300">👑 Shout Premium (Pago)</span>
+                                        <span className="text-slate-300">ðŸ‘‘ Shout Premium (Pago)</span>
                                         <span className="text-purple-400 font-semibold">72 horas</span>
                                     </div>
                                     <div className="flex items-center justify-between p-2 bg-slate-800 rounded">
-                                        <span className="text-slate-300">🛡️ Ticker de Admin</span>
+                                        <span className="text-slate-300">ðŸ›¡ï¸ Ticker de Admin</span>
                                         <span className="text-amber-400 font-semibold">Permanente</span>
                                     </div>
                                 </div>
@@ -115,20 +115,20 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                             <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Coins className="w-5 h-5 text-emerald-400" />
-                                    <h4 className="font-semibold text-white">💰 Como Ganhar Shouts Grátis</h4>
+                                    <h4 className="font-semibold text-white">ðŸ’° Como Ganhar Shouts GrÃ¡tis</h4>
                                 </div>
                                 <div className="space-y-2 text-sm text-slate-300">
                                     <div className="flex items-start gap-2">
-                                        <span className="text-emerald-400">✓</span>
-                                        <span><strong>3 shouts por semana</strong> (reset automático)</span>
+                                        <span className="text-emerald-400">âœ“</span>
+                                        <span><strong>3 shouts por semana</strong> (reset automÃ¡tico)</span>
                                     </div>
                                     <div className="flex items-start gap-2">
-                                        <span className="text-emerald-400">✓</span>
-                                        <span><strong>10 shouts por mês</strong> (limite mensal)</span>
+                                        <span className="text-emerald-400">âœ“</span>
+                                        <span><strong>10 shouts por mÃªs</strong> (limite mensal)</span>
                                     </div>
                                     <div className="flex items-start gap-2">
-                                        <span className="text-yellow-400">⚠️</span>
-                                        <span className="text-yellow-300">Você precisa ter <strong>ambos</strong> os limites disponíveis</span>
+                                        <span className="text-yellow-400">âš ï¸</span>
+                                        <span className="text-yellow-300">VocÃª precisa ter <strong>ambos</strong> os limites disponÃ­veis</span>
                                     </div>
                                 </div>
                             </div>
@@ -137,22 +137,22 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                             <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-4 border border-purple-500/30">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Crown className="w-5 h-5 text-purple-400" />
-                                    <h4 className="font-semibold text-white">👑 Tickers Premium</h4>
+                                    <h4 className="font-semibold text-white">ðŸ‘‘ Tickers Premium</h4>
                                 </div>
                                 <div className="space-y-3 text-sm">
                                     <p className="text-slate-300">
-                                        Shouts Premium duram <strong className="text-purple-400">3x mais</strong> (72h) e têm destaque visual!
+                                        Shouts Premium duram <strong className="text-purple-400">3x mais</strong> (72h) e tÃªm destaque visual!
                                     </p>
                                     <div className="bg-slate-900/50 rounded p-3 border border-purple-500/20">
-                                        <p className="text-purple-300 font-semibold mb-2">💎 Para onde vai o investimento?</p>
+                                        <p className="text-purple-300 font-semibold mb-2">ðŸ’Ž Para onde vai o investimento?</p>
                                         <div className="space-y-1 text-slate-300">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-amber-400">🏆</span>
-                                                <span><strong>50%</strong> → Prêmios para a comunidade</span>
+                                                <span className="text-amber-400">ðŸ†</span>
+                                                <span><strong>50%</strong> â†’ PrÃªmios para a comunidade</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-cyan-400">💾</span>
-                                                <span><strong>50%</strong> → Manutenção do banco de dados</span>
+                                                <span className="text-cyan-400">ðŸ’¾</span>
+                                                <span><strong>50%</strong> â†’ ManutenÃ§Ã£o do banco de dados</span>
                                             </div>
                                         </div>
                                     </div>
@@ -163,10 +163,10 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                             <div className="bg-slate-900 rounded-lg p-4 border border-amber-500/30">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Shield className="w-5 h-5 text-amber-400" />
-                                    <h4 className="font-semibold text-white">🛡️ Tickers de Admin</h4>
+                                    <h4 className="font-semibold text-white">ðŸ›¡ï¸ Tickers de Admin</h4>
                                 </div>
                                 <p className="text-sm text-slate-300">
-                                    Mensagens oficiais da equipe TortaApp. Ficam <strong className="text-amber-400">permanentes</strong> no ticker e têm badge especial.
+                                    Mensagens oficiais da equipe TortaApp. Ficam <strong className="text-amber-400">permanentes</strong> no ticker e tÃªm badge especial.
                                 </p>
                             </div>
 
@@ -174,7 +174,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                             <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Palette className="w-5 h-5 text-pink-400" />
-                                    <h4 className="font-semibold text-white">🎨 Cores do Market Standard</h4>
+                                    <h4 className="font-semibold text-white">ðŸŽ¨ Cores do Market Standard</h4>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div className="flex items-center gap-2 p-2 bg-slate-800 rounded">
@@ -187,7 +187,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                     </div>
                                     <div className="flex items-center gap-2 p-2 bg-slate-800 rounded">
                                         <div className="w-4 h-4 bg-purple-500 rounded"></div>
-                                        <span className="text-slate-300">PC (Preço)</span>
+                                        <span className="text-slate-300">PC (PreÃ§o)</span>
                                     </div>
                                     <div className="flex items-center gap-2 p-2 bg-slate-800 rounded">
                                         <div className="w-4 h-4 bg-amber-500 rounded"></div>
@@ -203,7 +203,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                 onClick={() => setShowInfoModal(false)}
                                 className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-lg transition"
                             >
-                                ✓ Entendi!
+                                âœ“ Entendi!
                             </button>
                         </div>
                     </div>
@@ -252,7 +252,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                             type="text"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder={canShout ? "Digite sua mensagem..." : "Sem shouts disponíveis esta semana."}
+                            placeholder={canShout ? "Digite sua mensagem..." : "Sem shouts disponÃ­veis esta semana."}
                             disabled={!canShout || sending}
                             maxLength={100}
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -296,7 +296,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
 
                     {!canShout && (
                         <p className="text-center text-xs text-slate-500 mt-2">
-                            Reseta automaticamente na próxima semana.
+                            Reseta automaticamente na prÃ³xima semana.
                         </p>
                     )}
                 </div>

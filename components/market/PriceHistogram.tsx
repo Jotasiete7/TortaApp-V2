@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { formatWurmPrice } from '../../services/priceUtils';
 
 interface PriceHistogramProps {

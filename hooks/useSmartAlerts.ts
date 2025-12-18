@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { MarketItem } from '../types';
 
 export interface SmartAlert {

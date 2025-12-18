@@ -1,4 +1,4 @@
-
+﻿
 /**
  * casketService.ts
  * Logic for calculating Tier and Value of Dirty Caskets based on Sleep Powder yield.

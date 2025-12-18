@@ -1,4 +1,4 @@
-import { MarketItem } from '../types';
+﻿import { MarketItem } from '../types';
 
 export interface VolatilityMetrics {
     score: number; // 0-100 normalized volatility score

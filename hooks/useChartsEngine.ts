@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { MarketItem, VolatilityMetrics, SellerInsights } from '../types';
 import {
     getDistinctMarketItems, // Updated import

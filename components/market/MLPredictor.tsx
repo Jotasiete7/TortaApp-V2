@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { BrainCircuit, Loader2, TrendingUp, TrendingDown, Info, AlertTriangle, Search, Filter, Layers, Calculator, HelpCircle } from 'lucide-react';
 import { PredictionResult, MarketItem, BulkAnalysis } from '../../types';
 import { analyzePriceSet, MarketStats } from '../../services/mlEngine';
@@ -98,7 +98,7 @@ const BulkSelector: React.FC<{
                                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-pulse" title="Best Value"></div>
                             )}
                             <div className="text-xs opacity-70 flex gap-1 justify-center mt-1">
-                                {multiplier < 0.95 ? '💸' : multiplier > 1.05 ? '⚠️' : '✓'}
+                                {multiplier < 0.95 ? 'ðŸ’¸' : multiplier > 1.05 ? 'âš ï¸' : 'âœ“'}
                             </div>
                         </button>
                     );
@@ -125,7 +125,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
     const [selectedBulk, setSelectedBulk] = useState<number>(1);
     const [showBulks, setShowBulks] = useState(false);
 
-    // 1. Extração Dinâmica de Materiais
+    // 1. ExtraÃ§Ã£o DinÃ¢mica de Materiais
     const availableMaterials = useMemo(() => {
         if (data.length === 0) return ['Iron', 'Wood', 'Cotton'];
         const mats = new Set<string>();
@@ -138,7 +138,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
         return Array.from(mats).sort();
     }, [data]);
 
-    // 2. Extração Dinâmica de Nomes
+    // 2. ExtraÃ§Ã£o DinÃ¢mica de Nomes
     const availableItemNames = useMemo(() => {
         if (data.length === 0) return [];
         const names = new Set<string>();
@@ -177,17 +177,17 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                 return;
             }
 
-            // 2. Análise de Bulks
+            // 2. AnÃ¡lise de Bulks
             const analysis = analyzeBulks(relevantItems);
             setBulkAnalysis(analysis);
             setShowBulks(analysis.hasBulks);
 
-            // 3. Análise Estatística Avançada (Median, Quartiles)
+            // 3. AnÃ¡lise EstatÃ­stica AvanÃ§ada (Median, Quartiles)
             const unitPrices = relevantItems.map(i => i.price);
             const stats = analyzePriceSet(unitPrices);
             setMarketStats(stats);
 
-            // 4. Projeção baseada em Fair Price (Mediana Robusta)
+            // 4. ProjeÃ§Ã£o baseada em Fair Price (Mediana Robusta)
             const basePredictedPrice = stats.fairPrice;
 
             let confidence = 0.95;
@@ -331,7 +331,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                 <div className="text-slate-500 space-y-4">
                                     <Loader2 className="w-16 h-16 mx-auto animate-spin text-purple-500" />
                                     <p className="animate-pulse text-lg">Crunching numbers...</p>
-                                    <p className="text-xs text-slate-600">Analyzing {data.length.toLocaleString()} records • Removing outliers • Calculating quartiles</p>
+                                    <p className="text-xs text-slate-600">Analyzing {data.length.toLocaleString()} records â€¢ Removing outliers â€¢ Calculating quartiles</p>
                                 </div>
                             )}
 

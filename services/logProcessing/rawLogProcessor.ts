@@ -1,4 +1,4 @@
-/**
+﻿/**
  * rawLogProcessor.ts
  * Main log processing function - parse, clean, normalize
  * Adapted from Gemini's code with improvements

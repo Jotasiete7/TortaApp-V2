@@ -1,4 +1,4 @@
-// Enhanced Gamification Constants
+﻿// Enhanced Gamification Constants
 // Optimized for 24/7 Live Monitor farming
 
 export const XP_PER_TRADE = 100; // Increased from 10 to scale better
@@ -81,20 +81,20 @@ export interface Achievement {
 
 export const ACHIEVEMENTS: Achievement[] = [
     // Live Monitor Achievements
-    { id: 'night_owl', name: 'Night Owl', description: 'Monitor live trades for 6+ hours continuously', icon: '🦉', color: 'purple', requirement: { type: 'monitor_time', value: 21600 } },
-    { id: 'data_collector', name: 'Data Collector', description: 'Capture 1,000 live trades', icon: '📊', color: 'blue', requirement: { type: 'live_trades', value: 1000 } },
-    { id: 'market_watcher', name: 'Market Watcher', description: 'Capture 10,000 live trades', icon: '👁️', color: 'cyan', requirement: { type: 'live_trades', value: 10000 } },
-    { id: 'trade_oracle', name: 'Trade Oracle', description: 'Capture 100,000 live trades', icon: '🔮', color: 'purple', requirement: { type: 'live_trades', value: 100000 } },
+    { id: 'night_owl', name: 'Night Owl', description: 'Monitor live trades for 6+ hours continuously', icon: 'ðŸ¦‰', color: 'purple', requirement: { type: 'monitor_time', value: 21600 } },
+    { id: 'data_collector', name: 'Data Collector', description: 'Capture 1,000 live trades', icon: 'ðŸ“Š', color: 'blue', requirement: { type: 'live_trades', value: 1000 } },
+    { id: 'market_watcher', name: 'Market Watcher', description: 'Capture 10,000 live trades', icon: 'ðŸ‘ï¸', color: 'cyan', requirement: { type: 'live_trades', value: 10000 } },
+    { id: 'trade_oracle', name: 'Trade Oracle', description: 'Capture 100,000 live trades', icon: 'ðŸ”®', color: 'purple', requirement: { type: 'live_trades', value: 100000 } },
     
     // Database Achievements
-    { id: 'archivist', name: 'Archivist', description: 'Database reaches 10MB', icon: '📚', color: 'amber', requirement: { type: 'db_size', value: 10 } },
-    { id: 'historian', name: 'Historian', description: 'Database reaches 100MB', icon: '📜', color: 'gold', requirement: { type: 'db_size', value: 100 } },
-    { id: 'chronicler', name: 'Chronicler', description: 'Database reaches 1GB', icon: '💾', color: 'emerald', requirement: { type: 'db_size', value: 1024 } },
+    { id: 'archivist', name: 'Archivist', description: 'Database reaches 10MB', icon: 'ðŸ“š', color: 'amber', requirement: { type: 'db_size', value: 10 } },
+    { id: 'historian', name: 'Historian', description: 'Database reaches 100MB', icon: 'ðŸ“œ', color: 'gold', requirement: { type: 'db_size', value: 100 } },
+    { id: 'chronicler', name: 'Chronicler', description: 'Database reaches 1GB', icon: 'ðŸ’¾', color: 'emerald', requirement: { type: 'db_size', value: 1024 } },
     
     // Trade Milestones
-    { id: 'first_hundred', name: 'First Hundred', description: 'Record 100 trades', icon: '💯', color: 'blue', requirement: { type: 'trades', value: 100 } },
-    { id: 'thousand_club', name: 'Thousand Club', description: 'Record 1,000 trades', icon: '🎯', color: 'cyan', requirement: { type: 'trades', value: 1000 } },
-    { id: 'ten_k_master', name: '10K Master', description: 'Record 10,000 trades', icon: '⭐', color: 'amber', requirement: { type: 'trades', value: 10000 } },
-    { id: 'hundred_k_legend', name: '100K Legend', description: 'Record 100,000 trades', icon: '👑', color: 'gold', requirement: { type: 'trades', value: 100000 } },
-    { id: 'million_god', name: 'Million God', description: 'Record 1,000,000 trades', icon: '💎', color: 'purple', requirement: { type: 'trades', value: 1000000 } }
+    { id: 'first_hundred', name: 'First Hundred', description: 'Record 100 trades', icon: 'ðŸ’¯', color: 'blue', requirement: { type: 'trades', value: 100 } },
+    { id: 'thousand_club', name: 'Thousand Club', description: 'Record 1,000 trades', icon: 'ðŸŽ¯', color: 'cyan', requirement: { type: 'trades', value: 1000 } },
+    { id: 'ten_k_master', name: '10K Master', description: 'Record 10,000 trades', icon: 'â­', color: 'amber', requirement: { type: 'trades', value: 10000 } },
+    { id: 'hundred_k_legend', name: '100K Legend', description: 'Record 100,000 trades', icon: 'ðŸ‘‘', color: 'gold', requirement: { type: 'trades', value: 100000 } },
+    { id: 'million_god', name: 'Million God', description: 'Record 1,000,000 trades', icon: 'ðŸ’Ž', color: 'purple', requirement: { type: 'trades', value: 1000000 } }
 ];

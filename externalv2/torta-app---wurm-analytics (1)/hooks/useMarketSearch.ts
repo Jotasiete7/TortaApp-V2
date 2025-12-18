@@ -1,4 +1,4 @@
-
+﻿
 import { useMemo } from 'react';
 import { MarketItem } from '../types';
 import { SearchEngine } from '../services/searchEngine';

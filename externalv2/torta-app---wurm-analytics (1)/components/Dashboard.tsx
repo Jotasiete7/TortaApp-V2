@@ -1,4 +1,4 @@
-
+﻿
 import React, { useRef, useMemo } from 'react';
 import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2 } from 'lucide-react';
 import { MarketItem, Language } from '../types';

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * searchEngine.ts
  * High-Performance Inverted Index Search Engine
  * 
@@ -55,7 +55,7 @@ export class SearchEngine {
 
     this.isIndexed = true;
     if (import.meta.env.DEV) console.timeEnd('SearchEngine Indexing');
-    if (import.meta.env.DEV) console.log(`✅ Indexed ${data.length} items. Unique tokens: ${this.index.size}`);
+    if (import.meta.env.DEV) console.log(`âœ… Indexed ${data.length} items. Unique tokens: ${this.index.size}`);
   }
 
   /**

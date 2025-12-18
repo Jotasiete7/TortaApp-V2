@@ -1,4 +1,4 @@
-
+﻿
 import { MarketItem, ChartDataPoint, PredictionResult } from '../types';
 
 const MATERIALS = ['Iron', 'Steel', 'Seryll', 'Glimmersteel', 'Adamantite', 'Wood', 'Cotton', 'Linden', 'Oak', 'Cedar', 'Maple'];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 import { Play, Pause, RotateCcw, X, GripVertical } from 'lucide-react';
 import { SoundService } from '../services/SoundService';

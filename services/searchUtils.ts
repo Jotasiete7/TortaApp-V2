@@ -1,4 +1,4 @@
-
+﻿
 import { MarketItem } from '../types';
 
 export interface SearchResult {
@@ -123,15 +123,15 @@ export function categorizeItem(itemName: string): string {
 
 export function getCategoryEmoji(category: string): string {
     switch (category) {
-        case 'Bricks': return '🧱';
-        case 'Wood': return '🪵';
-        case 'Metals': return '⚒️';
-        case 'Stone': return '🪨';
-        case 'Hardware': return '🔩';
-        case 'Tools': return '🛠️';
-        case 'Ores': return '⛏️';
-        case 'Clay': return '🏺';
-        default: return '📦';
+        case 'Bricks': return 'ðŸ§±';
+        case 'Wood': return 'ðŸªµ';
+        case 'Metals': return 'âš’ï¸';
+        case 'Stone': return 'ðŸª¨';
+        case 'Hardware': return 'ðŸ”©';
+        case 'Tools': return 'ðŸ› ï¸';
+        case 'Ores': return 'â›ï¸';
+        case 'Clay': return 'ðŸº';
+        default: return 'ðŸ“¦';
     }
 }
 

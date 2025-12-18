@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { VolatilityMetrics } from '../../types';
 import { getVolatilityLevel, getVolatilityColor } from '../../services/volatilityCalculator';
@@ -22,9 +22,9 @@ export const VolatilityBadge: React.FC<VolatilityBadgeProps> = ({ metrics, itemN
 
     const getLevelEmoji = () => {
         switch (level) {
-            case 'stable': return '🟢';
-            case 'moderate': return '🟡';
-            case 'volatile': return '🔴';
+            case 'stable': return 'ðŸŸ¢';
+            case 'moderate': return 'ðŸŸ¡';
+            case 'volatile': return 'ðŸ”´';
         }
     };
 

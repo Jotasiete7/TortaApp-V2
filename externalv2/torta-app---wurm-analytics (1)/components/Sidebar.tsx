@@ -1,4 +1,4 @@
-
+﻿
 import React from 'react';
 import { LayoutDashboard, ShoppingCart, BarChart2, BrainCircuit, Settings, PieChart, BadgeDollarSign } from 'lucide-react';
 import { ViewState, Language } from '../types';

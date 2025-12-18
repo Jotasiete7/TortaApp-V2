@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { calculateMarketHealth } from '../../services/marketHealthCalculator';
 import { MarketItem } from '../../types';
 import { Activity, TrendingUp, TrendingDown, Target, Shield, AlertTriangle } from 'lucide-react';

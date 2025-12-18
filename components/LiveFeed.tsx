@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { Terminal, Trash2 } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 
@@ -133,7 +133,7 @@ export const LiveFeed = () => {
             >
                 {trades.length === 0 && (
                     <div className="flex-1 flex items-center justify-center text-slate-700 animate-pulse text-xs self-center">
-                        [WAITING FOR DATA STREAM - Configure o monitor no botão inferior direito]
+                        [WAITING FOR DATA STREAM - Configure o monitor no botÃ£o inferior direito]
                     </div>
                 )}
 

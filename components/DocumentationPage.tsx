@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { ArrowLeft, Book, Trophy, Award, Scroll, Calculator } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,7 +8,7 @@ interface DocumentationPageProps {
 }
 
 const MARKDOWN_CONTENT = `
-# 🎮 TortaApp Gamification Rules
+# ðŸŽ® TortaApp Gamification Rules
 
 Welcome to the TortaApp Trade Career system. Here is how you can level up, earn badges, and become a Tycoon.
 
@@ -17,7 +17,7 @@ Welcome to the TortaApp Trade Career system. Here is how you can level up, earn 
 Your progress is automatically calculated based on your market activity.
 **XP Formula:** \`1 Interaction (Trade/PC) = 10 XP\`
 
-### 📊 Career Ladder
+### ðŸ“Š Career Ladder
 
 | Level | Title | Trades Needed | Total XP | Description |
 | :---: | :--- | :--- | :--- | :--- |
@@ -33,15 +33,15 @@ Your progress is automatically calculated based on your market activity.
 
 Badges are unique honors displayed on your profile.
 
-### 🎖️ Current Badges
+### ðŸŽ–ï¸ Current Badges
 
 | Icon | Name | Class | How to Obtain |
 | :---: | :--- | :--- | :--- |
-| 🛡️ | **Administrator** | \`Red\` | TortaApp Staff only. |
-| 💜 | **Patreon Supporter** | \`Purple\` | Support the project financially. |
-| 🧪 | **Beta Tester** | \`Cyan\` | Participated in early testing phases. |
-| 📈 | **Market Mogul** | \`Green\` | Significant market influence (Manual). |
-| 🎁 | **Christmas 2025** | \`Red\` | Active during Dec 2025 event. |
+| ðŸ›¡ï¸ | **Administrator** | \`Red\` | TortaApp Staff only. |
+| ðŸ’œ | **Patreon Supporter** | \`Purple\` | Support the project financially. |
+| ðŸ§ª | **Beta Tester** | \`Cyan\` | Participated in early testing phases. |
+| ðŸ“ˆ | **Market Mogul** | \`Green\` | Significant market influence (Manual). |
+| ðŸŽ | **Christmas 2025** | \`Red\` | Active during Dec 2025 event. |
 
 ---
 

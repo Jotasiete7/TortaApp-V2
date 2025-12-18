@@ -1,4 +1,4 @@
-
+﻿
 /**
  * Utility functions for Price Management and Formatting
  * Ported from legacy Python logic.

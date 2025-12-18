@@ -1,4 +1,4 @@
-
+﻿
 import { MarketItem, ChartDataPoint } from '../types';
 
 export interface ItemHistoryPoint {

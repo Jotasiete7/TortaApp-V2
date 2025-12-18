@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { HelpCircle, X, Sparkles } from 'lucide-react';
 
 interface SearchHelpProps {
@@ -62,7 +62,7 @@ export const SearchHelp: React.FC<SearchHelpProps> = ({ onExampleClick }) => {
                             {/* Quick Examples - Clickable */}
                             <div>
                                 <div className="text-slate-300 font-semibold mb-2 flex items-center gap-2">
-                                    <span className="text-amber-500">✨</span>
+                                    <span className="text-amber-500">âœ¨</span>
                                     Quick Examples (Click to Try)
                                 </div>
                                 <div className="space-y-2">
@@ -91,7 +91,7 @@ export const SearchHelp: React.FC<SearchHelpProps> = ({ onExampleClick }) => {
 
                             {/* Field Reference */}
                             <div>
-                                <div className="text-slate-300 font-semibold mb-2">📋 Available Fields</div>
+                                <div className="text-slate-300 font-semibold mb-2">ðŸ“‹ Available Fields</div>
                                 <div className="space-y-2">
                                     <div className="bg-slate-900/30 p-2 rounded">
                                         <div className="text-amber-400 font-mono text-xs mb-1">ql, quality, q</div>
@@ -122,7 +122,7 @@ export const SearchHelp: React.FC<SearchHelpProps> = ({ onExampleClick }) => {
 
                             {/* Operators */}
                             <div className="bg-slate-900/50 p-3 rounded border border-slate-700">
-                                <div className="text-slate-300 font-semibold mb-2">🔧 Operators</div>
+                                <div className="text-slate-300 font-semibold mb-2">ðŸ”§ Operators</div>
                                 <div className="grid grid-cols-5 gap-2 text-center">
                                     <div className="bg-slate-800 p-1.5 rounded">
                                         <code className="text-amber-400 font-bold">&gt;</code>
@@ -149,7 +149,7 @@ export const SearchHelp: React.FC<SearchHelpProps> = ({ onExampleClick }) => {
 
                             {/* Tips */}
                             <div className="bg-blue-500/10 border border-blue-500/30 p-3 rounded">
-                                <div className="text-blue-400 font-semibold mb-1 text-xs">💡 Pro Tips</div>
+                                <div className="text-blue-400 font-semibold mb-1 text-xs">ðŸ’¡ Pro Tips</div>
                                 <ul className="text-slate-400 text-[11px] space-y-1 list-disc list-inside">
                                     <li>Combine multiple filters for precise results</li>
                                     <li>Text search works on name, seller, and material</li>

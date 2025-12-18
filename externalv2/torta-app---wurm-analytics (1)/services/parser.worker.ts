@@ -1,4 +1,4 @@
-
+﻿
 // NOTE: This file is currently unused in the live environment.
 // The worker logic has been embedded directly into hooks/useFileProcessor.ts
 // to prevent "Invalid URL" and 404 errors in preview/sandbox environments.

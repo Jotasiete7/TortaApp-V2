@@ -1,4 +1,4 @@
-/**
+﻿/**
  * rankings.ts
  * Service layer for ranking/leaderboard functionality
  */

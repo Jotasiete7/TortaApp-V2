@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { X, BookOpen, Activity, Zap, Brain, Search, TrendingUp, HelpCircle } from 'lucide-react';
 import { useChartsTranslation } from '../../services/chartsTranslations';
 
@@ -22,49 +22,49 @@ export const ChartsGuide: React.FC<ChartsGuideProps> = ({ isOpen, onClose, lang 
                     title: lang === 'en' ? 'Smart Search' : 'Busca Inteligente',
                     desc: lang === 'en'
                         ? 'Type any part of an item name. Our fuzzy search will find it even if you make typo.'
-                        : 'Digite qualquer parte do nome. Nossa busca inteligente encontra mesmo com erros de digitação.'
+                        : 'Digite qualquer parte do nome. Nossa busca inteligente encontra mesmo com erros de digitaÃ§Ã£o.'
                 },
                 {
-                    title: lang === 'en' ? 'Chart Types' : 'Tipos de Gráfico',
+                    title: lang === 'en' ? 'Chart Types' : 'Tipos de GrÃ¡fico',
                     desc: lang === 'en'
                         ? 'Toggle between Line Chart (trends), Candlestick (price action), and Heatmap (supply density).'
-                        : 'Alterne entre Linha (tendências), Candlestick (ação de preço) e Mapa de Calor (densidade de supply).'
+                        : 'Alterne entre Linha (tendÃªncias), Candlestick (aÃ§Ã£o de preÃ§o) e Mapa de Calor (densidade de supply).'
                 }
             ]
         },
         volatility: {
-            title: lang === 'en' ? 'Volatility Analysis' : 'Análise de Volatilidade',
+            title: lang === 'en' ? 'Volatility Analysis' : 'AnÃ¡lise de Volatilidade',
             icon: <Activity className="w-5 h-5" />,
             items: [
                 {
                     title: lang === 'en' ? 'Volatility Score (0-100)' : 'Score de Volatilidade (0-100)',
                     desc: lang === 'en'
                         ? 'Lower scores (0-30) mean stable prices. Higher scores (70+) mean high risk/reward.'
-                        : 'Scores baixos (0-30) indicam preços estáveis. Altos (70+) indicam alto risco/recompensa.'
+                        : 'Scores baixos (0-30) indicam preÃ§os estÃ¡veis. Altos (70+) indicam alto risco/recompensa.'
                 },
                 {
-                    title: lang === 'en' ? 'Trading Strategy' : 'Estratégia de Trading',
+                    title: lang === 'en' ? 'Trading Strategy' : 'EstratÃ©gia de Trading',
                     desc: lang === 'en'
                         ? 'Buy low volatility items for stability. Trade high volatility items for quick profits.'
-                        : 'Compre itens estáveis para segurança. Negocie itens voláteis para lucros rápidos.'
+                        : 'Compre itens estÃ¡veis para seguranÃ§a. Negocie itens volÃ¡teis para lucros rÃ¡pidos.'
                 }
             ]
         },
         forecast: {
-            title: lang === 'en' ? 'Price Forecasting' : 'Previsão de Preços',
+            title: lang === 'en' ? 'Price Forecasting' : 'PrevisÃ£o de PreÃ§os',
             icon: <Brain className="w-5 h-5" />,
             items: [
                 {
-                    title: lang === 'en' ? '7-Day Prediction' : 'Previsão de 7 Dias',
+                    title: lang === 'en' ? '7-Day Prediction' : 'PrevisÃ£o de 7 Dias',
                     desc: lang === 'en'
                         ? 'We use linear regression on last 30 days data to project future trends.'
-                        : 'Usamos regressão linear nos dados dos últimos 30 dias para projetar tendências futuras.'
+                        : 'Usamos regressÃ£o linear nos dados dos Ãºltimos 30 dias para projetar tendÃªncias futuras.'
                 },
                 {
-                    title: lang === 'en' ? 'Confidence Score' : 'Score de Confiança',
+                    title: lang === 'en' ? 'Confidence Score' : 'Score de ConfianÃ§a',
                     desc: lang === 'en'
                         ? 'Only trust predictions with >70% confidence. Low confidence means the market is unpredictable.'
-                        : 'Confie apenas em previsões com >70% de confiança. Confiança baixa significa mercado imprevisível.'
+                        : 'Confie apenas em previsÃµes com >70% de confianÃ§a. ConfianÃ§a baixa significa mercado imprevisÃ­vel.'
                 }
             ]
         }

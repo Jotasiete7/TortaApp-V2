@@ -1,4 +1,4 @@
-
+﻿
 import { MarketItem } from '../types';
 
 /**

@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useMemo } from 'react';
 import { BrainCircuit, Loader2, TrendingUp, TrendingDown, Info, AlertTriangle, Search, Filter, Layers } from 'lucide-react';
 import { PredictionResult, MarketItem, BulkAnalysis } from '../types';
@@ -106,7 +106,7 @@ const BulkSelector: React.FC<{
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-pulse" title="Best Value"></div>
                 )}
                 <div className="text-xs opacity-70 flex gap-1 justify-center mt-1">
-                 {multiplier < 0.95 ? '💸' : multiplier > 1.05 ? '⚠️' : '✓'}
+                 {multiplier < 0.95 ? 'ðŸ’¸' : multiplier > 1.05 ? 'âš ï¸' : 'âœ“'}
                 </div>
             </button>
            );
@@ -116,9 +116,9 @@ const BulkSelector: React.FC<{
       {analysis.hasBulks && (
         <div className="text-xs text-slate-400 space-y-1 pt-1">
           <div className="flex gap-3">
-             <span>💸 Better value</span>
-             <span>⚠️ Premium price</span>
-             <span>✓ Fair price</span>
+             <span>ðŸ’¸ Better value</span>
+             <span>âš ï¸ Premium price</span>
+             <span>âœ“ Fair price</span>
           </div>
           {analysis.recommendedBulk > 1 && (
             <div className="text-amber-400 font-medium">
@@ -147,7 +147,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
   const [selectedBulk, setSelectedBulk] = useState<number>(1);
   const [showBulks, setShowBulks] = useState(false);
 
-  // 1. Extração Dinâmica de Materiais
+  // 1. ExtraÃ§Ã£o DinÃ¢mica de Materiais
   const availableMaterials = useMemo(() => {
       if (data.length === 0) return ['Iron', 'Wood', 'Cotton'];
       const mats = new Set<string>();
@@ -160,7 +160,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
       return Array.from(mats).sort();
   }, [data]);
 
-  // 2. Extração Dinâmica de Nomes
+  // 2. ExtraÃ§Ã£o DinÃ¢mica de Nomes
   const availableItemNames = useMemo(() => {
       if (data.length === 0) return [];
       const names = new Set<string>();
@@ -200,17 +200,17 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
           return;
       }
 
-      // 2. Análise de Bulks
+      // 2. AnÃ¡lise de Bulks
       const analysis = analyzeBulks(relevantItems);
       setBulkAnalysis(analysis);
       setShowBulks(analysis.hasBulks);
 
-      // 3. Análise Estatística (Baseada em Unit Price inicialmente)
+      // 3. AnÃ¡lise EstatÃ­stica (Baseada em Unit Price inicialmente)
       const unitPrices = relevantItems.map(i => i.price);
       const stats = analyzePriceSet(unitPrices);
       setMarketStats(stats);
 
-      // 4. Projeção Inicial (Unitário)
+      // 4. ProjeÃ§Ã£o Inicial (UnitÃ¡rio)
       const basePredictedPrice = stats.mean;
 
       let confidence = 0.9;
@@ -257,7 +257,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
       // We should apply that factor.
       
       // To avoid double counting if the mean already includes cheap bulks, let's just project linear first.
-      // User requested: "Calcular preços considerando o bulk selecionado"
+      // User requested: "Calcular preÃ§os considerando o bulk selecionado"
       
       // If I select 1000x, I want to see the price for 1000 items.
       const multiplierFactor = selectedBulk > 1 && bulkIndex >= 0 ? specificMultiplier : 1;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * index.ts
  * Main exports for logProcessing module
  */

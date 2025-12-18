@@ -1,4 +1,4 @@
-/**
+﻿/**
  * types.ts
  * TypeScript interfaces for RAW log processing module
  */

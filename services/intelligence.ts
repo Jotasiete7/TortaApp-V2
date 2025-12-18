@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 
 export interface TraderProfile {
     nick: string;
@@ -127,7 +127,7 @@ export const IntelligenceService = {
 
     /**
      * Fetches trade logs for Trade Master view
-     * 📊 INCREASED LIMIT: 5000 -> 50000 to match Supabase max_rows config
+     * ðŸ“Š INCREASED LIMIT: 5000 -> 50000 to match Supabase max_rows config
      */
     getTradeLogs: async (limit: number = 50000): Promise<any[]> => {
         const { data, error } = await supabase

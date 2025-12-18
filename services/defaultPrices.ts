@@ -1,4 +1,4 @@
-export const DEFAULT_PRICES_CSV = `
+﻿export const DEFAULT_PRICES_CSV = `
 "Nome_Item;Qtd_Lote;Preco_Medio_Copper"
 "Stone bricks;1000;175"
 "Rounded stone bricks;1000;175"

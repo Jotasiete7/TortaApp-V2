@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Calculator, ArrowRight, Coins } from 'lucide-react';
 import { formatWurmPrice } from '../../services/priceUtils';
 

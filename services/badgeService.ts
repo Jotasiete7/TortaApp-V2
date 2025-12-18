@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 import { Badge, UserBadge } from '../types';
 
 export const BadgeService = {
