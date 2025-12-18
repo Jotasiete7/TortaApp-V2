@@ -4,9 +4,9 @@ Este projeto segue o padrão **Semantic Versioning 2.0.0** ([semver.org](https:/
 
 ## Formato de Versão
 
-```
+\`\`\`
 MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
-```
+\`\`\`
 
 ### Componentes
 
@@ -18,12 +18,12 @@ MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
 
 ## Exemplos
 
-```
+\`\`\`
 1.0.0           - Release estável
 2.0.0-beta.1    - Primeiro beta da v2
 2.1.0-alpha.3   - Terceiro alpha da v2.1
 2.1.1           - Correção de bug
-```
+\`\`\`
 
 ## Regras de Incremento
 
@@ -51,44 +51,44 @@ MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
 ## Pre-releases
 
 ### Sequência
-```
+\`\`\`
 2.0.0-alpha.1
 2.0.0-alpha.2
 2.0.0-beta.1
 2.0.0-beta.2
 2.0.0-rc.1
 2.0.0
-```
+\`\`\`
 
 ## Versão Atual
 
-**TortaApp v2.0.0-beta.1**
+**TortaApp v2.0.1**
 
 ## Workflow de Release
 
 ### Pre-release
-```bash
+\`\`\`bash
 npm version 2.1.0-beta.1 --no-git-tag-version
 npm run tauri build
 git tag v2.1.0-beta.1
 git push origin v2.1.0-beta.1
-```
+\`\`\`
 
 ### Release Estável
-```bash
+\`\`\`bash
 npm version 2.1.0 --no-git-tag-version
 npm run tauri build
 git tag v2.1.0
 git push origin v2.1.0
-```
+\`\`\`
 
 ## Commits Convencionais
 
-```
+\`\`\`
 feat: nova funcionalidade (MINOR)
 fix: correção de bug (PATCH)
 BREAKING CHANGE: mudança incompatível (MAJOR)
-```
+\`\`\`
 
 ## Referências
 

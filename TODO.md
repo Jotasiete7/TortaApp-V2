@@ -39,6 +39,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas (docs, secrets, resources) e limpeza da raiz. | ✅ Concluído (12/12) |
 | 016 | 🟡 Média | [Feature] | **Controle de Volume** | Persistência de volume e mute para alertas e sons do app. | ✅ Concluído (12/12) |
 | 017 | 🔴 Alta | [Feature] | **Simplificação do Parser** | Remover modo legado e usar apenas AdvancedParser como modo único. | ✅ Concluído (14/12) |
+| 018 | 🔴 Alta | [Fix] | **Live Update Fix** | Corrigir atualização em tempo real usando PollWatcher (200ms) para contornar limitações do FS Watcher em alguns sistemas. | ✅ Concluído (18/12) |
 
 ---
 
@@ -54,31 +55,21 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 17
-**Concluídas:** 15 (88.2%)
-**Pendentes:** 2 (11.8%)
+**Total de Tarefas:** 18
+**Concluídas:** 16 (88.8%)
+**Pendentes:** 2 (11.2%)
 
-**Última Atualização:** 14/12/2024 - Versão "Advanced Only Mode" 🚀
+**Última Atualização:** 18/12/2024 - "Live Updates Fixed" 🚀
 
 ---
 
-## 📝 Notas da Sessão (14/12/2024)
+## 📝 Notas da Sessão (18/12/2024)
 
 ### ✅ Realizado Hoje:
-1.  **Simplificação do Parser**:
-    *   Removido parser legado (`StandardLogParser`)
-    *   Removida trait `LogParser` e abstrações desnecessárias
-    *   Removida flag `USE_ADVANCED_PARSING`
-    *   Sistema agora usa apenas `AdvancedParser` como modo único
-    *   Redução de ~50 linhas de código
-    *   Compilação bem-sucedida (9m 27s) com apenas 2 warnings
+1.  **Correção do Live Update**:
+    *   Substituído watcher padrão por `PollWatcher` com intervalo de 200ms.
+    *   Implementado sistema de "Batching" para agrupar atualizações rápidas e evitar travamentos.
+    *   Validado que gráficos e ML usam dados em tempo real corretamente.
 
 ### ⚠️ Próximos Passos:
--   Testar o watcher com logs reais
--   Verificar se campos avançados estão sendo populados corretamente
--   Validar performance com arquivos grandes
-
-## 📝 Nota de Performance
-**IMPORTANTE**: App.tsx ajustado para limite variável:
-- DEV: 5.000 registros (rápido)
-- PROD: 50.000 registros (completo)
+-   Preparar Release v2.0.0-beta.2
