@@ -43,25 +43,25 @@ const BadgeIconMap: Record<string, React.ElementType> = {
 
 // Map Lucide Interface Names -> Emoji Characters for Vivid SVGs
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '🛡️',
-    'Award': '🎯',
-    'Star': 'â­',
-    'Heart': 'â¤ï¸',
-    'Gift': '🎯
-    'Beaker': '🎯
-    'TrendingUp': '🎯
-    'Trophy': '🎯
-    'Flame': '🎯
-    'Zap': 'âš¡',
-    'Crown': '🎯
-    'Diamond': '🎯
-    'Swords': 'âš”ï¸',
-    'Scroll': '🎯
-    'Map': '🎯',
-    'Compass': '🎯
+    'Shield': '🛡️',
+    'Award': '🎖️',
+    'Star': '⭐',
+    'Heart': '❤️',
+    'Gift': '🎁',
+    'Beaker': '🧪',
+    'TrendingUp': '📈',
+    'Trophy': '🏆',
+    'Flame': '🔥',
+    'Zap': '⚡',
+    'Crown': '👑',
+    'Diamond': '💎',
+    'Swords': '⚔️',
+    'Scroll': '📜',
+    'Map': '🗺️',
+    'Compass': '🧭',
     'Anchor': 'âš“',
-    'Hammer': '🎯
-    'Axe': '🎯
+    'Hammer': '🔨',
+    'Axe': '🪓',
     'Pickaxe': 'â›ï¸'
 };
 
