@@ -10,7 +10,7 @@ import { LiveTradeSetup } from './LiveTradeSetup';
 import { LiveFeed } from './LiveFeed';
 import { AdvancedTools } from './AdvancedTools';
 import { MarketIntelligence } from './dashboard/MarketIntelligence';
-import { MarketItem, Language } from '../types';
+import { MarketItem, Language, ViewState } from '../types';
 import { translations } from '../services/i18n';
 import { IntelligenceService, GlobalStats } from '../services/intelligence';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,6 +32,7 @@ interface DashboardProps {
     language: Language;
     selectedPlayer: string | null;
     onPlayerSelect: (player: string | null) => void;
+    onNavigate: (view: ViewState) => void;
 }
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon, color, trend = 'stable', trendValue }) => (
@@ -59,7 +60,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     marketData,
     language,
     selectedPlayer,
-    onPlayerSelect
+    onPlayerSelect,
+    onNavigate
 }) => {
     const t = translations[language];
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -240,7 +242,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {/* 2. MARKET INTELLIGENCE (NEW) */}
             <div className="mt-4">
-                <MarketIntelligence />
+                <MarketIntelligence onNavigate={onNavigate} />
             </div>
 
             {/* 3. LIVE FEED */}
@@ -298,10 +300,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 <div className="font-medium text-white">
                                     {isProcessing ? t.processing : t.uploadDump}
                                 </div>
+                                <div className="text-xs text-slate-400">
+                                    {isProcessing ? 'Parsing massive file...' : t.uploadHint}
+                                </div>
                                 {isProcessing ? <Loader2 className="w-5 h-5 text-amber-500 animate-spin" /> : <Upload className="w-5 h-5 text-slate-400 group-hover:text-white" />}
-                            </div>
-                            <div className="text-xs text-slate-400">
-                                {isProcessing ? 'Parsing massive file...' : t.uploadHint}
                             </div>
                         </button>
 

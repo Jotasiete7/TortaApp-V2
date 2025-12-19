@@ -3,10 +3,10 @@ import { TrendingUp, TrendingDown, Zap, ArrowRight, Activity, ArrowUpRight, Arro
 import { IntelligenceService, MarketIntelligenceData, MarketTrendItem } from '../../services/intelligence';
 import { formatWurmPrice } from '../../services/priceUtils';
 import { InfoTooltip } from '../market/InfoTooltip';
+import { ViewState } from '../../types';
 
 const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'supply' | 'volatility' }) => {
     let priceColor = 'text-slate-300';
-    let icon = null;
 
     if (type === 'demand') {
         priceColor = 'text-amber-400';
@@ -37,7 +37,7 @@ const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'su
     );
 };
 
-export const MarketIntelligence = () => {
+export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewState) => void }) => {
     const [data, setData] = useState<MarketIntelligenceData | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -90,7 +90,10 @@ export const MarketIntelligence = () => {
                             ))}
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-                            <button className="text-[10px] text-amber-500 hover:text-amber-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+                            <button 
+                                onClick={() => onNavigate(ViewState.MARKET)}
+                                className="text-[10px] text-amber-500 hover:text-amber-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
+                            >
                                 View Opportunities <ArrowRight className="w-3 h-3" />
                             </button>
                         </div>
@@ -112,7 +115,10 @@ export const MarketIntelligence = () => {
                             ))}
                         </div>
                          <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-                            <button className="text-[10px] text-cyan-500 hover:text-cyan-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+                            <button 
+                                onClick={() => onNavigate(ViewState.MARKET)}
+                                className="text-[10px] text-cyan-500 hover:text-cyan-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
+                            >
                                 Browse Listings <ArrowRight className="w-3 h-3" />
                             </button>
                         </div>
@@ -134,7 +140,10 @@ export const MarketIntelligence = () => {
                             ))}
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-                            <button className="text-[10px] text-purple-500 hover:text-purple-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+                            <button 
+                                onClick={() => onNavigate(ViewState.ANALYTICS)}
+                                className="text-[10px] text-purple-500 hover:text-purple-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
+                            >
                                 Analyze Trends <ArrowRight className="w-3 h-3" />
                             </button>
                          </div>

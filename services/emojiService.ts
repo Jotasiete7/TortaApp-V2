@@ -1,4 +1,4 @@
-﻿interface Emoji {
+interface Emoji {
     hexcode: string;
     emoji: string;
     name: string;
@@ -52,10 +52,9 @@ class EmojiService {
             }
 
             const emojiChar = match[0];
-            if (import.meta.env.DEV) console.log('Parsing emoji:', emojiChar, 'Codes:', Array.from(emojiChar as string).map((c: string) => c.charCodeAt(0).toString(16)));
+            // SILENCED CONSOLE LOGS HERE
             const openMoji = this.getEmoji(emojiChar);
-            if (import.meta.env.DEV) console.log('Lookup result:', openMoji ? openMoji.hexcode : 'NOT FOUND');
-
+            
             if (openMoji) {
                 parts.push({
                     type: 'emoji',
