@@ -51,9 +51,9 @@ export const Leaderboard = () => {
     const [priceCheckers, setPriceCheckers] = useState<PriceChecker[]>([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<TimePeriod>('all_time');
-    
-    // NEW: Collapsible State (Default: Open)
-    const [isExpanded, setIsExpanded] = useState(true);
+
+    // NEW: Collapsible State (Default: Closed)
+    const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {
         loadRankings();
@@ -88,7 +88,7 @@ export const Leaderboard = () => {
         <div className="space-y-4 animate-fade-in border-b border-slate-800 pb-8 mb-8">
             {/* Header & Filters */}
             <div className="flex items-center justify-between">
-                <div 
+                <div
                     className="cursor-pointer group flex items-center gap-3"
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
@@ -168,8 +168,8 @@ export const Leaderboard = () => {
                         ))}
                     </RankingCard>
 
-                     {/* 4. Top Checkers (Replaces appraisers visually if desired, using generic trophy for now) */}
-                     <RankingCard title="Top Contributors" icon={Trophy} color="purple">
+                    {/* 4. Top Checkers (Replaces appraisers visually if desired, using generic trophy for now) */}
+                    <RankingCard title="Top Contributors" icon={Trophy} color="purple">
                         {priceCheckers.map((c, index) => (
                             <RankItem
                                 key={`${c.nick}-${index}`}
