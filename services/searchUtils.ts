@@ -102,59 +102,74 @@ export function searchItems(
 }
 
 /**
- * Categorize item by name
+ * Categorize item by name. 
+ * ORDER MATTERS! Specific types first, then materials, then broad categories.
  */
 export function categorizeItem(itemName: string): string {
     const name = itemName.toLowerCase();
     
-    // -- ANIMALS & MOUNTS --
-    if (name.includes('horse') || name.includes('foal') || name.includes('mare') || name.includes('stallion')) return 'Animals';
-    if (name.includes('cow') || name.includes('bull') || name.includes('sheep') || name.includes('ram')) return 'Animals';
-    if (name.includes('dog') || name.includes('cat') || name.includes('spider')) return 'Animals';
+    // 1. Vehicles & Infrastructure
+    if (name.includes('ship') || name.includes('boat') || name.includes('knarr') || name.includes('corbita') || name.includes('cog') || name.includes('caravel') || name.includes('yacht')) return 'Boats';
+    if (name.includes('cart') || name.includes('wagon') || name.includes('chariot')) return 'Vehicles';
 
-    // -- STORAGE --
+    // 2. Storage (Specific items often made of wood/metal, so check first)
     if (name.includes('casket') || name.includes('chest') || name.includes('coffer') || name.includes('trunk')) return 'Storage';
-    if (name.includes('barrel') || name.includes('bin') || name.includes('crate') || name.includes('rack')) return 'Storage';
-    
-    // -- SHIPS --
-    if (name.includes('ship') || name.includes('boat') || name.includes('knarr') || name.includes('corbita')) return 'Boats';
-    if (name.includes('cog') || name.includes('caravel') || name.includes('yacht')) return 'Boats';
+    if (name.includes('barrel') || name.includes('bin') || name.includes('crate') || name.includes('rack') || name.includes('silo')) return 'Storage';
 
-    // -- ARMOR --
-    if (name.includes('helm') || name.includes('armor') || name.includes('plate') || name.includes('chain')) return 'Armor';
-    if (name.includes('shield') || name.includes('gauntlet') || name.includes('boot') || name.includes('greave')) return 'Armor';
+    // 3. Equipment (Armor, Weapons, Tools)
+    if (name.includes('helm') || name.includes('armor') || name.includes('plate') || name.includes('chain') || name.includes('shield') || name.includes('gauntlet') || name.includes('boot') || name.includes('greave')) return 'Armor';
+    if (name.includes('sword') || name.includes('axe') || name.includes('maul') || name.includes('blade') || name.includes('knife') || name.includes('dagger')) return 'Weapons';
+    if (name.includes('tool') || name.includes('hammer') || name.includes('saw') || name.includes('pickaxe') || name.includes('shovel') || name.includes('rake')) return 'Tools';
+    if (name.includes('rod') || name.includes('net') || name.includes('pole')) return 'Tools';
 
-    // -- EXISTING --
-    if (name.includes('brick')) return 'Bricks';
-    if (name.includes('plank') || name.includes('wood') || name.includes('log') || name.includes('shaft')) return 'Wood';
-    if (name.includes('iron') || name.includes('steel') || name.includes('metal') || name.includes('copper')) return 'Metals';
-    if (name.includes('stone') || name.includes('rock') || name.includes('marble') || name.includes('slate')) return 'Stone';
-    if (name.includes('nail') || name.includes('rivet') || name.includes('lock')) return 'Hardware';
-    if (name.includes('tool') || name.includes('hammer') || name.includes('saw') || name.includes('pickaxe')) return 'Tools';
-    if (name.includes('ore') || name.includes('lump') || name.includes('shard')) return 'Ores';
-    if (name.includes('clay') || name.includes('pottery') || name.includes('jar') || name.includes('bowl')) return 'Clay';
+    // 4. Hardware (Small metal parts, locks)
+    if (name.includes('nail') || name.includes('rivet') || name.includes('lock') || name.includes('hinge') || name.includes('horse shoe') || name.includes('horseshoe')) return 'Hardware';
+
+    // 5. Materials (Processed)
+    if (name.includes('brick') || name.includes('slab')) return 'Bricks';
+    if (name.includes('plank') || name.includes('log') || name.includes('wood') || name.includes('shaft') || name.includes('handle')) return 'Wood';
+    if (name.includes('cotton') || name.includes('cloth') || name.includes('rag') || name.includes('sheet') || name.includes('rug') || name.includes('carpet') || name.includes('yarn') || name.includes('string') || name.includes('rope')) return 'Textiles';
+    if (name.includes('pottery') || name.includes('bowl') || name.includes('jar') || name.includes('flask') || name.includes('planter') || name.includes('amphora')) return 'Clay';
+
+    // 6. Raw Materials (Ores, Lumps, Shards)
+    if (name.includes('ore') || name.includes('lump') || name.includes('shard') || name.includes('rock') || name.includes('bar')) {
+        if (name.includes('clay')) return 'Clay';
+        return 'Raw Materials'; 
+    }
     
-    // -- TEXTILES --
-    if (name.includes('cotton') || name.includes('cloth') || name.includes('rag') || name.includes('sheet')) return 'Textiles';
+    // 7. Metals (Generic metal items not caught above)
+    if (name.includes('iron') || name.includes('steel') || name.includes('metal') || name.includes('copper') || name.includes('silver') || name.includes('gold')) return 'Metals';
+    if (name.includes('stone') || name.includes('marble') || name.includes('slate')) return 'Stone'; // Stone items
+
+    // 8. Living Things
+    if (name.includes('horse') || name.includes('foal') || name.includes('mare') || name.includes('stallion') || name.includes('steed')) return 'Animals';
+    if (name.includes('cow') || name.includes('bull') || name.includes('sheep') || name.includes('ram') || name.includes('lamb')) return 'Animals';
+    if (name.includes('dog') || name.includes('cat') || name.includes('spider') || name.includes('bear') || name.includes('wolf')) return 'Animals';
+    
+    // 9. Consumables
+    if (name.includes('meal') || name.includes('stew') || name.includes('soup') || name.includes('casserole') || name.includes('fillet') || name.includes('meat')) return 'Food';
 
     return 'Other';
 }
 
 export function getCategoryEmoji(category: string): string {
     switch (category) {
-        case 'Bricks': return '🧱';
-        case 'Wood': return '🪵';
-        case 'Metals': return '⚒️';
-        case 'Stone': return '🪨';
+        case 'Bricks': return '🧱'; // Should work, but if failed, could use 🏗️
+        case 'Wood': return '🌲'; // Safer than 🪵
+        case 'Metals': return '⚙️';
+        case 'Stone': return '⛰️'; // Safer than 🪨
         case 'Hardware': return '🔩';
-        case 'Tools': return '🛠️';
-        case 'Ores': return '⛏️';
+        case 'Tools': return '🔨';
+        case 'Weapons': return '⚔️';
+        case 'Raw Materials': return '💎';
         case 'Clay': return '🏺';
-        case 'Animals': return '🐎';
-        case 'Storage': return '🗳️';
+        case 'Animals': return '🐾'; // Safer than 🐎
+        case 'Storage': return '📦'; // Safer than 🗳️
         case 'Boats': return '⛵';
+        case 'Vehicles': return '🚜'; 
         case 'Armor': return '🛡️';
-        case 'Textiles': return '🧵';
+        case 'Textiles': return '👕';
+        case 'Food': return '🍖';
         default: return '📦';
     }
 }
