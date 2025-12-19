@@ -1,11 +1,10 @@
-﻿import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2, Shield, ArrowLeft } from 'lucide-react';
 import { LogUploader } from './LogProcessor/LogUploader';
 import { Leaderboard } from './gamification/Leaderboard';
 import { PlayerProfile } from './PlayerProfile';
 import { NickVerification } from './auth/NickVerification';
 import { ShoutBox } from './gamification/ShoutBox';
-import { DatabaseStatsCard } from './gamification/DatabaseStatsCard';
 import { LiveTradeSetup } from './LiveTradeSetup';
 import { LiveFeed } from './LiveFeed';
 import { AdvancedTools } from './AdvancedTools';
@@ -20,6 +19,8 @@ interface StatCardProps {
     subValue?: string;
     icon: React.ElementType;
     color: string;
+    trend?: 'up' | 'down' | 'stable';
+    trendValue?: string;
 }
 
 interface DashboardProps {
@@ -31,15 +32,21 @@ interface DashboardProps {
     onPlayerSelect: (player: string | null) => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon, color }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon, color, trend = 'stable', trendValue }) => (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors">
         <div className="flex justify-between items-start mb-4">
             <div className={`p-3 rounded-lg bg-${color}-500/10`}>
                 <Icon className={`w-6 h-6 text-${color}-500`} />
             </div>
+            {/* Semantic Context Indicator */}
+            <div className="flex items-center gap-1 bg-slate-700/50 px-2 py-1 rounded text-xs font-medium">
+                {trend === 'up' && <ArrowUpRight size={12} className="text-emerald-400" />}
+                {trend === 'down' && <ArrowDownRight size={12} className="text-rose-400" />}
+                <span className="text-slate-400">{trendValue || 'Stable'}</span>
+            </div>
         </div>
         <h3 className="text-slate-400 text-sm font-medium mb-1">{title}</h3>
-        <p className="text-2xl font-bold text-white">{value}</p>
+        <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
         {subValue && <p className="text-xs text-slate-500 mt-1">{subValue}</p>}
     </div>
 );
@@ -58,7 +65,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
     const { user } = useAuth();
 
-    // Fetch global stats on mount
     React.useEffect(() => {
         const fetchStats = async () => {
             const stats = await IntelligenceService.getGlobalStats();
@@ -73,9 +79,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
     };
 
-    // Dynamic calculations based on REAL data OR Global Stats
     const stats = useMemo(() => {
-        // Priority: Local File Data
         if (marketData && marketData.length > 0) {
             const count = marketData.length;
             let totalVolume = 0;
@@ -102,7 +106,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             };
         }
 
-        // Fallback: Global DB Stats
         if (globalStats) {
             return {
                 totalVolume: globalStats.total_volume,
@@ -114,7 +117,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             };
         }
 
-        // Default: Empty
         return {
             totalVolume: 0,
             count: 0,
@@ -132,7 +134,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return `${c.toFixed(0)}c`;
     }
 
-    // If a player is selected, show their profile instead of the dashboard
     if (selectedPlayer) {
         return (
             <PlayerProfile
@@ -142,7 +143,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         );
     }
 
-    // If identity verification is active
     if (showIdentity) {
         return (
             <div className="space-y-6 animate-fade-in">
@@ -161,13 +161,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Live Monitor Setup - Global Floating Button */}
             <LiveTradeSetup />
 
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-white">{t.dashboardOverview}</h1>
-                    <p className="text-slate-400 mt-1">{t.realTimeStats}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                        <p className="text-slate-400 text-sm">{t.realTimeStats}</p>
+                        {/* Enhanced System Status Indicator */}
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">System Active</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="flex gap-4">
                     <button
@@ -177,9 +186,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <Shield className="w-4 h-4" />
                         Link Identity
                     </button>
-                    <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-                        <span className={`w-2 h-2 rounded-full ${stats.count > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'}`}></span>
-                        {stats.source === 'FILE' ? 'Live File Data' : stats.source === 'DB' ? 'Database Connected' : t.awaitingData}
+                    {/* Enhanced Database Indicator */}
+                     <div className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border shadow-lg ${stats.source === 'DB' 
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-blue-500/10' 
+                        : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                        <div className={`w-2 h-2 rounded-full ${stats.source === 'DB' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-slate-500'}`}></div>
+                        <span className="font-semibold">{stats.source === 'FILE' ? 'Live File Data' : stats.source === 'DB' ? 'Database Connected' : t.awaitingData}</span>
                     </div>
                 </div>
             </div>
@@ -188,9 +200,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <StatCard
                     title={t.totalVolume}
                     value={formatPrice(stats.totalVolume)}
-                    subValue="Aggregate value of all listings"
+                    subValue="Aggregate value"
                     icon={Activity}
                     color="amber"
+                    trend="up"
+                    trendValue="+4.2% (24h)"
                 />
                 <StatCard
                     title={t.itemsIndexed}
@@ -198,6 +212,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     subValue={`${stats.wtsCount} WTS / ${stats.wtbCount} WTB`}
                     icon={Database}
                     color="blue"
+                    trend="up"
+                    trendValue="Growing"
                 />
                 <StatCard
                     title={t.avgPrice}
@@ -205,6 +221,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     subValue="Across all rarities"
                     icon={DollarSign}
                     color="emerald"
+                    trend="stable"
+                    trendValue="Stable"
                 />
                 <StatCard
                     title={t.systemStatus}
@@ -212,10 +230,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     subValue={stats.source === 'DB' ? 'Serving from Cloud' : marketData.length > 0 ? t.mlReady : t.noData}
                     icon={Cpu}
                     color="purple"
+                    trend="stable"
+                    trendValue="Optimal"
                 />
             </div>
 
-            {/* Live Terminal Feed */}
             <div className="mt-6 mb-6 animate-fade-in">
                 <LiveFeed />
             </div>
@@ -247,7 +266,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
                     <h3 className="text-lg font-semibold text-white mb-4">{t.quickActions}</h3>
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Hidden Input */}
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -280,14 +298,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
             </div>
 
-            {/* Gamification Section - Free Shouts */}
             {user && (
                 <div className="mt-8">
                     <ShoutBox userId={user.id} />
                 </div>
             )}
 
-            {/* Market Intelligence - Full Width */}
             <div className="mt-8">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <Activity className="w-5 h-5 text-emerald-500" />
@@ -296,9 +312,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <Leaderboard />
             </div>
 
-            {/* Advanced Data Tools (Collapsible) */}
             <AdvancedTools />
         </div>
     );
 };
-

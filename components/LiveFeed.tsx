@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Terminal, Trash2 } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 
@@ -17,15 +17,13 @@ export const LiveFeed = () => {
     const { trades: contextTrades, isMonitoring } = useTradeEvents();
     const [trades, setTrades] = useState<DisplayTrade[]>([]);
     const scrollEndRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null); // NEW: Container Ref
+    const containerRef = useRef<HTMLDivElement>(null);
     const processedCount = useRef(0);
-    const [shouldAutoScroll, setShouldAutoScroll] = useState(true); // NEW: Scroll State
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
-    // NEW: Smart Scroll Handler
     const handleScroll = () => {
         if (!containerRef.current) return;
         const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-        // Consider 'at bottom' if within 50px threshold
         const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
         setShouldAutoScroll(isAtBottom);
     };
@@ -48,24 +46,23 @@ export const LiveFeed = () => {
                         message: '',
                         is_live_marker: true
                     };
-                    return [...prev, marker, ...formattedNewItems].slice(-100); // 100 Buffer
+                    return [...prev, marker, ...formattedNewItems].slice(-100);
                 }
-                return [...prev, ...formattedNewItems].slice(-100); // 100 Buffer
+                return [...prev, ...formattedNewItems].slice(-100);
             });
             processedCount.current = contextTrades.length;
         } else if (contextTrades.length === 0 && processedCount.current > 0) {
             setTrades([]);
             processedCount.current = 0;
-            setShouldAutoScroll(true); // Reset scroll on clear
+            setShouldAutoScroll(true);
         }
     }, [contextTrades, isMonitoring]);
 
-    // CONDITIONAL Auto-Scroll
     useEffect(() => {
         if (shouldAutoScroll) {
             scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [trades]); // Only trigger on new trades if permitted
+    }, [trades]);
 
     const handleClear = () => {
         setTrades([]);
@@ -73,10 +70,8 @@ export const LiveFeed = () => {
         setShouldAutoScroll(true);
     };
 
-            const handleCopy = (nick: string, message: string) => {
-        // Default format
+    const handleCopy = (nick: string, message: string) => {
         let format = '/t {nick} {message}';
-        // Try to get saved config from LiveTradeMonitor settings (if available via localStorage)
         const savedConfig = localStorage.getItem('torta_live_monitor_config');
         if (savedConfig) {
             try {
@@ -88,18 +83,49 @@ export const LiveFeed = () => {
                 console.error('Failed to parse monitor config', e);
             }
         }
-
-        const formatted = format
-            .replace('{nick}', nick)
-            .replace('{message}', message);
-
+        const formatted = format.replace('{nick}', nick).replace('{message}', message);
         navigator.clipboard.writeText(formatted);
-        // Could add a toast here
+    };
+
+    // --- COLORIZERS ---
+    
+    // Rarity Color Map for Item Name
+    const getRarityColor = (text: string) => {
+        if (/scarecrow|supreme/i.test(text)) return 'text-cyan-400';
+        if (/fantastic/i.test(text)) return 'text-pink-400';
+        if (/rare/i.test(text)) return 'text-blue-400';
+        return 'text-slate-300';
+    };
+
+    const renderMessage = (msg: string) => {
+        // Detect Type
+        let typeColor = 'text-slate-400';
+        if (msg.startsWith('WTS')) typeColor = 'text-cyan-400 font-bold';
+        else if (msg.startsWith('WTB')) typeColor = 'text-amber-500 font-bold';
+        else if (msg.startsWith('sold')) typeColor = 'text-emerald-500 font-bold';
+
+        // Split "WTS [Item Name] 50s"
+        // Simple logic: Highlight known patterns
+        const parts = msg.split(' ');
+        const firstWord = parts[0];
+        
+        // If standard trade msg
+        if (['WTS', 'WTB', 'sold'].includes(firstWord)) {
+            const rest = parts.slice(1).join(' ');
+            return (
+                <span>
+                    <span className={typeColor}>{firstWord}</span>{' '}
+                    <span className={getRarityColor(rest)}>{rest}</span>
+                </span>
+            );
+        }
+        
+        // Fallback for unknown patterns
+        return <span className={getRarityColor(msg)}>{msg}</span>;
     };
 
     return (
         <div className="w-full bg-[#0a0f14] border-t border-slate-800 shadow-2xl flex flex-col font-mono text-sm h-64 relative overflow-hidden group">
-            {/* Terminal Header */}
             <div className={`h-8 px-4 flex items-center justify-between border-b border-slate-800 ${isMonitoring ? 'bg-emerald-950/20' : 'bg-slate-800/50'}`}>
                 <div className="flex items-center gap-3">
                     <Terminal size={14} className="text-slate-500" />
@@ -122,10 +148,8 @@ export const LiveFeed = () => {
                 </div>
             </div>
 
-            {/* Matrix Overlay */}
             <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10" style={{ backgroundSize: "100% 2px, 3px 100%" }}></div>
 
-            {/* Content - Bottom stacking like game chat */}
             <div 
                 ref={containerRef}
                 onScroll={handleScroll}
@@ -159,20 +183,18 @@ export const LiveFeed = () => {
                                 {trade.nick}
                             </span>
 
-                            <span className="text-emerald-300/90 break-all">
-                                {trade.message}
+                            <span className="break-all opacity-90">
+                                {renderMessage(trade.message)}
                             </span>
                         </div>
                     )
                 ))}
                 
-                {/* End of Stream Indicator */}
                 {trades.length > 0 && (
                     <div className="pl-2 pt-1 pb-2">
                         <span className="text-emerald-500/50 text-[10px] animate-pulse font-bold">_ AWAITING SIGNAL</span>
                     </div>
                 )}
-                {/* Scroll Anchor */}
                 <div ref={scrollEndRef} className="shrink-0" />
             </div>
         </div>

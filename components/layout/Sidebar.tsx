@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { open } from '@tauri-apps/plugin-shell';
 import { LayoutDashboard, ShoppingCart, BarChart2, BrainCircuit, Settings, BadgeDollarSign, Shield } from 'lucide-react';
 import { ViewState, Language } from '../../types';
@@ -47,9 +47,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                         <button
                             key={item.id}
                             onClick={() => onNavigate(item.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${isActive
-                                ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-sm'
-                                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group relative overflow-hidden ${isActive
+                                ? 'bg-gradient-to-r from-amber-500/20 to-transparent text-amber-500 border-l-4 border-amber-500 shadow-[inset_10px_0_20px_-10px_rgba(245,158,11,0.2)]'
+                                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200 border-l-4 border-transparent'
                                 }`}
                         >
                             <Icon className={`w-5 h-5 ${isActive ? 'text-amber-500' : 'text-slate-500 group-hover:text-slate-300'}`} />
@@ -66,9 +66,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                         </div>
                         <button
                             onClick={() => onNavigate(ViewState.ADMIN)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${currentView === ViewState.ADMIN
-                                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm'
-                                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group relative overflow-hidden ${currentView === ViewState.ADMIN
+                                ? 'bg-gradient-to-r from-purple-500/20 to-transparent text-purple-400 border-l-4 border-purple-500 shadow-[inset_10px_0_20px_-10px_rgba(168,85,247,0.2)]'
+                                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200 border-l-4 border-transparent'
                                 }`}
                         >
                             <Shield className={`w-5 h-5 ${currentView === ViewState.ADMIN ? 'text-purple-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
@@ -76,9 +76,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                         </button>
                         <button
                             onClick={() => onNavigate(ViewState.PRICEMANAGER)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${currentView === ViewState.PRICEMANAGER
-                                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm'
-                                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-r-lg transition-all duration-200 group relative overflow-hidden ${currentView === ViewState.PRICEMANAGER
+                                ? 'bg-gradient-to-r from-purple-500/20 to-transparent text-purple-400 border-l-4 border-purple-500 shadow-[inset_10px_0_20px_-10px_rgba(168,85,247,0.2)]'
+                                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200 border-l-4 border-transparent'
                                 }`}
                         >
                             <BadgeDollarSign className={`w-5 h-5 ${currentView === ViewState.PRICEMANAGER ? 'text-purple-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
