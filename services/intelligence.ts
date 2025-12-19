@@ -1,4 +1,5 @@
-﻿import { supabase } from './supabase';
+
+import { supabase } from './supabase';
 
 export interface TraderProfile {
     nick: string;
@@ -50,6 +51,20 @@ export interface DbUsageStats {
     trade_logs_count: number;
     users_count: number;
     limit_bytes: number;
+}
+
+// --- NEW INTELLIGENCE INTERFACES ---
+export interface MarketTrendItem {
+    name: string;
+    volume: number;
+    price: number;
+    change: number; // Percent change
+}
+
+export interface MarketIntelligenceData {
+    topDemand: MarketTrendItem[];
+    topSupply: MarketTrendItem[];
+    topVolatility: MarketTrendItem[];
 }
 
 export const IntelligenceService = {
@@ -106,7 +121,7 @@ export const IntelligenceService = {
             .rpc('get_player_logs', { target_nick: nick, limit_count: limit, offset_count: offset });
 
         if (error) {
-            console.error('Error fetching player logs:', error);
+            console.error('Error fetching playerLogs:', error);
             return [];
         }
 
@@ -125,10 +140,6 @@ export const IntelligenceService = {
         return data || [];
     },
 
-    /**
-     * Fetches trade logs for Trade Master view
-     * ðŸ“Š INCREASED LIMIT: 5000 -> 50000 to match Supabase max_rows config
-     */
     getTradeLogs: async (limit: number = 50000): Promise<any[]> => {
         const { data, error } = await supabase
             .rpc('get_trade_logs_for_market', { limit_count: limit });
@@ -141,9 +152,6 @@ export const IntelligenceService = {
         return data || [];
     },
 
-    /**
-     * Fetches database usage statistics.
-     */
     getDbUsage: async (): Promise<DbUsageStats | null> => {
         const { data, error } = await supabase.rpc('get_db_usage');
         if (error) {
@@ -151,5 +159,29 @@ export const IntelligenceService = {
             return null;
         }
         return data;
+    },
+
+    // --- NEW METHOD FOR DASHBOARD 2.0 ---
+    getMarketIntelligence: async (): Promise<MarketIntelligenceData> => {
+        // MOCK DATA - In future connect to supabase RPC 'get_market_intelligence'
+        await new Promise(resolve => setTimeout(resolve, 500)); 
+
+        return {
+            topDemand: [
+                { name: "Iron Lump (90ql+)", volume: 42, price: 1500, change: 12 },
+                { name: "Seryll Lump", volume: 18, price: 5000, change: 5 },
+                { name: "Cotton", volume: 156, price: 10, change: 25 }
+            ],
+            topSupply: [
+                { name: "Clay", volume: 500, price: 2, change: -10 },
+                { name: "Dirt", volume: 1200, price: 1, change: -5 },
+                { name: "Kindling", volume: 350, price: 5, change: 0 }
+            ],
+            topVolatility: [
+                { name: "Drake Hide", volume: 5, price: 250000, change: 150 },
+                { name: "Glimmersteel", volume: 8, price: 8500, change: 45 },
+                { name: "Rare Bone", volume: 3, price: 15000, change: 30 }
+            ]
+        };
     }
 };
