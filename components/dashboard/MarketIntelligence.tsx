@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, Zap, ArrowRight, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { IntelligenceService, MarketIntelligenceData, MarketTrendItem } from '../../services/intelligence';
+import { TrendingUp, TrendingDown, Zap, ArrowRight, Activity, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react'; // Added Clock
+import { IntelligenceService, MarketIntelligenceData, MarketTrendItem, TimeWindow } from '../../services/intelligence';
 import { formatWurmPrice } from '../../services/priceUtils';
-import { InfoTooltip } from '../market/InfoTooltip';
 import { ViewState } from '../../types';
 
 const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'supply' | 'volatility' }) => {
@@ -16,7 +15,9 @@ const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'su
         priceColor = 'text-purple-400';
     }
 
-    const isPositive = item.change > 0;
+    const isPositive = item.absoluteChange > 0;
+    // Volatility should show absolute change
+    // Supply should show Avg Price Context
 
     return (
         <div className="flex items-center justify-between p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-transparent hover:border-slate-600 transition-all group">
@@ -28,10 +29,17 @@ const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'su
                     </span>
                     <span className="text-[10px] text-slate-500">• {item.volume} vol</span>
                 </div>
+                {type === 'supply' && item.avgPrice > 0 && (
+                     <div className="text-[10px] text-slate-500 mt-0.5">
+                        Avg: <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(item.avgPrice) }} className="opacity-75" />
+                     </div>
+                )}
             </div>
+            
             <div className={`flex items-center gap-1 text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-rose-400'} bg-slate-900/50 px-2 py-1 rounded`}>
                 {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                {Math.abs(item.change)}%
+                {/* For Volatility/Supply/Demand we show Absolute Change now as requested */}
+                <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(Math.abs(item.absoluteChange)) }} />
             </div>
         </div>
     );
@@ -40,115 +48,125 @@ const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'su
 export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewState) => void }) => {
     const [data, setData] = useState<MarketIntelligenceData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [timeWindow, setTimeWindow] = useState<TimeWindow>('24h');
 
     useEffect(() => {
+        let mounted = true;
         const load = async () => {
-            const result = await IntelligenceService.getMarketIntelligence();
-            setData(result);
-            setLoading(false);
+            setLoading(true);
+            try {
+                const result = await IntelligenceService.getMarketIntelligence(timeWindow);
+                if (mounted) setData(result);
+            } catch (e) {
+                console.error("Failed to load market intelligence", e);
+            } finally {
+                if (mounted) setLoading(false);
+            }
         };
         load();
-    }, []);
+        return () => { mounted = false; };
+    }, [timeWindow]); // Reload when timeWindow changes
+
+    const sections = [
+        {
+            title: 'Top Demand (WTB)',
+            icon: TrendingUp,
+            color: 'amber',
+            data: data?.topDemand || [],
+            type: 'demand' as const,
+            desc: 'Highest buy volume'
+        },
+        {
+            title: 'Top Supply (WTS)',
+            icon: TrendingDown,
+            color: 'blue', // visual override to cyan in render
+            data: data?.topSupply || [],
+            type: 'supply' as const,
+            desc: 'Most listed items'
+        },
+        {
+            title: 'High Volatility',
+            icon: Zap,
+            color: 'purple',
+            data: data?.topVolatility || [],
+            type: 'volatility' as const,
+            desc: 'Largest price swings'
+        }
+    ];
 
     if (loading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="h-48 bg-slate-800/50 rounded-xl border border-slate-700/50"></div>
+                    <div key={i} className="h-64 bg-slate-800/50 rounded-xl border border-slate-700/50" />
                 ))}
             </div>
         );
     }
 
-    if (!data) return null;
-
     return (
-        <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Activity className="w-5 h-5 text-indigo-400" />
                     Market Intelligence
-                    <InfoTooltip text="Real-time strategic insights based on the last 4 hours of market activity." />
                 </h2>
-                <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">Synced just now</span>
+                
+                {/* Time Filter Controls */}
+                <div className="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700/50">
+                    <Clock size={14} className="text-slate-500 ml-2 mr-2" />
+                    {(['4h', '12h', '24h'] as TimeWindow[]).map(tw => (
+                        <button
+                            key={tw}
+                            onClick={() => setTimeWindow(tw)}
+                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                                timeWindow === tw 
+                                ? 'bg-indigo-500/20 text-indigo-400 shadow-sm border border-indigo-500/30' 
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/50'
+                            }`}
+                        >
+                            {tw}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* 1. TOP DEMAND (WTB) */}
-                <div className="bg-slate-900/80 border border-amber-500/20 rounded-xl p-5 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <TrendingUp className="w-24 h-24 text-amber-500" />
-                    </div>
-                    <div className="relative z-10">
-                        <h3 className="text-amber-400 font-bold uppercase tracking-wider text-xs flex items-center gap-2 mb-4">
-                            <TrendingUp className="w-4 h-4" /> Top Demand (WTB)
-                        </h3>
-                        <div className="space-y-2">
-                            {data.topDemand.map((item, i) => (
-                                <TrendItem key={i} item={item} type="demand" />
-                            ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {sections.map((section, idx) => (
+                    <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden hover:border-slate-600 transition-colors flex flex-col h-full">
+                        <div className="p-4 border-b border-slate-700/50 flex justify-between items-start bg-slate-800/80 backdrop-blur-sm">
+                            <div>
+                                <h3 className={`font-bold text-${section.color === 'blue' ? 'cyan' : section.color}-400 flex items-center gap-2`}>
+                                    <section.icon className="w-4 h-4" />
+                                    {section.title}
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">{section.desc} • Last {timeWindow}</p>
+                            </div>
                         </div>
-                        <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-                            <button 
-                                onClick={() => onNavigate(ViewState.MARKET)}
-                                className="text-[10px] text-amber-500 hover:text-amber-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
-                            >
-                                View Opportunities <ArrowRight className="w-3 h-3" />
-                            </button>
+                        
+                        <div className="p-2 space-y-1 flex-1 overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-slate-700">
+                            {section.data.length > 0 ? (
+                                section.data.map((item, i) => (
+                                    <TrendItem key={i} item={item} type={section.type} />
+                                ))
+                            ) : (
+                                <div className="h-32 flex flex-col items-center justify-center text-slate-500 text-xs text-center p-4">
+                                    <Activity className="w-8 h-8 mb-2 opacity-20" />
+                                    <p>No enough data for this period.</p>
+                                    <p className="mt-1 opacity-50">Try importing logs or waiting for more trades.</p>
+                                </div>
+                            )}
                         </div>
+                        
+                        <button 
+                            onClick={() => onNavigate('market')}
+                            className="w-full py-2 bg-slate-800/50 hover:bg-slate-700 text-xs font-medium text-slate-400 hover:text-white transition-colors border-t border-slate-700/50 flex items-center justify-center gap-1 group"
+                        >
+                            View Full Analysis
+                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
                     </div>
-                </div>
-
-                {/* 2. TOP SUPPLY (WTS) */}
-                <div className="bg-slate-900/80 border border-cyan-500/20 rounded-xl p-5 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <TrendingDown className="w-24 h-24 text-cyan-500" />
-                    </div>
-                    <div className="relative z-10">
-                        <h3 className="text-cyan-400 font-bold uppercase tracking-wider text-xs flex items-center gap-2 mb-4">
-                            <TrendingDown className="w-4 h-4" /> Top Supply (WTS)
-                        </h3>
-                        <div className="space-y-2">
-                            {data.topSupply.map((item, i) => (
-                                <TrendItem key={i} item={item} type="supply" />
-                            ))}
-                        </div>
-                         <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-                            <button 
-                                onClick={() => onNavigate(ViewState.MARKET)}
-                                className="text-[10px] text-cyan-500 hover:text-cyan-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
-                            >
-                                Browse Listings <ArrowRight className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 3. HIGH VOLATILITY */}
-                <div className="bg-slate-900/80 border border-purple-500/20 rounded-xl p-5 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Zap className="w-24 h-24 text-purple-500" />
-                    </div>
-                    <div className="relative z-10">
-                        <h3 className="text-purple-400 font-bold uppercase tracking-wider text-xs flex items-center gap-2 mb-4">
-                            <Zap className="w-4 h-4" /> High Volatility
-                        </h3>
-                        <div className="space-y-2">
-                            {data.topVolatility.map((item, i) => (
-                                <TrendItem key={i} item={item} type="volatility" />
-                            ))}
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-                            <button 
-                                onClick={() => onNavigate(ViewState.ANALYTICS)}
-                                className="text-[10px] text-purple-500 hover:text-purple-300 uppercase tracking-widest font-bold flex items-center gap-1 transition-colors"
-                            >
-                                Analyze Trends <ArrowRight className="w-3 h-3" />
-                            </button>
-                         </div>
-                    </div>
-                </div>
+                ))}
             </div>
         </div>
     );

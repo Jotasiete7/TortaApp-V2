@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Terminal, Trash2 } from 'lucide-react';
+import { Terminal, Trash2, Filter } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 
 interface ParsedTrade {
@@ -7,6 +7,7 @@ interface ParsedTrade {
     nick: string;
     message: string;
     internalId?: string; // Opt
+    type?: 'WTB' | 'WTS' | 'WTT'; // Ensure type is passed or inferred
 }
 
 interface DisplayTrade extends ParsedTrade {
@@ -14,9 +15,13 @@ interface DisplayTrade extends ParsedTrade {
     is_live_marker?: boolean;
 }
 
+type FilterType = 'ALL' | 'WTS' | 'WTB' | 'WTT';
+
 export const LiveFeed = () => {
     const { trades: contextTrades, isMonitoring } = useTradeEvents();
     const [trades, setTrades] = useState<DisplayTrade[]>([]);
+    const [filter, setFilter] = useState<FilterType>('ALL'); // NEW: Filter State
+
     const scrollEndRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
@@ -40,8 +45,6 @@ export const LiveFeed = () => {
     useEffect(() => {
         if (contextTrades.length === 0) return;
 
-        // 1. Calculate New Items (Pure Calculation)
-        // We do this BEFORE the state update to ensure we don't rely on side-effects inside setState
         const newUniqueTrades = contextTrades.filter(t => {
             const signature = getTradeSignature(t);
             return !processedIdsRef.current.has(signature);
@@ -49,26 +52,20 @@ export const LiveFeed = () => {
 
         if (newUniqueTrades.length === 0) return;
 
-        // 2. Update Ref (Side Effect - Safe here as useEffect runs after render commited)
-        // We update the ref immediately to prevent subsequent effects from processing these
         newUniqueTrades.forEach(t => {
             const signature = getTradeSignature(t);
             processedIdsRef.current.add(signature);
         });
 
-        // 3. Update State
         setTrades(prev => {
             const formattedNewItems = newUniqueTrades.map((t, idx) => ({
                 ...t,
-                id: Date.now() + idx + Math.random(), // Ensure unique React Key
+                id: Date.now() + idx + Math.random(),
                 is_live_marker: false
             }));
 
-            // Handle Initial "Live Monitor Started" marker logic
             let nextState = [...prev, ...formattedNewItems];
 
-            // Only add marker if we are adding new items and the PREVIOUS state was empty
-            // This prevents markers from appearing in the middle of a stream unless there was a gap
             if (prev.length === 0 && isMonitoring && newUniqueTrades.length > 0) {
                  const marker: DisplayTrade = {
                     id: -1,
@@ -80,9 +77,8 @@ export const LiveFeed = () => {
                 nextState = [marker, ...formattedNewItems];
             }
             
-            // Keep local buffer manageable (200 items)
-            if (nextState.length > 200) {
-                 nextState = nextState.slice(-200);
+            if (nextState.length > 500) { // Increased buffer for filtering
+                 nextState = nextState.slice(-500);
             }
             
             return nextState;
@@ -94,12 +90,11 @@ export const LiveFeed = () => {
         if (shouldAutoScroll) {
             scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [trades]);
+    }, [trades, filter]); // Auto-scroll when filter changes too if at bottom
 
     const handleClear = () => {
         setTrades([]);
         processedIdsRef.current.clear();
-        // Repopulate with CURRENT context trades to avoid them flashing back
         contextTrades.forEach(t => {
             const sig = getTradeSignature(t);
             processedIdsRef.current.add(sig);
@@ -124,57 +119,97 @@ export const LiveFeed = () => {
         navigator.clipboard.writeText(formatted);
     };
 
-    // --- COLORIZERS ---
+    // --- HELPER LOGIC ---
     
-    // Rarity Color Map for Item Name
-    const getRarityColor = (text: string) => {
-        if (/scarecrow|supreme/i.test(text)) return 'text-cyan-400';
-        if (/fantastic/i.test(text)) return 'text-pink-400';
-        if (/rare/i.test(text)) return 'text-blue-400';
-        return 'text-slate-300';
-    };
-
     // Helper to clean 'Impure' and other prefixes from display
     const cleanMessageText = (msg: string) => {
         return msg.replace(/\b(impure|shattered|unfinished|corroded|broken|damaged|rusty)\s+/gi, '');
     };
+    
+    // Heuristic param detection if 'type' is missing from context (backward compat)
+    const detectType = (msg: string): 'WTS' | 'WTB' | 'SOLD' | 'OTHER' => {
+        const clean = cleanMessageText(msg).trim().toUpperCase();
+        if (clean.startsWith('WTS')) return 'WTS';
+        if (clean.startsWith('WTB')) return 'WTB';
+        if (clean.startsWith('SOLD')) return 'SOLD';
+        return 'OTHER';
+    };
 
     const renderMessage = (msg: string) => {
         const cleanedMsg = cleanMessageText(msg);
-
-        // Detect Type
+        const type = detectType(cleanedMsg);
+        
         let typeColor = 'text-slate-400';
-        if (cleanedMsg.startsWith('WTS')) typeColor = 'text-cyan-400 font-bold';
-        else if (cleanedMsg.startsWith('WTB')) typeColor = 'text-amber-500 font-bold';
-        else if (cleanedMsg.startsWith('sold')) typeColor = 'text-emerald-500 font-bold';
+        if (type === 'WTS') typeColor = 'text-cyan-400 font-bold';
+        else if (type === 'WTB') typeColor = 'text-amber-500 font-bold';
+        else if (type === 'SOLD') typeColor = 'text-emerald-500 font-bold';
 
-        // Split "WTS [Item Name] 50s"
+         // Split "WTS [Item Name] 50s"
         const parts = cleanedMsg.split(' ');
         const firstWord = parts[0];
         
-        // If standard trade msg
-        if (['WTS', 'WTB', 'sold'].includes(firstWord)) {
+        if (['WTS', 'WTB', 'sold'].includes(firstWord.toLowerCase())) {
             const rest = parts.slice(1).join(' ');
+            
+            // Rarity Color
+            let rarityColor = 'text-slate-300';
+            if (/scarecrow|supreme/i.test(rest)) rarityColor = 'text-cyan-400';
+            if (/fantastic/i.test(rest)) rarityColor = 'text-pink-400';
+            if (/rare/i.test(rest)) rarityColor = 'text-blue-400';
+
             return (
                 <span>
                     <span className={typeColor}>{firstWord}</span>{' '}
-                    <span className={getRarityColor(rest)}>{rest}</span>
+                    <span className={rarityColor}>{rest}</span>
                 </span>
             );
         }
         
-        // Fallback for unknown patterns
-        return <span className={getRarityColor(cleanedMsg)}>{cleanedMsg}</span>;
+        return <span className="text-slate-300">{cleanedMsg}</span>;
     };
+
+    // Filter Logic
+    const filteredTrades = trades.filter(t => {
+        if (t.is_live_marker) return true; // Always show markers
+        if (filter === 'ALL') return true;
+        
+        // Use provided type or infer from message
+        const type = t.type || detectType(t.message);
+        
+        if (filter === 'WTT') return type === 'OTHER' || t.message.toUpperCase().includes('WTT'); // Weak WTT check
+        if (filter === 'WTS') return type === 'WTS' || t.message.toUpperCase().startsWith('WTS');
+        if (filter === 'WTB') return type === 'WTB' || t.message.toUpperCase().startsWith('WTB');
+        
+        return true;
+    });
 
     return (
         <div className="w-full bg-[#0a0f14] border-t border-slate-800 shadow-2xl flex flex-col font-mono text-sm h-64 relative overflow-hidden group">
             <div className={`h-8 px-4 flex items-center justify-between border-b border-slate-800 ${isMonitoring ? 'bg-emerald-950/20' : 'bg-slate-800/50'}`}>
-                <div className="flex items-center gap-3">
-                    <Terminal size={14} className="text-slate-500" />
-                    <span className="text-xs font-bold text-slate-400 tracking-wider">
-                        _ LIVE FEED // <span className={isMonitoring ? "text-emerald-400" : "text-slate-500"}>{isMonitoring ? 'MONITORING' : 'WAITING'}</span>
-                    </span>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <Terminal size={14} className="text-slate-500" />
+                        <span className="text-xs font-bold text-slate-400 tracking-wider">
+                            _ LIVE FEED // <span className={isMonitoring ? "text-emerald-400" : "text-slate-500"}>{isMonitoring ? 'MONITORING' : 'WAITING'}</span>
+                        </span>
+                    </div>
+
+                    {/* QUICK FILTERS */}
+                    <div className="flex items-center bg-slate-900/50 rounded gap-0.5 p-0.5 border border-slate-700/50">
+                        {(['ALL', 'WTS', 'WTB'] as FilterType[]).map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`px-2 py-0.5 text-[10px] font-bold rounded-sm transition-colors ${
+                                    filter === f 
+                                    ? f === 'WTS' ? 'bg-cyan-900/50 text-cyan-400' : f === 'WTB' ? 'bg-amber-900/50 text-amber-400' : 'bg-slate-700 text-white'
+                                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+                                }`}
+                            >
+                                {f}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -204,7 +239,7 @@ export const LiveFeed = () => {
                     </div>
                 ) : null}
 
-                {trades.map((trade, i) => (
+                {filteredTrades.map((trade, i) => (
                     trade.is_live_marker ? (
                         <div key={`marker-${trade.id}`} className="py-2 flex items-center gap-4 shrink-0">
                             <div className="h-px bg-emerald-500/30 flex-1"></div>
@@ -233,11 +268,12 @@ export const LiveFeed = () => {
                     )
                 ))}
                 
-                {trades.length > 0 && (
-                    <div className="pl-2 pt-1 pb-2">
-                        <span className="text-emerald-500/50 text-[10px] animate-pulse font-bold">_ AWAITING SIGNAL</span>
-                    </div>
+                {filteredTrades.length === 0 && trades.length > 0 && (
+                     <div className="flex-1 flex items-center justify-center text-slate-700 text-xs py-8 opacity-50">
+                        No items match filter {filter}
+                     </div>
                 )}
+
                 <div ref={scrollEndRef} className="shrink-0" />
             </div>
         </div>
