@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { open } from '@tauri-apps/plugin-shell';
-import { LayoutDashboard, ShoppingCart, BarChart2, BrainCircuit, Settings, BadgeDollarSign, Shield } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, BarChart2, BrainCircuit, Settings, BadgeDollarSign, Shield, RefreshCw } from 'lucide-react';
 import { ViewState, Language } from '../../types';
 import { translations } from '../../services/i18n';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,6 +14,23 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, language }) => {
     const t = translations[language];
     const { role } = useAuth();
+    const [progress, setProgress] = useState(0);
+
+    // Cooldown Animation Effect
+    useEffect(() => {
+        const duration = 60000; // 60 seconds sync cycle
+        const interval = 100;
+        const step = 100 / (duration / interval);
+
+        const timer = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 100) return 0;
+                return prev + step;
+            });
+        }, interval);
+
+        return () => clearInterval(timer);
+    }, []);
 
     const navItems = [
         { id: ViewState.DASHBOARD, label: t.overview, icon: LayoutDashboard },
@@ -88,6 +105,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                 )}
             </nav>
 
+            {/* STATUS / COOLDOWN BAR */}
+            <div className="px-6 mb-4">
+                <div className="flex justify-between items-center text-[10px] text-slate-500 mb-1 font-mono uppercase tracking-wider">
+                    <span>Next Sync</span>
+                    <span>{Math.round((100 - progress) / 100 * 60)}s</span>
+                </div>
+                <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-slate-600 transition-all duration-100 ease-linear"
+                        style={{ width: `${progress}%` }}
+                    />
+                </div>
+            </div>
+
             <div className="p-4 border-t border-slate-800 bg-slate-950">
                 <button
                     onClick={() => onNavigate(ViewState.SETTINGS)}
@@ -98,12 +129,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                     <span className="font-medium">{t.settings}</span>
                 </button>
                 <button onClick={() => open("https://www.patreon.com/c/tortawurmapp?vanity=user")} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-slate-400 hover:text-[#ff424d] hover:bg-[#ff424d]/10 mb-2 text-left">
-                    <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0"><path d="M0 .48v23.04h4.22V.48zm15.385 0c-4.764 0-8.641 3.88-8.641 8.65 0 4.755 3.877 8.623 8.641 8.623 4.75 0 8.615-3.868 8.615-8.623C24 4.36 20.136.48 15.385.48z" /></svg>
-                    <span className="font-medium">Support (Patreon)</span>
+                    <div className="w-5 h-5 flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M0 .48v23.04h4.22V.48zm15.385 0c-4.764 0-8.641 3.88-8.641 8.65 0 4.755 3.877 8.623 8.641 8.623 4.75 0 8.615-3.868 8.615-8.623C24 4.36 20.136.48 15.385.48z" /></svg>
+                    </div>
+                    <span className="font-medium">Patreon</span>
                 </button>
-                <div className="mt-4 text-center">
-                    <span className="text-[10px] text-slate-600 font-mono">v2.0.0-beta Venerable Whale 🐳</span>
-                </div>
             </div>
         </div>
     );

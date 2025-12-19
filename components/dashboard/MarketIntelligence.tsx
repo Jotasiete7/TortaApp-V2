@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, Zap, ArrowRight, Activity, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react'; // Added Clock
+import { TrendingUp, TrendingDown, Zap, ArrowRight, Activity, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react';
 import { IntelligenceService, MarketIntelligenceData, MarketTrendItem, TimeWindow } from '../../services/intelligence';
 import { formatWurmPrice } from '../../services/priceUtils';
-import { ViewState } from '../../types';
+import { ViewState, MarketItem } from '../../types';
+import { ArbitrageWidget } from './ArbitrageWidget';
 
 const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'supply' | 'volatility' }) => {
     let priceColor = 'text-slate-300';
@@ -16,8 +17,6 @@ const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'su
     }
 
     const isPositive = item.absoluteChange > 0;
-    // Volatility should show absolute change
-    // Supply should show Avg Price Context
 
     return (
         <div className="flex items-center justify-between p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-transparent hover:border-slate-600 transition-all group">
@@ -38,14 +37,18 @@ const TrendItem = ({ item, type }: { item: MarketTrendItem, type: 'demand' | 'su
             
             <div className={`flex items-center gap-1 text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-rose-400'} bg-slate-900/50 px-2 py-1 rounded`}>
                 {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                {/* For Volatility/Supply/Demand we show Absolute Change now as requested */}
                 <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(Math.abs(item.absoluteChange)) }} />
             </div>
         </div>
     );
 };
 
-export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewState) => void }) => {
+interface MarketIntelligenceProps {
+    onNavigate: (view: ViewState) => void;
+    localData?: MarketItem[]; // NEW: Hybrid Support
+}
+
+export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNavigate, localData }) => {
     const [data, setData] = useState<MarketIntelligenceData | null>(null);
     const [loading, setLoading] = useState(true);
     const [timeWindow, setTimeWindow] = useState<TimeWindow>('24h');
@@ -55,7 +58,8 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
         const load = async () => {
             setLoading(true);
             try {
-                const result = await IntelligenceService.getMarketIntelligence(timeWindow);
+                // Pass localData to Service
+                const result = await IntelligenceService.getMarketIntelligence(timeWindow, localData);
                 if (mounted) setData(result);
             } catch (e) {
                 console.error("Failed to load market intelligence", e);
@@ -65,7 +69,7 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
         };
         load();
         return () => { mounted = false; };
-    }, [timeWindow]); // Reload when timeWindow changes
+    }, [timeWindow, localData]); // Reload if localData changes (file upload)
 
     const sections = [
         {
@@ -79,7 +83,7 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
         {
             title: 'Top Supply (WTS)',
             icon: TrendingDown,
-            color: 'blue', // visual override to cyan in render
+            color: 'blue',
             data: data?.topSupply || [],
             type: 'supply' as const,
             desc: 'Most listed items'
@@ -112,7 +116,6 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
                     Market Intelligence
                 </h2>
                 
-                {/* Time Filter Controls */}
                 <div className="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700/50">
                     <Clock size={14} className="text-slate-500 ml-2 mr-2" />
                     {(['4h', '12h', '24h'] as TimeWindow[]).map(tw => (
@@ -131,6 +134,8 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
                 </div>
             </div>
 
+            <ArbitrageWidget onNavigate={onNavigate} />
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {sections.map((section, idx) => (
                     <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden hover:border-slate-600 transition-colors flex flex-col h-full">
@@ -144,7 +149,7 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
                             </div>
                         </div>
                         
-                        <div className="p-2 space-y-1 flex-1 overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-slate-700">
+                        <div className="p-2 space-y-1 flex-1 overflow-y-auto max-h-64 custom-scrollbar">
                             {section.data.length > 0 ? (
                                 section.data.map((item, i) => (
                                     <TrendItem key={i} item={item} type={section.type} />
@@ -159,7 +164,7 @@ export const MarketIntelligence = ({ onNavigate }: { onNavigate: (view: ViewStat
                         </div>
                         
                         <button 
-                            onClick={() => onNavigate('market')}
+                            onClick={() => onNavigate(ViewState.MARKET)}
                             className="w-full py-2 bg-slate-800/50 hover:bg-slate-700 text-xs font-medium text-slate-400 hover:text-white transition-colors border-t border-slate-700/50 flex items-center justify-center gap-1 group"
                         >
                             View Full Analysis

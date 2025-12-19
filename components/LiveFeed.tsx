@@ -7,7 +7,7 @@ interface ParsedTrade {
     nick: string;
     message: string;
     internalId?: string; // Opt
-    type?: 'WTB' | 'WTS' | 'WTT'; // Ensure type is passed or inferred
+    type?: 'WTB' | 'WTS' | 'WTT';
 }
 
 interface DisplayTrade extends ParsedTrade {
@@ -20,14 +20,13 @@ type FilterType = 'ALL' | 'WTS' | 'WTB' | 'WTT';
 export const LiveFeed = () => {
     const { trades: contextTrades, isMonitoring } = useTradeEvents();
     const [trades, setTrades] = useState<DisplayTrade[]>([]);
-    const [filter, setFilter] = useState<FilterType>('ALL'); // NEW: Filter State
+    const [filter, setFilter] = useState<FilterType>('ALL');
 
     const scrollEndRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
-    // NEW DEDUPLICATION LOGIC
-    // Stores internalId OR generated signature for older items
+    // Keep processedIdsRef for extra safety, though context handles duplicates now
     const processedIdsRef = useRef<Set<string>>(new Set());
 
     const handleScroll = () => {
@@ -38,13 +37,14 @@ export const LiveFeed = () => {
     };
 
     const getTradeSignature = (t: ParsedTrade) => {
-        // Fallback signature for legacy/buggy items without IDs
         return t.internalId || `${t.timestamp}-${t.nick}-${t.message}`;
     };
 
     useEffect(() => {
         if (contextTrades.length === 0) return;
 
+        // Context now handles deduplication, but we filter here just in case of
+        // re-mounts or race conditions with the same context reference
         const newUniqueTrades = contextTrades.filter(t => {
             const signature = getTradeSignature(t);
             return !processedIdsRef.current.has(signature);
@@ -77,7 +77,7 @@ export const LiveFeed = () => {
                 nextState = [marker, ...formattedNewItems];
             }
             
-            if (nextState.length > 500) { // Increased buffer for filtering
+            if (nextState.length > 500) {
                  nextState = nextState.slice(-500);
             }
             
@@ -90,7 +90,7 @@ export const LiveFeed = () => {
         if (shouldAutoScroll) {
             scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [trades, filter]); // Auto-scroll when filter changes too if at bottom
+    }, [trades, filter]);
 
     const handleClear = () => {
         setTrades([]);
@@ -121,17 +121,27 @@ export const LiveFeed = () => {
 
     // --- HELPER LOGIC ---
     
-    // Helper to clean 'Impure' and other prefixes from display
+    // Robust cleaning
     const cleanMessageText = (msg: string) => {
-        return msg.replace(/\b(impure|shattered|unfinished|corroded|broken|damaged|rusty)\s+/gi, '');
+        // Strip common "noisy" suffixes or prefixes from Wurm logs
+        return msg
+            .replace(/\b(impure|shattered|unfinished|corroded|broken|damaged|rusty)\s+/gi, '')
+            .replace(/\s+received\.?$/i, '') // Fix for "received" at end
+            .trim();
     };
     
-    // Heuristic param detection if 'type' is missing from context (backward compat)
+    // Improved detection: Check anywhere in string if startsWith fails
     const detectType = (msg: string): 'WTS' | 'WTB' | 'SOLD' | 'OTHER' => {
         const clean = cleanMessageText(msg).trim().toUpperCase();
+        
         if (clean.startsWith('WTS')) return 'WTS';
         if (clean.startsWith('WTB')) return 'WTB';
         if (clean.startsWith('SOLD')) return 'SOLD';
+        
+        // Fallback: Check inclusion if not at start (sometimes "selling", "buying")
+        if (clean.includes(' WTS ') || clean.includes('SELLING')) return 'WTS';
+        if (clean.includes(' WTB ') || clean.includes('BUYING')) return 'WTB';
+        
         return 'OTHER';
     };
 
@@ -144,20 +154,21 @@ export const LiveFeed = () => {
         else if (type === 'WTB') typeColor = 'text-amber-500 font-bold';
         else if (type === 'SOLD') typeColor = 'text-emerald-500 font-bold';
 
-         // Split "WTS [Item Name] 50s"
+        // Highlighting Logic
         const parts = cleanedMsg.split(' ');
-        const firstWord = parts[0];
         
-        if (['WTS', 'WTB', 'sold'].includes(firstWord.toLowerCase())) {
-            const rest = parts.slice(1).join(' ');
-            
-            // Rarity Color
-            let rarityColor = 'text-slate-300';
-            if (/scarecrow|supreme/i.test(rest)) rarityColor = 'text-cyan-400';
-            if (/fantastic/i.test(rest)) rarityColor = 'text-pink-400';
-            if (/rare/i.test(rest)) rarityColor = 'text-blue-400';
+        // If it looks like a standard trade message, highlight the keyword
+        if (['WTS', 'WTB', 'SOLD'].some(k => cleanedMsg.toUpperCase().startsWith(k))) {
+             const firstWord = parts[0];
+             const rest = parts.slice(1).join(' ');
+             
+             // Rarity Highlights
+             let rarityColor = 'text-slate-300';
+             if (/scarecrow|supreme/i.test(rest)) rarityColor = 'text-cyan-400';
+             if (/fantastic/i.test(rest)) rarityColor = 'text-pink-400';
+             if (/rare/i.test(rest)) rarityColor = 'text-blue-400';
 
-            return (
+             return (
                 <span>
                     <span className={typeColor}>{firstWord}</span>{' '}
                     <span className={rarityColor}>{rest}</span>
@@ -170,15 +181,15 @@ export const LiveFeed = () => {
 
     // Filter Logic
     const filteredTrades = trades.filter(t => {
-        if (t.is_live_marker) return true; // Always show markers
+        if (t.is_live_marker) return true;
         if (filter === 'ALL') return true;
         
-        // Use provided type or infer from message
+        // Use robustness
         const type = t.type || detectType(t.message);
         
-        if (filter === 'WTT') return type === 'OTHER' || t.message.toUpperCase().includes('WTT'); // Weak WTT check
-        if (filter === 'WTS') return type === 'WTS' || t.message.toUpperCase().startsWith('WTS');
-        if (filter === 'WTB') return type === 'WTB' || t.message.toUpperCase().startsWith('WTB');
+        if (filter === 'WTT') return t.message.toUpperCase().includes('WTT');
+        if (filter === 'WTS') return type === 'WTS';
+        if (filter === 'WTB') return type === 'WTB';
         
         return true;
     });
@@ -194,7 +205,6 @@ export const LiveFeed = () => {
                         </span>
                     </div>
 
-                    {/* QUICK FILTERS */}
                     <div className="flex items-center bg-slate-900/50 rounded gap-0.5 p-0.5 border border-slate-700/50">
                         {(['ALL', 'WTS', 'WTB'] as FilterType[]).map(f => (
                             <button
@@ -250,7 +260,6 @@ export const LiveFeed = () => {
                         <div
                             key={trade.id}
                             onDoubleClick={() => handleCopy(trade.nick, trade.message)}
-                            title="Double-click to copy message"
                             className="flex items-start gap-3 hover:bg-slate-700 py-0.5 px-2 rounded transition-colors group shrink-0 animate-in slide-in-from-bottom-1 fade-in cursor-pointer"
                         >
                             <span className="text-slate-500 text-xs shrink-0 font-light">

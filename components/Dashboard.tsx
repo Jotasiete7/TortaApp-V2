@@ -14,7 +14,7 @@ import { MarketItem, Language, ViewState } from '../types';
 import { translations } from '../services/i18n';
 import { IntelligenceService, GlobalStats } from '../services/intelligence';
 import { useAuth } from '../contexts/AuthContext';
-import { formatWurmPrice } from '../services/priceUtils'; // Ensure this is imported or derived
+import { formatWurmPrice } from '../services/priceUtils'; 
 
 // derived locally if not exported
 const formatPrice = (copper: number) => {
@@ -151,15 +151,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const stats = useMemo(() => {
-        // Fallback or override logic if needed, but we mostly use globalStats from DB/Service now
-        // For 'marketData' prop (which is file upload content), we show that live if available.
-        // But the main cards should probably reflect the PERSISTED or HYBRID state.
-        // For now, mirroring existing logic: prioritize 'stats' derived from marketData for 'Items Indexed' logic
-        // if file is loaded.
-        
-        // Actually, the previous code derived 'stats' from props `marketData`. 
-        // We should merge with `globalStats`.
-        
         let displayStats = {
             totalVolume: 0,
             count: 0,
@@ -287,9 +278,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 />
             </div>
 
-            {/* 2. MARKET INTELLIGENCE (REFIMED) */}
+            {/* 2. MARKET INTELLIGENCE (HYBRID) */}
             <div className="mt-4">
-                <MarketIntelligence onNavigate={onNavigate} />
+                <MarketIntelligence onNavigate={onNavigate} localData={marketData} />
             </div>
 
             {/* 3. LIVE FEED */}
@@ -299,85 +290,53 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Live Transaction Feed</span>
                     <div className="h-px bg-slate-800 flex-1"></div>
                  </div>
-                <LiveFeed />
+                 <LiveFeed />
             </div>
 
-            {/* 4. TOOLS & LOGS FOOTER */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">{t.recentLogs}</h3>
-                    <div className="space-y-4">
-                        {marketData.length > 0 ? (
-                            <>
-                                <div className="flex items-start gap-3 text-sm">
-                                    <span className="text-slate-500 font-mono">NOW</span>
-                                    <span className="text-emerald-400">Successfully indexed {marketData.length} records.</span>
-                                </div>
-                                <div className="flex items-start gap-3 text-sm">
-                                    <span className="text-slate-500 font-mono">NOW</span>
-                                    <span className="text-blue-400">Analytics Engine ready for queries.</span>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex items-start gap-3 text-sm">
-                                <span className="text-slate-500 font-mono">--:--</span>
-                                <span className="text-amber-400">Waiting for user input file...</span>
-                            </div>
-                        )}
-                    </div>
+            {/* 4. LEADERBOARD */}
+            <div className="flex gap-4">
+                <div className="flex-1">
+                    <Leaderboard onPlayerSelect={onPlayerSelect} /> 
                 </div>
-
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">{t.quickActions}</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            accept=".txt,.csv,.log"
-                            className="hidden"
-                        />
-
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isProcessing}
-                            className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed h-full"
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <div className="font-medium text-white">
-                                    {isProcessing ? t.processing : t.uploadDump}
-                                </div>
-                                <div className="text-xs text-slate-400">
-                                    {isProcessing ? 'Parsing massive file...' : t.uploadHint}
-                                </div>
-                                {isProcessing ? <Loader2 className="w-5 h-5 text-amber-500 animate-spin" /> : <Upload className="w-5 h-5 text-slate-400 group-hover:text-white" />}
-                            </div>
-                        </button>
-
-                        <button className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-all opacity-50 cursor-not-allowed h-full">
-                            <div className="font-medium text-white mb-1">Run Predictions</div>
-                            <div className="text-xs text-slate-400">Requires Loaded Data</div>
-                        </button>
-                    </div>
+                <div className="w-80">
+                    <ShoutBox />
                 </div>
             </div>
 
-            {user && (
-                <div className="mt-8">
-                    <ShoutBox userId={user.id} />
+            <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-between">
+                <div>
+                   <h3 className="text-lg font-bold text-white mb-1">{t.uploadLog}</h3>
+                   <p className="text-sm text-slate-400 max-w-lg">{t.uploadLogDesc}</p>
+                </div>
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isProcessing}
+                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                    {isProcessing ? t.processing : t.selectFile}
+                </button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept=".txt,.log"
+                    className="hidden"
+                />
+            </div>
+
+            {!marketData.length && !globalStats && (
+                <div className="text-center py-12">
+                   <AdvancedTools />
                 </div>
             )}
-
-            {/* 5. TOP TRADERS */}
-            <div className="mt-8">
-                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-500" />
-                    Top Traders & Leaderboards
-                </h2>
-                <Leaderboard />
-            </div>
-
-            <AdvancedTools />
+            
+            {selectedPlayer && (
+                 <PlayerProfile 
+                     playerNick={selectedPlayer} 
+                     onClose={() => onPlayerSelect(null)} 
+                 />
+            )}
         </div>
     );
 };

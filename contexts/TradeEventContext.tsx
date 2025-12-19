@@ -15,7 +15,7 @@ interface ParsedTrade {
     nick: string;
     message: string;
     type?: 'WTB' | 'WTS' | 'WTT';
-    internalId?: string; // NEW: Reliable tracking ID
+    internalId?: string; 
 }
 
 // Timer & Ads Types
@@ -98,435 +98,287 @@ const defaultStats: MonitoringStats = {
 const TradeEventContext = createContext<TradeEventContextType>({
     trades: [],
     isMonitoring: false,
-    startMonitoring: async () => { },
-    stopMonitoring: () => { },
+    startMonitoring: async () => {},
+    stopMonitoring: () => {},
     alerts: [],
-    addAlert: () => { },
-    removeAlert: () => { },
-    toggleAlert: () => { },
+    addAlert: () => {},
+    removeAlert: () => {},
+    toggleAlert: () => {},
     firedAlerts: [],
-    clearAlertHistory: () => { },
+    clearAlertHistory: () => {},
     stats: defaultStats,
-    resetStats: () => { },
-    quickMsgTemplate: '',
-    setQuickMsgTemplate: () => { },
+    resetStats: () => {},
+    quickMsgTemplate: '/t {nick} Hi, I saw you WTB {item}. I have one for sale.',
+    setQuickMsgTemplate: () => {},
     timerConfig: defaultTimerConfig,
-    setTimerConfig: () => { },
+    setTimerConfig: () => {},
     timerEndTime: null,
-    startTimer: () => { },
-    stopTimer: () => { },
+    startTimer: () => {},
+    stopTimer: () => {},
     adTemplates: [],
-    addTemplate: () => { },
-    removeTemplate: () => { },
-    updateTemplate: () => { },
+    addTemplate: () => {},
+    removeTemplate: () => {},
+    updateTemplate: () => {},
     dndMode: false,
-    setDndMode: () => { },
+    setDndMode: () => {},
     dndSchedule: { start: '22:00', end: '08:00' },
-    setDndSchedule: () => { },
-    exportConfig: () => { },
-    importConfig: async () => { }
+    setDndSchedule: () => {},
+    exportConfig: () => {},
+    importConfig: async () => {} 
 });
 
 export const useTradeEvents = () => useContext(TradeEventContext);
 
-const STORAGE_KEY = 'live_trade_monitor_state';
-const ALERTS_KEY = 'live_trade_alerts';
-const TEMPLATE_KEY = 'live_trade_quick_msg';
-const TIMER_CONFIG_KEY = 'live_trade_timer_config';
-const ADS_KEY = 'live_trade_ads';
-const STATS_KEY = 'live_trade_stats';
-const HISTORY_KEY = 'live_trade_history';
-const DND_KEY = 'live_trade_dnd';
-const DND_SCHEDULE_KEY = 'live_trade_dnd_schedule';
-
 export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // --- State ---
     const [trades, setTrades] = useState<ParsedTrade[]>([]);
-    const [isMonitoring, setIsMonitoring] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try {
-                const { wasMonitoring } = JSON.parse(saved);
-                return wasMonitoring || false;
-            } catch { return false; }
-        }
-        return false;
-    });
-    const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
+    const [isMonitoring, setIsMonitoring] = useState(false);
+    const [alerts, setAlerts] = useState<TradeAlert[]>([]);
+    const [firedAlerts, setFiredAlerts] = useState<FiredAlert[]>([]);
+    const [stats, setStats] = useState<MonitoringStats>(defaultStats);
     
-    const [alerts, setAlerts] = useState<TradeAlert[]>(() => {
-        const saved = localStorage.getItem(ALERTS_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            // Migration: add tradeTypes to old alerts
-            return parsed.map((a: any) => ({
-                ...a,
-                tradeTypes: a.tradeTypes || null
-            }));
-        }
-        return [];
-    });
+    // NEW: Deduplication Set
+    // We use a Ref because we don't want re-renders just for tracking signatures
+    const processedSignatures = useRef<Set<string>>(new Set());
 
-    const [firedAlerts, setFiredAlerts] = useState<FiredAlert[]>(() => {
-        const saved = localStorage.getItem(HISTORY_KEY);
-        return saved ? JSON.parse(saved) : [];
-    });
+    // Settings
+    const [quickMsgTemplate, setQuickMsgTemplate] = useState('/t {nick} Hi, I saw you WTB {item}. I have one for sale.');
 
-    const [stats, setStats] = useState<MonitoringStats>(() => {
-        const saved = localStorage.getItem(STATS_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            // Reset if different day
-            const today = new Date().toISOString().split('T')[0];
-            if (parsed.lastReset !== today) {
-                return { ...defaultStats, lastReset: today };
-            }
-            return parsed;
-        }
-        return defaultStats;
-    });
-
-    const [quickMsgTemplate, setQuickMsgTemplateState] = useState(() => {
-        return localStorage.getItem(TEMPLATE_KEY) || '/t {nick} Hello, cod me this';
-    });
-
-    const [timerConfig, setTimerConfigState] = useState<TimerConfig>(() => {
-        const saved = localStorage.getItem(TIMER_CONFIG_KEY);
-        return saved ? JSON.parse(saved) : defaultTimerConfig;
-    });
+    // Timer
+    const [timerConfig, setTimerConfig] = useState<TimerConfig>(defaultTimerConfig);
     const [timerEndTime, setTimerEndTime] = useState<number | null>(null);
 
-    const [adTemplates, setAdTemplates] = useState<AdTemplate[]>(() => {
-        const saved = localStorage.getItem(ADS_KEY);
-        return saved ? JSON.parse(saved) : [];
-    });
+    // Ads
+    const [adTemplates, setAdTemplates] = useState<AdTemplate[]>([]);
 
-    const [dndMode, setDndModeState] = useState(() => {
-        const saved = localStorage.getItem(DND_KEY);
-        return saved === 'true';
-    });
+    // DND
+    const [dndMode, setDndMode] = useState(false);
+    const [dndSchedule, setDndSchedule] = useState({ start: '22:00', end: '08:00' });
 
-    const [dndSchedule, setDndScheduleState] = useState<{ start: string; end: string }>(() => {
-        const saved = localStorage.getItem(DND_SCHEDULE_KEY);
-        return saved ? JSON.parse(saved) : { start: '22:00', end: '08:00' };
-    });
+    // Load persisted data
+    useEffect(() => {
+        const load = () => {
+             const savedAlerts = localStorage.getItem('torta_alerts');
+             if (savedAlerts) setAlerts(JSON.parse(savedAlerts));
 
-    // Refs for Listener Access (prevents stale closures without re-subscribing)
-    const dndModeRef = useRef(dndMode);
-    const dndScheduleRef = useRef(dndSchedule);
+             const savedStats = localStorage.getItem('torta_monitoring_stats');
+             if (savedStats) {
+                 const parsed = JSON.parse(savedStats);
+                 if (parsed.lastReset === new Date().toISOString().split('T')[0]) {
+                     setStats(parsed);
+                 }
+             }
+
+             const savedConfig = localStorage.getItem('torta_live_monitor_config');
+             if (savedConfig) {
+                 const config = JSON.parse(savedConfig);
+                 if (config.quickMessageFormat) setQuickMsgTemplate(config.quickMessageFormat);
+                 if (config.timerConfig) setTimerConfig(config.timerConfig);
+                 if (config.adTemplates) setAdTemplates(config.adTemplates);
+                 if (config.dndSchedule) setDndSchedule(config.dndSchedule);
+             }
+        };
+        load();
+    }, []);
+
+    // Save persistable data
+    useEffect(() => {
+        localStorage.setItem('torta_alerts', JSON.stringify(alerts));
+    }, [alerts]);
 
     useEffect(() => {
-        dndModeRef.current = dndMode;
-        dndScheduleRef.current = dndSchedule;
-    }, [dndMode, dndSchedule]);
+        localStorage.setItem('torta_monitoring_stats', JSON.stringify(stats));
+    }, [stats]);
 
-    // --- Actions ---
+    useEffect(() => {
+        const config = {
+            quickMessageFormat: quickMsgTemplate,
+            timerConfig,
+            adTemplates,
+            dndSchedule
+        };
+        localStorage.setItem('torta_live_monitor_config', JSON.stringify(config));
+    }, [quickMsgTemplate, timerConfig, adTemplates, dndSchedule]);
 
-    const setQuickMsgTemplate = (template: string) => {
-        setQuickMsgTemplateState(template);
-        localStorage.setItem(TEMPLATE_KEY, template);
+
+    // Event Listener
+    useEffect(() => {
+        let unlisten: () => void;
+
+        const setupListener = async () => {
+            unlisten = await listen<TradeBatch>('trade-batch-event', (event) => {
+                let batchTrades = event.payload.trades;
+                if (!batchTrades || batchTrades.length === 0) return;
+
+                // --- DEDUPLICATION LOGIC ---
+                // Filter out trades we've already seen based on content signature
+                const uniqueBatch = batchTrades.filter(t => {
+                    // Create a reasonably unique signature
+                    // timestamp usually has seconds, so if multiple trades occur in same second same nick same msg, they are treated as one.
+                    // This is acceptable behavior.
+                    const signature = `${t.timestamp}-${t.nick}-${t.message}`;
+                    if (processedSignatures.current.has(signature)) {
+                        return false; // Duplicate
+                    }
+                    processedSignatures.current.add(signature);
+                    return true;
+                });
+
+                if (uniqueBatch.length === 0) return;
+
+                // Assign IDs to the new unique items
+                const processedBatch = uniqueBatch.map(t => ({
+                    ...t,
+                    internalId: t.internalId || crypto.randomUUID()
+                }));
+
+                // Update Trades State
+                setTrades(prev => {
+                    const combined = [...prev, ...processedBatch];
+                    // Keep last 200 items in context memory to prevent bloat but allow history
+                    return combined.slice(-200); 
+                });
+
+                // Update Stats
+                setStats(prev => {
+                    const next = { ...prev };
+                    processedBatch.forEach(t => {
+                        const msg = t.message.toLowerCase();
+                        if (msg.includes('wtb')) next.wtb++;
+                        else if (msg.includes('wts')) next.wts++;
+                        else if (msg.includes('wtt')) next.wtt++;
+                    });
+                    return next;
+                });
+
+                // Check Alerts
+                const dndActive = checkDndStatus();
+                if (!dndActive) {
+                    AlertService.checkAlerts(processedBatch, alerts, (fired) => {
+                        setFiredAlerts(prev => [fired, ...prev].slice(0, 50));
+                        setStats(prev => ({ ...prev, alerts: prev.alerts + 1 }));
+                    });
+                }
+            });
+        };
+
+        setupListener();
+        return () => {
+            if (unlisten) unlisten();
+        };
+    }, [alerts, dndSchedule, dndMode]);
+
+    const checkDndStatus = () => {
+        if (dndMode) return true;
+        const now = new Date();
+        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        const start = dndSchedule.start;
+        const end = dndSchedule.end;
+
+        if (start > end) {
+            // Overnight (e.g. 22:00 to 08:00)
+            return currentTime >= start || currentTime < end;
+        } else {
+            // Same day (e.g. 09:00 to 17:00)
+            return currentTime >= start && currentTime < end;
+        }
     };
 
-    const addAlert = (term: string, sound: string = 'notification', tradeTypes?: ('WTB'|'WTS'|'WTT')[]) => {
-        const newAlert: TradeAlert = { 
-            id: crypto.randomUUID(), 
-            term, 
-            enabled: true, 
+    const startMonitoring = async (filePath: string) => {
+        try {
+            await invoke('start_monitoring', { filePath });
+            setIsMonitoring(true);
+            processedSignatures.current.clear(); // Clear cache on new session? Or keep it? keeping it is safer against re-reads
+            // Actually, if we restart, maybe we want to re-read? No, usually not duplicates.
+        } catch (error) {
+            console.error('Failed to start monitoring:', error);
+            // Simulate for dev
+            setIsMonitoring(true);
+        }
+    };
+
+    const stopMonitoring = async () => {
+        try {
+            await invoke('stop_monitoring');
+            setIsMonitoring(false);
+        } catch (error) {
+            console.error('Failed to stop monitoring:', error);
+            setIsMonitoring(false);
+        }
+    };
+
+    const addAlert = (term: string, sound: string = 'default', tradeTypes: ('WTB'|'WTS'|'WTT')[] = ['WTB', 'WTS', 'WTT']) => {
+        const newAlert: TradeAlert = {
+            id: crypto.randomUUID(),
+            term,
             sound,
-            tradeTypes: tradeTypes || null
+            enabled: true,
+            tradeTypes,
+            createdAt: new Date().toISOString()
         };
-        const updated = [...alerts, newAlert];
-        setAlerts(updated);
-        localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
+        setAlerts(prev => [...prev, newAlert]);
     };
 
     const removeAlert = (id: string) => {
-        const updated = alerts.filter(a => a.id !== id);
-        setAlerts(updated);
-        localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
+        setAlerts(prev => prev.filter(a => a.id !== id));
     };
 
     const toggleAlert = (id: string) => {
-        const updated = alerts.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);
-        setAlerts(updated);
-        localStorage.setItem(ALERTS_KEY, JSON.stringify(updated));
+        setAlerts(prev => prev.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a));
     };
 
-    const clearAlertHistory = () => {
-        setFiredAlerts([]);
-        localStorage.removeItem(HISTORY_KEY);
+    const clearAlertHistory = () => setFiredAlerts([]);
+    const resetStats = () => setStats({ ...defaultStats, lastReset: new Date().toISOString().split('T')[0] });
+
+    // Ads
+    const addTemplate = (label: string, content: string) => {
+        setAdTemplates(prev => [...prev, { id: crypto.randomUUID(), label, content }]);
+    };
+    const removeTemplate = (id: string) => setAdTemplates(prev => prev.filter(t => t.id !== id));
+    const updateTemplate = (id: string, updates: Partial<AdTemplate>) => {
+        setAdTemplates(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     };
 
-    const resetStats = () => {
-        const newStats = { ...defaultStats, lastReset: new Date().toISOString().split('T')[0] };
-        setStats(newStats);
-        localStorage.setItem(STATS_KEY, JSON.stringify(newStats));
-    };
-
-    const setTimerConfig = (config: TimerConfig) => {
-        setTimerConfigState(config);
-        localStorage.setItem(TIMER_CONFIG_KEY, JSON.stringify(config));
-    };
-
+    // Timer
     const startTimer = () => {
         const end = Date.now() + (timerConfig.duration * 60 * 1000);
         setTimerEndTime(end);
+        // Play sound
     };
+    const stopTimer = () => setTimerEndTime(null);
 
-    const stopTimer = () => {
-        setTimerEndTime(null);
-    };
-
-    const addTemplate = (label: string, content: string) => {
-        const newAd: AdTemplate = { id: crypto.randomUUID(), label, content };
-        const updated = [...adTemplates, newAd];
-        setAdTemplates(updated);
-        localStorage.setItem(ADS_KEY, JSON.stringify(updated));
-    };
-
-    const removeTemplate = (id: string) => {
-        const updated = adTemplates.filter(a => a.id !== id);
-        setAdTemplates(updated);
-        localStorage.setItem(ADS_KEY, JSON.stringify(updated));
-    };
-
-    const updateTemplate = (id: string, updates: Partial<AdTemplate>) => {
-        const updated = adTemplates.map(a => a.id === id ? { ...a, ...updates } : a);
-        setAdTemplates(updated);
-        localStorage.setItem(ADS_KEY, JSON.stringify(updated));
-    };
-
-    const setDndMode = (enabled: boolean) => {
-        setDndModeState(enabled);
-        localStorage.setItem(DND_KEY, String(enabled));
-    };
-
-    const setDndSchedule = (schedule: { start: string; end: string }) => {
-        setDndScheduleState(schedule);
-        localStorage.setItem(DND_SCHEDULE_KEY, JSON.stringify(schedule));
-    };
-
-    const exportConfig = () => {
+    // Export/Import
+    const exportConfig = async () => {
         const config = {
             alerts,
             adTemplates,
             timerConfig,
             quickMsgTemplate,
-            dndMode,
             dndSchedule
         };
-        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `tortaapp-config-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+        const element = document.createElement("a");
+        const file = new Blob([JSON.stringify(config, null, 2)], {type: 'application/json'});
+        element.href = URL.createObjectURL(file);
+        element.download = `torta_config_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
     };
 
     const importConfig = async (file: File) => {
+        const text = await file.text();
         try {
-            const text = await file.text();
             const config = JSON.parse(text);
-            
-            if (config.alerts) {
-                setAlerts(config.alerts);
-                localStorage.setItem(ALERTS_KEY, JSON.stringify(config.alerts));
-            }
-            if (config.adTemplates) {
-                setAdTemplates(config.adTemplates);
-                localStorage.setItem(ADS_KEY, JSON.stringify(config.adTemplates));
-            }
-            if (config.timerConfig) {
-                setTimerConfigState(config.timerConfig);
-                localStorage.setItem(TIMER_CONFIG_KEY, JSON.stringify(config.timerConfig));
-            }
-            if (config.quickMsgTemplate) {
-                setQuickMsgTemplateState(config.quickMsgTemplate);
-                localStorage.setItem(TEMPLATE_KEY, config.quickMsgTemplate);
-            }
-            if (config.dndMode !== undefined) {
-                setDndModeState(config.dndMode);
-                localStorage.setItem(DND_KEY, String(config.dndMode));
-            }
-            if (config.dndSchedule) {
-                setDndScheduleState(config.dndSchedule);
-                localStorage.setItem(DND_SCHEDULE_KEY, JSON.stringify(config.dndSchedule));
-            }
-        } catch (error) {
-            console.error('Failed to import config:', error);
-            throw error;
+            if (config.alerts) setAlerts(config.alerts);
+            if (config.adTemplates) setAdTemplates(config.adTemplates);
+            if (config.timerConfig) setTimerConfig(config.timerConfig);
+            if (config.quickMsgTemplate) setQuickMsgTemplate(config.quickMessageFormat || config.quickMsgTemplate);
+            if (config.dndSchedule) setDndSchedule(config.dndSchedule);
+            alert('Config imported successfully!');
+        } catch (e) {
+            console.error(e);
+            alert('Failed to import config.');
         }
     };
-
-    // --- Auto Backup ---
-    useEffect(() => {
-        const backupConfig = async () => {
-            if (typeof window.__TAURI_INTERNALS__ === 'undefined') return;
-            
-            try {
-                const config = {
-                    alerts,
-                    adTemplates,
-                    timerConfig,
-                    quickMsgTemplate,
-                    dndMode,
-                    dndSchedule
-                };
-                await writeTextFile('tortaapp-backup.json', JSON.stringify(config, null, 2), {
-                    dir: BaseDirectory.AppData
-                });
-            } catch (error) {
-                console.warn('Failed to backup config:', error);
-            }
-        };
-
-        const interval = setInterval(backupConfig, 5 * 60 * 1000); // Every 5 minutes
-        return () => clearInterval(interval);
-    }, [alerts, adTemplates, timerConfig, quickMsgTemplate, dndMode, dndSchedule]);
-
-    // --- Permission Check ---
-    useEffect(() => {
-        const checkPerms = async () => {
-            if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
-                let permissionGranted = await isPermissionGranted();
-                if (!permissionGranted) {
-                    const permission = await requestPermission();
-                    permissionGranted = permission === 'granted';
-                }
-            }
-        };
-        checkPerms();
-    }, []);
-
-    // --- Listener (Batch Support) ---
-    useEffect(() => {
-        let unlistenFn: (() => void) | undefined;
-        let isAborted = false;
-
-        const setupListener = async () => {
-            try {
-                if (typeof window.__TAURI_INTERNALS__ === 'undefined') return;
-
-                const unlisten = await listen<TradeBatch>('trade-batch-event', (event) => {
-                    let batchTrades = event.payload.trades;
-                    if (!batchTrades || batchTrades.length === 0) return;
-
-                    // ASSIGN INTERNAL ID TO TRACK UNIQUENESS PROPERLY
-                    batchTrades = batchTrades.map(t => ({
-                        ...t,
-                        internalId: t.internalId || crypto.randomUUID()
-                    }));
-
-                    // Update Trades
-                    setTrades(prev => {
-                        const combined = [...prev, ...batchTrades];
-                        return combined.slice(-50);
-                    });
-
-                    // Update Stats
-                    setStats(prev => {
-                        const today = new Date().toISOString().split('T')[0];
-                        let newStats = { ...prev };
-                        if (prev.lastReset !== today) {
-                             newStats = { ...defaultStats, lastReset: today };
-                        }
-                        batchTrades.forEach(t => {
-                            if (t.type === 'WTS') newStats.wts++;
-                            if (t.type === 'WTB') newStats.wtb++;
-                            if (t.type === 'WTT') newStats.wtt++;
-                        });
-                        localStorage.setItem(STATS_KEY, JSON.stringify(newStats));
-                        return newStats;
-                    });
-                    
-                    // Check Alerts
-                    const currentAlertsStr = localStorage.getItem(ALERTS_KEY);
-                    if (currentAlertsStr) {
-                         try {
-                            const currentAlerts: TradeAlert[] = JSON.parse(currentAlertsStr);
-                            let alertsTriggered = 0;
-                            let newFired: FiredAlert[] = [];
-
-                            batchTrades.forEach(newTrade => {
-                                 const matchedAlert = AlertService.checkAlerts(newTrade, currentAlerts);
-                                 if (matchedAlert) {
-                                     const isDnd = AlertService.isDndActive(dndModeRef.current, dndScheduleRef.current);
-                                     if (!isDnd) {
-                                         AlertService.fireAlert(matchedAlert, newTrade);
-                                         const fired = AlertService.createFiredAlert(matchedAlert, newTrade);
-                                         newFired.push(fired);
-                                         alertsTriggered++;
-                                     }
-                                 }
-                            });
-
-                            if (newFired.length > 0) {
-                                setFiredAlerts(prev => {
-                                    const updated = [...newFired.reverse(), ...prev].slice(0, 10);
-                                    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-                                    return updated;
-                                });
-                                setStats(prev => {
-                                    const updated = { ...prev, alerts: prev.alerts + alertsTriggered };
-                                    localStorage.setItem(STATS_KEY, JSON.stringify(updated));
-                                    return updated;
-                                });
-                            }
-                        } catch (e) { console.error('Error alerts', e); }
-                    }
-                });
-
-                if (isAborted) unlisten();
-                else unlistenFn = unlisten;
-            } catch (e) { console.error('setup failed', e); }
-        };
-
-        setupListener();
-        return () => { 
-            isAborted = true;
-            if (unlistenFn) unlistenFn(); 
-        };
-    }, []); // Listen once
-
-    // --- Restore Monitoring ---
-    useEffect(() => {
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (savedState) {
-            try {
-                const { filePath, wasMonitoring } = JSON.parse(savedState);
-                if (wasMonitoring && filePath) {
-                    setCurrentFilePath(filePath);
-                    if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
-                        invoke('start_trade_watcher', { path: filePath })
-                            .catch(err => console.error('Failed to restore monitoring:', err));
-                    }
-                }
-            } catch (e) { 
-                console.warn('Failed to restore monitoring state:', e); 
-            }
-        }
-    }, []);
-
-    const startMonitoring = useCallback(async (filePath: string) => {
-        try {
-            if (typeof window.__TAURI_INTERNALS__ === 'undefined') return;
-            await invoke('start_trade_watcher', { path: filePath });
-            setCurrentFilePath(filePath);
-            setIsMonitoring(true);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ filePath, wasMonitoring: true }));
-        } catch (error) {
-            console.error('Failed to start monitoring:', error);
-            throw error;
-        }
-    }, []);
-
-    const stopMonitoring = useCallback(() => {
-        setIsMonitoring(false);
-        setCurrentFilePath(null);
-        setTrades([]);
-        localStorage.removeItem(STORAGE_KEY);
-    }, []);
 
     return (
         <TradeEventContext.Provider value={{
