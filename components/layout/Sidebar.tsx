@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                     <span className="font-medium">Support (Patreon)</span>
                 </button>
                 <div className="mt-4 text-center">
-                    <span className="text-[10px] text-slate-600 font-mono">v2.0.0-beta Venerable Whale 🎯span>
+                    <span className="text-[10px] text-slate-600 font-mono">v2.0.0-beta Venerable Whale 🐳</span>
                 </div>
             </div>
         </div>

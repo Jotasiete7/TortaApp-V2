@@ -22,9 +22,9 @@ export const VolatilityBadge: React.FC<VolatilityBadgeProps> = ({ metrics, itemN
 
     const getLevelEmoji = () => {
         switch (level) {
-            case 'stable': return '🎯
-            case 'moderate': return '🛡️
-            case 'volatile': return '🎯
+            case 'stable': return '🛡️';
+            case 'moderate': return '⚠️';
+            case 'volatile': return '🔥';
         }
     };
 

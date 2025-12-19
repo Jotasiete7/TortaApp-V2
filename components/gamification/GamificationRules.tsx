@@ -18,18 +18,18 @@ const IconMap: Record<string, React.ElementType> = {
 };
 
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '🛡️',
-    'Award': '🎯',
-    'Star': '🎯
-    'Heart': '🎯
-    'Gift': '🎯
-    'Beaker': '🎯
-    'TrendingUp': '🎯
-    'Trophy': '🎯
-    'Moon': '🎯
-    'Sunrise': '🎯
-    'Ghost': '🎯
-    'Sparkles': 'âœ¨'
+    'Shield': '🛡️',
+    'Award': '🎖️',
+    'Star': '⭐',
+    'Heart': '❤️',
+    'Gift': '🎁',
+    'Beaker': '🧪',
+    'TrendingUp': '📈',
+    'Trophy': '🏆',
+    'Moon': '🌙',
+    'Sunrise': '🌅',
+    'Ghost': '👻',
+    'Sparkles': '✨'
 };
 
 const LEVEL_TABLE = [
