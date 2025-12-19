@@ -98,7 +98,7 @@ const BulkSelector: React.FC<{
                                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-pulse" title="Best Value"></div>
                             )}
                             <div className="text-xs opacity-70 flex gap-1 justify-center mt-1">
-                                {multiplier < 0.95 ? '🎯 : multiplier > 1.05 ? 'âš ï¸' : 'âœ“'}
+                                {multiplier < 0.95 ? '💰' : multiplier > 1.05 ? '⚠️' : '✓'}
                             </div>
                         </button>
                     );
