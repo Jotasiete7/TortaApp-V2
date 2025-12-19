@@ -97,16 +97,22 @@ export const LiveFeed = () => {
         return 'text-slate-300';
     };
 
+    // Helper to clean 'Impure' and other prefixes from display
+    const cleanMessageText = (msg: string) => {
+        return msg.replace(/\b(impure|shattered|unfinished|corroded|broken|damaged|rusty)\s+/gi, '');
+    };
+
     const renderMessage = (msg: string) => {
+        const cleanedMsg = cleanMessageText(msg);
+
         // Detect Type
         let typeColor = 'text-slate-400';
-        if (msg.startsWith('WTS')) typeColor = 'text-cyan-400 font-bold';
-        else if (msg.startsWith('WTB')) typeColor = 'text-amber-500 font-bold';
-        else if (msg.startsWith('sold')) typeColor = 'text-emerald-500 font-bold';
+        if (cleanedMsg.startsWith('WTS')) typeColor = 'text-cyan-400 font-bold';
+        else if (cleanedMsg.startsWith('WTB')) typeColor = 'text-amber-500 font-bold';
+        else if (cleanedMsg.startsWith('sold')) typeColor = 'text-emerald-500 font-bold';
 
         // Split "WTS [Item Name] 50s"
-        // Simple logic: Highlight known patterns
-        const parts = msg.split(' ');
+        const parts = cleanedMsg.split(' ');
         const firstWord = parts[0];
         
         // If standard trade msg
@@ -121,7 +127,7 @@ export const LiveFeed = () => {
         }
         
         // Fallback for unknown patterns
-        return <span className={getRarityColor(msg)}>{msg}</span>;
+        return <span className={getRarityColor(cleanedMsg)}>{cleanedMsg}</span>;
     };
 
     return (

@@ -249,7 +249,8 @@ export const NewsTicker: React.FC = () => {
                                                 key={i}
                                                 src={part.path}
                                                 alt={part.alt}
-                                                className="w-5 h-5 object-contain mx-1.5"
+                                                // Added 'filter drop-shadow-[0_0_3px_rgba(255,255,255,0.6)]' for sticker glow effect
+                                                className="w-5 h-5 object-contain mx-1.5 filter drop-shadow-[0_0_3px_rgba(255,255,255,0.6)]"
                                                 loading="eager"
                                             />
                                         )
@@ -259,7 +260,7 @@ export const NewsTicker: React.FC = () => {
                                 {/* Separador */}
                                 {index < messagesWithTip.length * 2 - 1 && (
                                     index === messagesWithTip.length - 1 ? (
-                                        <span className="mx-8 text-xl flex items-center h-full opacity-100 filter drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">🥧</span>
+                                        <span className="mx-8 text-xl flex items-center h-full opacity-100 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] pb-1">🥧</span>
                                     ) : (
                                         <span className="mx-8 text-slate-700/50 flex items-center h-full">•</span>
                                     )

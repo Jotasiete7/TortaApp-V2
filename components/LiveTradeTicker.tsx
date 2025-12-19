@@ -50,25 +50,12 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
     const { alerts } = useSmartAlerts(liveItems, rawItems);
 
     // Helper to check if a trade is an alert
-    // The alert object contains the item. We need to match it to the display row.
-    // Since 'convertLiveTrade' generates a random ID, we can't match by ID easily without linking.
-    // But 'alerts' logic uses the SAME 'liveItems' array references?
-    // Yes. liveItems[i] === alerts[x].item (reference equality) should hold if hooks run pure.
-    // However, displayTrades creates NEW array [...trades].reverse().
-    // So distinct references.
-    // We match by timestamp + nick + message combo.
     const getAlert = (trade: any) => {
         return alerts.find(a =>
             a.item.seller === trade.nick &&
             a.item.timestamp.includes(trade.timestamp.split('T')[0]) && // loose date check not needed if we check timestamp string
             (trade.message.includes(a.item.rawName || '') || trade.message === a.item.name)
         );
-        // Fallback: match by timestamp string equality if possible?
-        // trade.timestamp is "HH:mm:ss". liveItems.timestamp is ISO.
-        // Let's use nick + raw message substring.
-        // liveItems.rawName comes from trade.message regex.
-        // Actually simplest is: `a.item.rawName` came from `trade.message` or `[...]` content.
-        // Let's assume unique enough for UI highlight.
     };
 
 
@@ -143,6 +130,11 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
         ".ticker-hide-scrollbar::-webkit-scrollbar { display: none; } " +
         ".ticker-hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }";
 
+    // CLEANING FUNCTION
+    const cleanMessage = (msg: string) => {
+        return msg.replace(/\b(impure|shattered|unfinished|corroded|broken|damaged|rusty)\s+/gi, '');
+    };
+
     return (
         <>
             <style>{tickerStyles}</style>
@@ -203,7 +195,7 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
                                         </span>
 
                                         <span className={`text-xs font-medium group-hover:text-white ${isOpportunity ? 'text-amber-200' : 'text-slate-300'}`}>
-                                            {linkifyMessage(trade.message)}
+                                            {linkifyMessage(cleanMessage(trade.message))}
                                         </span>
 
                                         {idx === displayTrades.length - 1 ? (
