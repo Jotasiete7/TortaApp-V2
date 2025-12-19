@@ -75,7 +75,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                     <Info className="w-6 h-6 text-amber-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">â„¹ï¸ Como Funciona o Sistema de Shouts</h3>
+                                    <h3 className="text-xl font-bold text-white">ℹ️ Como Funciona o Sistema de Shouts</h3>
                                     <p className="text-sm text-slate-400">Tudo que você precisa saber</p>
                                 </div>
                             </div>
@@ -119,15 +119,15 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                 </div>
                                 <div className="space-y-2 text-sm text-slate-300">
                                     <div className="flex items-start gap-2">
-                                        <span className="text-emerald-400">âœ“</span>
+                                        <span className="text-emerald-400">✓</span>
                                         <span><strong>3 shouts por semana</strong> (reset automático)</span>
                                     </div>
                                     <div className="flex items-start gap-2">
-                                        <span className="text-emerald-400">âœ“</span>
+                                        <span className="text-emerald-400">✓</span>
                                         <span><strong>10 shouts por mês</strong> (limite mensal)</span>
                                     </div>
                                     <div className="flex items-start gap-2">
-                                        <span className="text-yellow-400">âš ï¸</span>
+                                        <span className="text-yellow-400">⚠️</span>
                                         <span className="text-yellow-300">Você precisa ter <strong>ambos</strong> os limites disponíveis</span>
                                     </div>
                                 </div>
@@ -147,12 +147,12 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                         <p className="text-purple-300 font-semibold mb-2">🎯 Para onde vai o investimento?</p>
                                         <div className="space-y-1 text-slate-300">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-amber-400">🎯span>
-                                                <span><strong>50%</strong> â†’ Prêmios para a comunidade</span>
+                                                <span className="text-amber-400">🎯</span>
+                                                <span><strong>50%</strong> → Prêmios para a comunidade</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-cyan-400">🎯span>
-                                                <span><strong>50%</strong> â†’ Manutenção do banco de dados</span>
+                                                <span className="text-cyan-400">🎯</span>
+                                                <span><strong>50%</strong> → Manutenção do banco de dados</span>
                                             </div>
                                         </div>
                                     </div>
@@ -203,7 +203,7 @@ export const ShoutBox: React.FC<ShoutBoxProps> = ({ userId }) => {
                                 onClick={() => setShowInfoModal(false)}
                                 className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-lg transition"
                             >
-                                âœ“ Entendi!
+                                ✓ Entendi!
                             </button>
                         </div>
                     </div>
