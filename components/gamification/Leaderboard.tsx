@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trophy, ShoppingBag, ShoppingCart, Search, Calendar, ChevronDown } from 'lucide-react';
 import { RankingsService, MostActiveTrader, ActiveSeller, ActiveBuyer, PriceChecker, TimePeriod } from '../../services/rankings';
 
@@ -121,7 +121,7 @@ export const Leaderboard = () => {
                             nick={t.nick}
                             value={t.wts_count}
                             subValue="WTS Posts"
-                            badge="🎯 Trader"
+                            badge="📜 Trader"
                         />
                     ))}
                 </RankingCard>
@@ -135,7 +135,7 @@ export const Leaderboard = () => {
                             nick={s.nick}
                             value={s.wts_count}
                             subValue="Listings"
-                            badge="🎯 Merchant"
+                            badge="📦 Merchant"
                         />
                     ))}
                 </RankingCard>
@@ -163,7 +163,7 @@ export const Leaderboard = () => {
                             nick={pc.nick}
                             value={pc.pc_count}
                             subValue="Checks"
-                            badge="🎯 Expert"
+                            badge="🔎 Expert"
                         />
                     ))}
                 </RankingCard>

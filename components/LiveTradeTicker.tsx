@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Activity, Radio, Flame } from 'lucide-react';
 import { useTradeEvents } from '../contexts/TradeEventContext';
 import { toast } from 'sonner';
@@ -147,10 +147,10 @@ export const LiveTradeTicker: React.FC<LiveTradeTickerProps> = ({ rawItems = [] 
         <>
             <style>{tickerStyles}</style>
 
-            <div className="ticker-reset fixed top-8 left-0 right-0 h-8 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 flex items-center z-[90] shadow-md select-none overflow-hidden">
+            <div className="ticker-reset fixed top-8 left-0 right-0 h-8 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/50 flex items-center z-[90] shadow-sm select-none overflow-hidden">
                 <div
                     onClick={jumpToLatest}
-                    className="bg-emerald-900/40 px-3 h-full flex items-center justify-center gap-2 border-r border-slate-800 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.1)] cursor-pointer hover:bg-emerald-800/50 transition-colors active:scale-95"
+                    className="bg-emerald-900/20 px-3 h-full flex items-center justify-center gap-2 border-r border-slate-800/50 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.05)] cursor-pointer hover:bg-emerald-900/30 transition-colors active:scale-95"
                     title="Clique para ver mensagens recentes"
                 >
                     <Activity size={14} className={isMonitoring ? "text-emerald-400 animate-pulse" : "text-slate-500"} />

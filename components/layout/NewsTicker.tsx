@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import { Megaphone, Award } from 'lucide-react';
 import { emojiService } from '../../services/emojiService';
@@ -22,13 +22,13 @@ const ROTATING_TIPS = [
     "🎯 Tip: Use the Smart Search with filters to find the best deals instantly!",
     "🎯 Tip: Complete achievements to unlock exclusive badges and level up faster!",
     "🎯 Tip: Check Market Intelligence for price trends and trading insights!",
-    "âš¡ Tip: Enable Live Monitor to auto-feed trades - no manual uploads needed!",
+    "⚡ Tip: Enable Live Monitor to auto-feed trades - no manual uploads needed!",
     "🎯 Tip: Verify your nick with the @TORTA token for auto-verification!",
     "🎯 Tip: Reach Level 50 'Legendary Whale' by processing 10M+ trades!",
     "💰 Tip: Smart Alerts highlight underpriced items automatically!",
     "🎯 Tip: Use Charts Engine to visualize price history and market trends!",
     "🎯 Tip: Paid Shouts appear in the ticker - support the community!",
-    "🎯 Tip: The pie emoji 🎯 shows when the ticker completes a full loop!",
+    "🎯 Tip: The pie emoji 🥧 shows when the ticker completes a full loop!",
     "🎯 Tip: Search debounce prevents lag - type freely without freezing!",
     "🎯 Tip: Customize ticker speed in Settings for your preferred reading pace!",
     "🎯 Tip: Advanced Tools section has manual log upload for historic data!",
@@ -206,10 +206,10 @@ export const NewsTicker: React.FC = () => {
 
 
         return (
-            <div className="fixed top-0 left-0 right-0 h-8 bg-black border-b border-slate-800 z-[60] overflow-hidden">
+            <div className="fixed top-0 left-0 right-0 h-8 bg-slate-950 border-b border-slate-800/50 z-[60] overflow-hidden shadow-sm">
             <div className="flex items-center h-full">
-                {/* Ãcone fixo Ã  esquerda */}
-                <div className="flex-shrink-0 px-3 bg-amber-600 h-full flex items-center justify-center z-20">
+                {/* Ícone fixo à esquerda */}
+                <div className="flex-shrink-0 px-3 bg-amber-600 h-full flex items-center justify-center z-20 shadow-lg shadow-amber-900/20">
                     <Megaphone className="w-4 h-4 text-white" />
                 </div>
 
@@ -222,15 +222,15 @@ export const NewsTicker: React.FC = () => {
                                 {/* Badge/Label */}
                                 {msg.paid && (
                                     msg.created_by_nick ? (
-                                        // SHOUT COMUNITÃRIO
-                                        <div className="mr-3 px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/50 text-cyan-400 text-xs font-bold rounded flex items-center gap-1.5 h-6">
+                                        // SHOUT COMUNITÁRIO
+                                        <div className="mr-3 px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold rounded flex items-center gap-1.5 h-6">
                                             {msg.user_first_badge_id && (
                                                 <Award className="w-3.5 h-3.5" />
                                             )}
                                             <span className="leading-none pt-0.5">{msg.created_by_nick}</span>
                                         </div>
                                     ) : (
-                                        // ANÃšNCIO ADMIN
+                                        // ANÚNCIO ADMIN
                                         <div className="mr-3 px-2 py-0.5 bg-amber-500 text-black text-xs font-bold rounded flex items-center h-5">
                                             PAID
                                         </div>
@@ -259,9 +259,9 @@ export const NewsTicker: React.FC = () => {
                                 {/* Separador */}
                                 {index < messagesWithTip.length * 2 - 1 && (
                                     index === messagesWithTip.length - 1 ? (
-                                        <span className="mx-8 text-xl flex items-center h-full">🎯</span>
+                                        <span className="mx-8 text-xl flex items-center h-full opacity-100 filter drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">🥧</span>
                                     ) : (
-                                        <span className="mx-8 text-slate-600 flex items-center h-full">•</span>
+                                        <span className="mx-8 text-slate-700/50 flex items-center h-full">•</span>
                                     )
                                 )}
                             </div>

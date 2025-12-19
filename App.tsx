@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { MarketTable } from './components/market/MarketTable';
@@ -237,8 +237,8 @@ const App: React.FC = () => {
     // Show login if not authenticated
     if (authLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-900">
-                <div className="animate-spin w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full"></div>
+            <div className="min-h-screen flex items-center justify-center bg-slate-950">
+                <div className="animate-spin w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full shadow-lg shadow-amber-500/20"></div>
             </div>
         );
     }
@@ -284,7 +284,7 @@ const App: React.FC = () => {
         if (loading) {
             return (
                 <div className="flex h-[80vh] items-center justify-center flex-col gap-4">
-                    <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin shadow-lg shadow-amber-500/20"></div>
                     <div className="text-slate-400 animate-pulse">{t.processing}</div>
                 </div>
             )
@@ -332,26 +332,26 @@ const App: React.FC = () => {
         }
     };
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-200 font-sans">
+        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500/30">
             {/* Global News Ticker */}
             <NewsTicker />
             {/* Live Market Ticker (Nasdaq Style) */}
             <LiveTradeTicker rawItems={marketData} />
 
             <Sidebar currentView={currentView} onNavigate={setCurrentView} language={language} />
-            <main className="ml-64 p-8 min-h-screen transition-all duration-300 pt-16">
-                <header className="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
+            <main className="ml-64 p-8 min-h-screen transition-all duration-300 pt-20 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+                <header className="flex justify-between items-center mb-8 pb-6 border-b border-slate-800/50 glass-panel rounded-xl px-6 py-4">
                     <div className="flex items-center gap-4">
                         {dataSource === 'FILE' ? (
-                            <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 animate-fade-in">
+                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20 animate-fade-in shadow-[0_0_10px_rgba(16,185,129,0.1)]">
                                 LIVE FILE DATA
                             </span>
                         ) : dataSource === 'DATABASE' ? (
-                            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-full border border-blue-500/30 animate-fade-in">
+                            <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs font-bold rounded-full border border-blue-500/20 animate-fade-in shadow-[0_0_10px_rgba(59,130,246,0.1)]">
                                 DATABASE CONNECTED
                             </span>
                         ) : (
-                            <span className="px-3 py-1 bg-slate-700 text-slate-400 text-xs font-bold rounded-full border border-slate-600">
+                            <span className="px-3 py-1 bg-slate-800/50 text-slate-500 text-xs font-bold rounded-full border border-slate-700/50">
                                 NO DATA LOADED
                             </span>
                         )}
