@@ -77,7 +77,7 @@ export interface ArbitrageOpportunity {
     potentialProfit: number;
 }
 
-export type TimeWindow = '4h' | '12h' | '24h';
+export type TimeWindow = '4h' | '12h' | '24h' | '7d' | '30d';
 
 // --- HELPERS ---
 
@@ -178,6 +178,8 @@ export const IntelligenceService = {
         const cutoff = new Date();
         if (window === '4h') cutoff.setHours(now.getHours() - 4);
         else if (window === '12h') cutoff.setHours(now.getHours() - 12);
+        else if (window === '7d') cutoff.setDate(now.getDate() - 7);
+        else if (window === '30d') cutoff.setDate(now.getDate() - 30);
         else cutoff.setHours(now.getHours() - 24);
 
         const recentRemoteLogs = logs.filter(l => new Date(l.trade_timestamp_utc) > cutoff);
