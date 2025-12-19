@@ -1,6 +1,6 @@
-
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2, Shield, ArrowLeft, Trophy } from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { LogUploader } from './LogProcessor/LogUploader';
 import { Leaderboard } from './gamification/Leaderboard';
 import { PlayerProfile } from './PlayerProfile';
@@ -14,6 +14,14 @@ import { MarketItem, Language, ViewState } from '../types';
 import { translations } from '../services/i18n';
 import { IntelligenceService, GlobalStats } from '../services/intelligence';
 import { useAuth } from '../contexts/AuthContext';
+import { formatWurmPrice } from '../services/priceUtils'; // Ensure this is imported or derived
+
+// derived locally if not exported
+const formatPrice = (copper: number) => {
+  if (copper >= 10000) return `${(copper / 10000).toFixed(1)}g`;
+  if (copper >= 100) return `${(copper / 100).toFixed(1)}s`;
+  return `${copper}c`;
+};
 
 interface StatCardProps {
     title: string;
@@ -23,6 +31,7 @@ interface StatCardProps {
     color: string;
     trend?: 'up' | 'down' | 'stable';
     trendValue?: string;
+    chartData?: number[]; // NEW: Sparkline Data
 }
 
 interface DashboardProps {
@@ -35,24 +44,64 @@ interface DashboardProps {
     onNavigate: (view: ViewState) => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon, color, trend = 'stable', trendValue }) => (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors">
-        <div className="flex justify-between items-start mb-4">
-            <div className={`p-3 rounded-lg bg-${color}-500/10`}>
-                <Icon className={`w-6 h-6 text-${color}-500`} />
+const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon, color, trend = 'stable', trendValue, chartData }) => {
+    // Map string color to hex for Recharts (Tailwind colors approx)
+    const getColorHex = (c: string) => {
+        switch(c) {
+            case 'amber': return '#f59e0b';
+            case 'blue': return '#3b82f6';
+            case 'emerald': return '#10b981';
+            case 'purple': return '#8b5cf6';
+            default: return '#64748b';
+        }
+    };
+    const chartColor = getColorHex(color);
+
+    return (
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors relative overflow-hidden">
+            <div className="relative z-10">
+                <div className="flex justify-between items-start mb-4">
+                    <div className={`p-3 rounded-lg bg-${color}-500/10`}>
+                        <Icon className={`w-6 h-6 text-${color}-500`} />
+                    </div>
+                    {/* Semantic Context Indicator */}
+                    <div className="flex items-center gap-1 bg-slate-700/50 px-2 py-1 rounded text-xs font-medium">
+                        {trend === 'up' && <ArrowUpRight size={12} className="text-emerald-400" />}
+                        {trend === 'down' && <ArrowDownRight size={12} className="text-rose-400" />}
+                        <span className="text-slate-400">{trendValue || 'Stable'}</span>
+                    </div>
+                </div>
+                <h3 className="text-slate-400 text-sm font-medium mb-1">{title}</h3>
+                <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
+                {subValue && <p className="text-xs text-slate-500 mt-1">{subValue}</p>}
             </div>
-            {/* Semantic Context Indicator */}
-            <div className="flex items-center gap-1 bg-slate-700/50 px-2 py-1 rounded text-xs font-medium">
-                {trend === 'up' && <ArrowUpRight size={12} className="text-emerald-400" />}
-                {trend === 'down' && <ArrowDownRight size={12} className="text-rose-400" />}
-                <span className="text-slate-400">{trendValue || 'Stable'}</span>
-            </div>
+
+            {/* SPARKLINE CHART */}
+            {chartData && chartData.length > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 pointer-events-none fade-in-up">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData.map((v, i) => ({ i, v }))}>
+                            <defs>
+                                <linearGradient id={`gradient-${color}`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={chartColor} stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <Area 
+                                type="monotone" 
+                                dataKey="v" 
+                                stroke={chartColor} 
+                                fill={`url(#gradient-${color})`} 
+                                strokeWidth={2}
+                                isAnimationActive={false} // Performance
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
         </div>
-        <h3 className="text-slate-400 text-sm font-medium mb-1">{title}</h3>
-        <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
-        {subValue && <p className="text-xs text-slate-500 mt-1">{subValue}</p>}
-    </div>
-);
+    );
+};
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onFileUpload,
@@ -67,12 +116,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showIdentity, setShowIdentity] = useState(false);
     const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+    
+    // Sparkline States
+    const [volHistory, setVolHistory] = useState<number[]>([]);
+    const [countHistory, setCountHistory] = useState<number[]>([]);
+    const [priceHistory, setPriceHistory] = useState<number[]>([]);
+
     const { user } = useAuth();
 
     React.useEffect(() => {
         const fetchStats = async () => {
             const stats = await IntelligenceService.getGlobalStats();
             setGlobalStats(stats);
+            
+            // Fetch Sparklines
+            try {
+                const vol = await IntelligenceService.getSparklineData('volume', 24);
+                setVolHistory(vol);
+                const count = await IntelligenceService.getSparklineData('count', 24);
+                setCountHistory(count);
+                const price = await IntelligenceService.getSparklineData('avg_price', 24);
+                setPriceHistory(price);
+            } catch (e) {
+                console.error("Failed to fetch sparklines", e);
+            }
         };
         fetchStats();
     }, []);
@@ -84,34 +151,35 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const stats = useMemo(() => {
+        // Fallback or override logic if needed, but we mostly use globalStats from DB/Service now
+        // For 'marketData' prop (which is file upload content), we show that live if available.
+        // But the main cards should probably reflect the PERSISTED or HYBRID state.
+        // For now, mirroring existing logic: prioritize 'stats' derived from marketData for 'Items Indexed' logic
+        // if file is loaded.
+        
+        // Actually, the previous code derived 'stats' from props `marketData`. 
+        // We should merge with `globalStats`.
+        
+        let displayStats = {
+            totalVolume: 0,
+            count: 0,
+            avgPrice: 0,
+            wtsCount: 0,
+            wtbCount: 0,
+            source: 'DB' // Default
+        };
+
         if (marketData && marketData.length > 0) {
-            const count = marketData.length;
-            let totalVolume = 0;
-            let totalPrice = 0;
-            let wtsCount = 0;
-            let wtbCount = 0;
-
             marketData.forEach(item => {
-                totalVolume += item.price;
-                totalPrice += item.price;
-                if (item.orderType === 'WTS') wtsCount++;
-                if (item.orderType === 'WTB') wtbCount++;
+                displayStats.totalVolume += item.price;
+                displayStats.count++;
+                if (item.orderType === 'WTS') displayStats.wtsCount++;
+                if (item.orderType === 'WTB') displayStats.wtbCount++;
             });
-
-            const avgPrice = count > 0 ? totalPrice / count : 0;
-
-            return {
-                totalVolume,
-                count,
-                avgPrice,
-                wtsCount,
-                wtbCount,
-                source: 'FILE'
-            };
-        }
-
-        if (globalStats) {
-            return {
+            displayStats.avgPrice = displayStats.totalVolume / (displayStats.count || 1);
+            displayStats.source = 'FILE';
+        } else if (globalStats) {
+            displayStats = {
                 totalVolume: globalStats.total_volume,
                 count: globalStats.items_indexed,
                 avgPrice: globalStats.avg_price,
@@ -121,31 +189,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             };
         }
 
-        return {
-            totalVolume: 0,
-            count: 0,
-            avgPrice: 0,
-            wtsCount: 0,
-            wtbCount: 0,
-            source: 'NONE'
-        };
+        return displayStats;
     }, [marketData, globalStats]);
-
-    const formatPrice = (c: number) => {
-        if (c === 0) return "0c";
-        if (c >= 10000) return `${(c / 10000).toFixed(1)}g`;
-        if (c >= 100) return `${(c / 100).toFixed(1)}s`;
-        return `${c.toFixed(0)}c`;
-    }
-
-    if (selectedPlayer) {
-        return (
-            <PlayerProfile
-                nick={selectedPlayer}
-                onBack={() => onPlayerSelect(null)}
-            />
-        );
-    }
 
     if (showIdentity) {
         return (
@@ -172,7 +217,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <h1 className="text-2xl font-bold text-white">{t.dashboardOverview}</h1>
                     <div className="flex items-center gap-3 mt-1">
                         <p className="text-slate-400 text-sm">{t.realTimeStats}</p>
-                        {/* Enhanced System Status Indicator */}
                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                             <span className="relative flex h-2 w-2">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -190,7 +234,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <Shield className="w-4 h-4" />
                         Link Identity
                     </button>
-                    {/* Enhanced Database Indicator */}
                      <div className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border shadow-lg ${stats.source === 'DB' 
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-blue-500/10' 
                         : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
@@ -210,6 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     color="amber"
                     trend="up"
                     trendValue="+4.2% (24h)"
+                    chartData={volHistory}
                 />
                 <StatCard
                     title={t.itemsIndexed}
@@ -219,6 +263,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     color="blue"
                     trend="up"
                     trendValue="Growing"
+                    chartData={countHistory}
                 />
                 <StatCard
                     title={t.avgPrice}
@@ -228,6 +273,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     color="emerald"
                     trend="stable"
                     trendValue="Stable"
+                    chartData={priceHistory}
                 />
                 <StatCard
                     title={t.systemStatus}
@@ -237,10 +283,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     color="purple"
                     trend="stable"
                     trendValue="Optimal"
+                    // No chart for System Status
                 />
             </div>
 
-            {/* 2. MARKET INTELLIGENCE (NEW) */}
+            {/* 2. MARKET INTELLIGENCE (REFIMED) */}
             <div className="mt-4">
                 <MarketIntelligence onNavigate={onNavigate} />
             </div>
@@ -321,7 +368,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
             )}
 
-            {/* 5. TOP TRADERS (Formerly "Market Intelligence") */}
+            {/* 5. TOP TRADERS */}
             <div className="mt-8">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-amber-500" />
