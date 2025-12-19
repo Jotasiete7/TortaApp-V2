@@ -89,7 +89,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
             desc: 'Most listed items'
         },
         {
-            title: 'High Volatility',
+            title: 'Top Volatility',
             icon: Zap,
             color: 'purple',
             data: data?.topVolatility || [],
@@ -118,7 +118,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                 
                 <div className="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700/50">
                     <Clock size={14} className="text-slate-500 ml-2 mr-2" />
-                    {(['4h', '12h', '24h'] as TimeWindow[]).map(tw => (
+                    {(['4h', '12h', '24h', '7d', '30d'] as TimeWindow[]).map(tw => (
                         <button
                             key={tw}
                             onClick={() => setTimeWindow(tw)}
