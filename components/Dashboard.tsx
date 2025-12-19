@@ -1,5 +1,6 @@
+
 import React, { useRef, useMemo, useState } from 'react';
-import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2, Shield, ArrowLeft } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2, Shield, ArrowLeft, Trophy } from 'lucide-react';
 import { LogUploader } from './LogProcessor/LogUploader';
 import { Leaderboard } from './gamification/Leaderboard';
 import { PlayerProfile } from './PlayerProfile';
@@ -8,6 +9,7 @@ import { ShoutBox } from './gamification/ShoutBox';
 import { LiveTradeSetup } from './LiveTradeSetup';
 import { LiveFeed } from './LiveFeed';
 import { AdvancedTools } from './AdvancedTools';
+import { MarketIntelligence } from './dashboard/MarketIntelligence';
 import { MarketItem, Language } from '../types';
 import { translations } from '../services/i18n';
 import { IntelligenceService, GlobalStats } from '../services/intelligence';
@@ -196,6 +198,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
             </div>
 
+            {/* 1. KEY METRICS */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                     title={t.totalVolume}
@@ -235,10 +238,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 />
             </div>
 
-            <div className="mt-6 mb-6 animate-fade-in">
+            {/* 2. MARKET INTELLIGENCE (NEW) */}
+            <div className="mt-4">
+                <MarketIntelligence />
+            </div>
+
+            {/* 3. LIVE FEED */}
+            <div className="mt-6 mb-6 animate-fade-in text-center">
+                 <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="h-px bg-slate-800 flex-1"></div>
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Live Transaction Feed</span>
+                    <div className="h-px bg-slate-800 flex-1"></div>
+                 </div>
                 <LiveFeed />
             </div>
 
+            {/* 4. TOOLS & LOGS FOOTER */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
                     <h3 className="text-lg font-semibold text-white mb-4">{t.recentLogs}</h3>
@@ -304,10 +319,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
             )}
 
+            {/* 5. TOP TRADERS (Formerly "Market Intelligence") */}
             <div className="mt-8">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-emerald-500" />
-                    Market Intelligence
+                    <Trophy className="w-5 h-5 text-amber-500" />
+                    Top Traders & Leaderboards
                 </h2>
                 <Leaderboard />
             </div>
