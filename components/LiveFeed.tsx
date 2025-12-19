@@ -22,6 +22,7 @@ export const LiveFeed = () => {
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
     // NEW DEDUPLICATION LOGIC
+    // Stores internalId OR generated signature for older items
     const processedIdsRef = useRef<Set<string>>(new Set());
 
     const handleScroll = () => {
@@ -31,42 +32,44 @@ export const LiveFeed = () => {
         setShouldAutoScroll(isAtBottom);
     };
 
+    const getTradeSignature = (t: ParsedTrade) => {
+        // Fallback signature for legacy/buggy items without IDs
+        return t.internalId || `${t.timestamp}-${t.nick}-${t.message}`;
+    };
+
     useEffect(() => {
         if (contextTrades.length === 0) return;
 
+        // 1. Calculate New Items (Pure Calculation)
+        // We do this BEFORE the state update to ensure we don't rely on side-effects inside setState
+        const newUniqueTrades = contextTrades.filter(t => {
+            const signature = getTradeSignature(t);
+            return !processedIdsRef.current.has(signature);
+        });
+
+        if (newUniqueTrades.length === 0) return;
+
+        // 2. Update Ref (Side Effect - Safe here as useEffect runs after render commited)
+        // We update the ref immediately to prevent subsequent effects from processing these
+        newUniqueTrades.forEach(t => {
+            const signature = getTradeSignature(t);
+            processedIdsRef.current.add(signature);
+        });
+
+        // 3. Update State
         setTrades(prev => {
-            // Filter out trades we've already processed by ID
-            const newUniqueTrades = contextTrades.filter(t => {
-                // If it has an ID, check it. If not (legacy/bug), treat as unique? 
-                // No, legacy duplicate check: check content vs last item
-                if (t.internalId) {
-                    return !processedIdsRef.current.has(t.internalId);
-                } 
-                return true; 
-            });
-
-            if (newUniqueTrades.length === 0) return prev; // No new content
-
-            // Mark new IDs as processed
-            newUniqueTrades.forEach(t => {
-                if (t.internalId) processedIdsRef.current.add(t.internalId);
-            });
-
             const formattedNewItems = newUniqueTrades.map((t, idx) => ({
                 ...t,
-                id: Date.now() + idx, // Display ID
+                id: Date.now() + idx + Math.random(), // Ensure unique React Key
                 is_live_marker: false
             }));
 
             // Handle Initial "Live Monitor Started" marker logic
             let nextState = [...prev, ...formattedNewItems];
 
-            // If this is the FIRST batch and we are monitoring, add marker
-            // But be careful not to spam it.
-            // Logic: if prev was empty, and we are adding stuff, add marker.
-            // Use refs to strictly control 'marker added' state?
-            // Actually, simplified:
-            if (prev.length === 0 && isMonitoring && processedIdsRef.current.size === newUniqueTrades.length) {
+            // Only add marker if we are adding new items and the PREVIOUS state was empty
+            // This prevents markers from appearing in the middle of a stream unless there was a gap
+            if (prev.length === 0 && isMonitoring && newUniqueTrades.length > 0) {
                  const marker: DisplayTrade = {
                     id: -1,
                     timestamp: '',
@@ -77,7 +80,7 @@ export const LiveFeed = () => {
                 nextState = [marker, ...formattedNewItems];
             }
             
-            // Keep local buffer manageable (100 items)
+            // Keep local buffer manageable (200 items)
             if (nextState.length > 200) {
                  nextState = nextState.slice(-200);
             }
@@ -98,7 +101,8 @@ export const LiveFeed = () => {
         processedIdsRef.current.clear();
         // Repopulate with CURRENT context trades to avoid them flashing back
         contextTrades.forEach(t => {
-            if (t.internalId) processedIdsRef.current.add(t.internalId);
+            const sig = getTradeSignature(t);
+            processedIdsRef.current.add(sig);
         });
         setShouldAutoScroll(true);
     };
@@ -202,7 +206,7 @@ export const LiveFeed = () => {
 
                 {trades.map((trade, i) => (
                     trade.is_live_marker ? (
-                        <div key="marker" className="py-2 flex items-center gap-4 shrink-0">
+                        <div key={`marker-${trade.id}`} className="py-2 flex items-center gap-4 shrink-0">
                             <div className="h-px bg-emerald-500/30 flex-1"></div>
                             <div className="text-[9px] text-emerald-500/80 font-bold uppercase tracking-widest animate-pulse">Live Monitor Started</div>
                             <div className="h-px bg-emerald-500/30 flex-1"></div>
