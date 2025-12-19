@@ -6,6 +6,7 @@ interface ParsedTrade {
     timestamp: string;
     nick: string;
     message: string;
+    internalId?: string; // Opt
 }
 
 interface DisplayTrade extends ParsedTrade {
@@ -18,8 +19,10 @@ export const LiveFeed = () => {
     const [trades, setTrades] = useState<DisplayTrade[]>([]);
     const scrollEndRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const processedCount = useRef(0);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
+    // NEW DEDUPLICATION LOGIC
+    const processedIdsRef = useRef<Set<string>>(new Set());
 
     const handleScroll = () => {
         if (!containerRef.current) return;
@@ -29,33 +32,59 @@ export const LiveFeed = () => {
     };
 
     useEffect(() => {
-        if (contextTrades.length > processedCount.current) {
-            const newItems = contextTrades.slice(processedCount.current);
-            setTrades(prev => {
-                const formattedNewItems = newItems.map((t, idx) => ({
-                    ...t,
-                    id: Date.now() + idx,
-                    is_live_marker: false
-                }));
+        if (contextTrades.length === 0) return;
 
-                if (prev.length === 0 && isMonitoring && processedCount.current === 0) {
-                     const marker: DisplayTrade = {
-                        id: -1,
-                        timestamp: '',
-                        nick: '',
-                        message: '',
-                        is_live_marker: true
-                    };
-                    return [...prev, marker, ...formattedNewItems].slice(-100);
-                }
-                return [...prev, ...formattedNewItems].slice(-100);
+        setTrades(prev => {
+            // Filter out trades we've already processed by ID
+            const newUniqueTrades = contextTrades.filter(t => {
+                // If it has an ID, check it. If not (legacy/bug), treat as unique? 
+                // No, legacy duplicate check: check content vs last item
+                if (t.internalId) {
+                    return !processedIdsRef.current.has(t.internalId);
+                } 
+                return true; 
             });
-            processedCount.current = contextTrades.length;
-        } else if (contextTrades.length === 0 && processedCount.current > 0) {
-            setTrades([]);
-            processedCount.current = 0;
-            setShouldAutoScroll(true);
-        }
+
+            if (newUniqueTrades.length === 0) return prev; // No new content
+
+            // Mark new IDs as processed
+            newUniqueTrades.forEach(t => {
+                if (t.internalId) processedIdsRef.current.add(t.internalId);
+            });
+
+            const formattedNewItems = newUniqueTrades.map((t, idx) => ({
+                ...t,
+                id: Date.now() + idx, // Display ID
+                is_live_marker: false
+            }));
+
+            // Handle Initial "Live Monitor Started" marker logic
+            let nextState = [...prev, ...formattedNewItems];
+
+            // If this is the FIRST batch and we are monitoring, add marker
+            // But be careful not to spam it.
+            // Logic: if prev was empty, and we are adding stuff, add marker.
+            // Use refs to strictly control 'marker added' state?
+            // Actually, simplified:
+            if (prev.length === 0 && isMonitoring && processedIdsRef.current.size === newUniqueTrades.length) {
+                 const marker: DisplayTrade = {
+                    id: -1,
+                    timestamp: '',
+                    nick: '',
+                    message: '',
+                    is_live_marker: true
+                };
+                nextState = [marker, ...formattedNewItems];
+            }
+            
+            // Keep local buffer manageable (100 items)
+            if (nextState.length > 200) {
+                 nextState = nextState.slice(-200);
+            }
+            
+            return nextState;
+        });
+
     }, [contextTrades, isMonitoring]);
 
     useEffect(() => {
@@ -66,7 +95,11 @@ export const LiveFeed = () => {
 
     const handleClear = () => {
         setTrades([]);
-        processedCount.current = 0;
+        processedIdsRef.current.clear();
+        // Repopulate with CURRENT context trades to avoid them flashing back
+        contextTrades.forEach(t => {
+            if (t.internalId) processedIdsRef.current.add(t.internalId);
+        });
         setShouldAutoScroll(true);
     };
 
@@ -161,11 +194,11 @@ export const LiveFeed = () => {
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto p-4 space-y-1 relative z-0 scrollbar-thin scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-700 flex flex-col justify-end"
             >
-                {trades.length === 0 && (
+                {trades.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center text-slate-700 animate-pulse text-xs self-center">
                         [WAITING FOR DATA STREAM - Configure o monitor no botão inferior direito]
                     </div>
-                )}
+                ) : null}
 
                 {trades.map((trade, i) => (
                     trade.is_live_marker ? (

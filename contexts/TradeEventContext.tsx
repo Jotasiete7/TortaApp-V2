@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
@@ -15,6 +15,7 @@ interface ParsedTrade {
     nick: string;
     message: string;
     type?: 'WTB' | 'WTS' | 'WTT';
+    internalId?: string; // NEW: Reliable tracking ID
 }
 
 // Timer & Ads Types
@@ -398,7 +399,7 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         checkPerms();
     }, []);
 
-        // --- Listener (Batch Support) ---
+    // --- Listener (Batch Support) ---
     useEffect(() => {
         let unlistenFn: (() => void) | undefined;
         let isAborted = false;
@@ -408,8 +409,14 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 if (typeof window.__TAURI_INTERNALS__ === 'undefined') return;
 
                 const unlisten = await listen<TradeBatch>('trade-batch-event', (event) => {
-                    const batchTrades = event.payload.trades;
+                    let batchTrades = event.payload.trades;
                     if (!batchTrades || batchTrades.length === 0) return;
+
+                    // ASSIGN INTERNAL ID TO TRACK UNIQUENESS PROPERLY
+                    batchTrades = batchTrades.map(t => ({
+                        ...t,
+                        internalId: t.internalId || crypto.randomUUID()
+                    }));
 
                     // Update Trades
                     setTrades(prev => {
@@ -557,6 +564,3 @@ export const TradeEventProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         </TradeEventContext.Provider>
     );
 };
-
-
-
