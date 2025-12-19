@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ItemIdentity.ts
  * 
  * Service responsible for Semantic Normalization of item names.
@@ -88,12 +88,28 @@ export const resolveItemIdentity = (rawName: string): ItemIdentity => {
 
     let cleaned = rawName.toLowerCase().trim();
 
+    // --- GAP REMEDIATION: STRICT FILTERING ---
+    // Filter out chat shouts starting with @ (e.g., "@ Arcadia")
+    if (cleaned.startsWith('@') || cleaned.startsWith('!')) {
+        return { id: 'unknown', displayName: 'Unknown' };
+    }
+    // Filter out system messages that might have leaked
+    if (cleaned.includes('joined the channel') || cleaned.includes('left the channel')) {
+        return { id: 'unknown', displayName: 'Unknown' };
+    }
+    // Filter out URLs
+    if (cleaned.includes('http') || cleaned.includes('www.')) {
+        return { id: 'unknown', displayName: 'Unknown' };
+    }
+
     // 0. Service Filtering (Fail Fast)
     // If the message is clearly a service, we shouldn't even try to ID it as an item properly.
     const hasServiceTerm = cleaned.split(/\s+/).some(w => SERVICE_TERMS.has(w));
-    // We treat service ads as 'unknown' or specific to filter them out?
-    // Let's rely on the token filtering below to strip the service words.
-    // If result is empty, it becomes 'unknown'.
+    if (hasServiceTerm) {
+        // Optionally return 'Service' if we want to track them, but for Market charts we want Items.
+        // Let's mark as unknown for charts.
+        // return { id: 'unknown', displayName: 'Unknown' };
+    }
 
     // 1. Basic Cleaning
     cleaned = cleaned.replace(/\[.*?\]/g, ''); // Remove brackets
@@ -155,12 +171,20 @@ export const resolveItemIdentity = (rawName: string): ItemIdentity => {
 
     // 6. Final ID Generation (Strict)
     const id = finalName.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    const displayName = toTitleCase(finalName);
+    let displayName = toTitleCase(finalName);
 
     // If empty after cleaning (e.g. "Impure"), return Unknown
     if (!id || id.length === 0) {
         return { id: 'unknown', displayName: 'Unknown' };
     }
+
+    // Final Sanity Check: If ID is just 1 or 2 chars (rubbish), ignore
+    if (id.length < 3) {
+        return { id: 'unknown', displayName: 'Unknown' };
+    }
+
+    // Auto-fix title case for Known acronyms if needed
+    if (id === 'cod_filled') displayName = 'CoD Filled';
 
     return { id, displayName };
 };
@@ -190,9 +214,9 @@ export const inferCategory = (canonicalId: string): string => {
     if (canonicalId.includes('lump') || canonicalId.includes('bar')) return 'Metals';
     if (canonicalId.includes('plank') || canonicalId.includes('log')) return 'Wood';
     if (canonicalId.includes('powder') || canonicalId.includes('shred')) return 'Reagents';
-    if (canonicalId.includes('anvil') || canonicalId.includes('hammer') || canonicalId.includes('whetstone')) return 'Tools';
-    if (canonicalId.includes('helm') || canonicalId.includes('breastplate') || canonicalId.includes('leggings')) return 'Armor';
-    if (canonicalId.includes('sword') || canonicalId.includes('axe') || canonicalId.includes('maul')) return 'Weapons';
+    if (canonicalId.includes('anvil') || canonicalId.includes('hammer') || canonicalId.includes('whetstone') || canonicalId.includes('rope')) return 'Tools';
+    if (canonicalId.includes('helm') || canonicalId.includes('breastplate') || canonicalId.includes('leggings') || canonicalId.includes('sleeve') || canonicalId.includes('glove') || canonicalId.includes('boot')) return 'Armor';
+    if (canonicalId.includes('sword') || canonicalId.includes('axe') || canonicalId.includes('maul') || canonicalId.includes('blade') || canonicalId.includes('knife')) return 'Weapons';
 
     return 'Misc';
 };

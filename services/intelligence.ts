@@ -47,6 +47,7 @@ export interface GlobalStats {
     wtb_count: number;
     wts_count: number;
     wtb_count: number;
+    wtb_count: number;
 }
 
 export interface DbUsageStats {
@@ -60,10 +61,10 @@ export interface DbUsageStats {
 export interface MarketTrendItem {
     name: string;
     volume: number;
-    price: number; 
-    avgPrice: number; 
-    absoluteChange: number; 
-    change: number; 
+    price: number;
+    avgPrice: number;
+    absoluteChange: number;
+    change: number;
 }
 
 export interface MarketIntelligenceData {
@@ -147,10 +148,10 @@ export const IntelligenceService = {
 
     // --- REALTIME MARKET INTELLIGENCE (OPTIMIZED HYBRID) ---
     getMarketIntelligence: async (window: TimeWindow = '24h', localData?: MarketItem[]): Promise<MarketIntelligenceData> => {
-        
+
         let demandMap = new Map<string, { vol: number, prices: number[], timestamps: number[], avgPrice: number, absChange: number }>();
         let supplyMap = new Map<string, { vol: number, prices: number[], timestamps: number[], avgPrice: number, absChange: number }>();
-        
+
         // 1. Fetch SERVER-SIDE Aggregated Data (Optimized RPC)
         try {
             let windowHours = 24;
@@ -159,23 +160,23 @@ export const IntelligenceService = {
             if (window === '7d') windowHours = 168;
             if (window === '30d') windowHours = 720;
 
-            const { data: remoteData, error } = await supabase.rpc('get_market_trends_optimized', { 
-                window_hours: windowHours 
+            const { data: remoteData, error } = await supabase.rpc('get_market_trends_optimized', {
+                window_hours: windowHours
             });
 
             if (error) throw error;
-            
+
             if (remoteData) {
                 remoteData.forEach((row: any) => {
                     const key = row.ql ? `${row.name} (${row.ql})` : row.name;
                     const item = {
                         vol: row.volume,
                         prices: [], // Pre-aggregated doesn't give array, but gives necessary stats
-                        timestamps: [], 
+                        timestamps: [],
                         avgPrice: row.avg_price,
                         absChange: row.price_change || row.volatility // Use change or volat proxy
                     };
-                    
+
                     if (row.trade_type === 'WTB') demandMap.set(key, item);
                     else if (row.trade_type === 'WTS') supplyMap.set(key, item);
                 });
@@ -202,26 +203,26 @@ export const IntelligenceService = {
             filteredLocal.forEach(item => {
                 const qlBucket = item.quality ? `${Math.floor(item.quality / 10) * 10}ql+` : '';
                 const key = qlBucket ? `${item.name} (${qlBucket})` : item.name;
-                
+
                 // Merge logic: If exists (from DB), ADD volume/stats. If new, create.
                 // Note: Merging Avg and AbsChange accurately is complex. Simple weighted avg or overwrite.
-                
+
                 const processMap = (map: Map<string, any>, type: string) => {
                     const existing = map.get(key) || { vol: 0, prices: [], timestamps: [] };
-                    
+
                     // Simple addition for hybrid demo
                     existing.vol += 1;
                     existing.prices.push(item.price);
-                    
+
                     // Re-calc for local items
                     // Ideally we would mix with DB stats, but for simplicity, local "boosts" volume
                     // and we trust DB price stats unless DB is empty.
-                    
+
                     if (!map.has(key)) {
-                         map.set(key, existing);
+                        map.set(key, existing);
                     }
                 };
-                
+
                 if (item.orderType === 'WTB') processMap(demandMap, 'WTB');
                 if (item.orderType === 'WTS') processMap(supplyMap, 'WTS');
             });
@@ -229,29 +230,43 @@ export const IntelligenceService = {
 
         // 3. Format Output
         const buildTrendItems = (map: Map<string, any>): MarketTrendItem[] => {
-            return Array.from(map.entries()).map(([name, data]) => {
-                // If data came from RPC, it has avgPrice directly. If local, it has prices[].
-                let finalAvg = data.avgPrice;
-                let finalPrice = data.avgPrice; // Fallback
-                let change = data.absChange || 0;
+            return Array.from(map.entries())
+                // Filter invalid items (Garbage Collection)
+                .filter(([name]) => {
+                    const lower = name.toLowerCase();
+                    // Is Unknown?
+                    if (lower === 'unknown' || lower.includes('unknown')) return false;
+                    // Is it likely a chat shout? (Starts with @)
+                    if (lower.startsWith('@') || lower.startsWith('!')) return false;
+                    // Is it just numbers?
+                    if (/^\d+$/.test(lower)) return false;
+                    // Is it too short to be real?
+                    if (lower.length < 3) return false;
+                    return true;
+                })
+                .map(([name, data]) => {
+                    // If data came from RPC, it has avgPrice directly. If local, it has prices[].
+                    let finalAvg = data.avgPrice;
+                    let finalPrice = data.avgPrice; // Fallback
+                    let change = data.absChange || 0;
 
-                if (data.prices && data.prices.length > 0) {
-                    finalPrice = data.prices[data.prices.length - 1];
-                    const localAvg = data.prices.reduce((a:number, b:number) => a+b, 0) / data.prices.length;
-                    // If we have both, maybe avg them? Or prefer DB? 
-                    // Let's defer to DB if volume is high, else local.
-                    if (!finalAvg) finalAvg = localAvg; 
-                }
+                    if (data.prices && data.prices.length > 0) {
+                        finalPrice = data.prices[data.prices.length - 1];
+                        const localAvg = data.prices.reduce((a: number, b: number) => a + b, 0) / data.prices.length;
+                        // If we have both, maybe avg them? Or prefer DB? 
+                        // Let's defer to DB if volume is high, else local.
+                        if (!finalAvg) finalAvg = localAvg;
+                    }
 
-                return {
-                    name,
-                    volume: data.vol,
-                    price: finalPrice || 0,
-                    avgPrice: finalAvg || 0,
-                    absoluteChange: change,
-                    change: 0 // Percentage omitted for now or calculated if needed
-                };
-            });
+                    return {
+                        name,
+                        volume: data.vol,
+                        price: finalPrice || 0,
+                        avgPrice: finalAvg || 0,
+                        absoluteChange: change,
+                        change: 0 // Percentage omitted for now or calculated if needed
+                    };
+                });
         };
 
         const demandItems = buildTrendItems(demandMap).sort((a, b) => b.volume - a.volume).slice(0, 5);
@@ -272,13 +287,13 @@ export const IntelligenceService = {
     getSparklineData: async (metric: 'volume' | 'count' | 'avg_price', hours: number = 24): Promise<number[]> => {
         // Optimized: Could use a database GROUP BY time bucket.
         // Falling back to raw logs for chart fidelity until migration Phase 3.
-        const logs = await IntelligenceService.getTradeLogs(2000); 
+        const logs = await IntelligenceService.getTradeLogs(2000);
         // ... (Existing bucket logic) ...
         const now = new Date();
         const cutoff = new Date();
         cutoff.setHours(now.getHours() - hours);
         const recentLogs = logs.filter(l => new Date(l.trade_timestamp_utc) > cutoff);
-        
+
         const bucketCount = 20;
         const bucketDuration = (hours * 60 * 60 * 1000) / bucketCount;
         const buckets = new Array(bucketCount).fill(0);
@@ -307,10 +322,10 @@ export const IntelligenceService = {
                 if (metric === 'volume') buckets[bucketIndex] += price;
                 else if (metric === 'count') buckets[bucketIndex] += 1;
                 else if (metric === 'avg_price') {
-                     if (price > 0 && (log.trade_type === 'WTS' || log.trade_type === 'SOLD')) {
+                    if (price > 0 && (log.trade_type === 'WTS' || log.trade_type === 'SOLD')) {
                         buckets[bucketIndex] += price;
                         counts[bucketIndex] += 1;
-                     }
+                    }
                 }
             }
         });
