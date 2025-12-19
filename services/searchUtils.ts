@@ -1,4 +1,4 @@
-﻿
+
 import { MarketItem } from '../types';
 
 export interface SearchResult {
@@ -60,7 +60,6 @@ function levenshteinDistance(a: string, b: string): number {
 
 /**
  * Search items with fuzzy matching.
- * ARCHITECTURAL CHANGE: Expects items to be { id, name } objects.
  */
 export function searchItems(
     query: string,
@@ -81,10 +80,7 @@ export function searchItems(
                 ? itemData.reduce((sum, d) => sum + d.price, 0) / itemData.length
                 : 0;
             const volume = itemData.length;
-            const category = categorizeItem(itemObj.name); // Categorize by name or ID? Name is fine (e.g. "Iron Bar")
-
-            // But wait, ItemIdentity has inferCategory(id). Maybe use that?
-            // Keeping simple for now to avoid circular dependency if not careful.
+            const category = categorizeItem(itemObj.name); 
 
             results.push({
                 id: itemObj.id,
@@ -110,36 +106,61 @@ export function searchItems(
  */
 export function categorizeItem(itemName: string): string {
     const name = itemName.toLowerCase();
+    
+    // -- ANIMALS & MOUNTS --
+    if (name.includes('horse') || name.includes('foal') || name.includes('mare') || name.includes('stallion')) return 'Animals';
+    if (name.includes('cow') || name.includes('bull') || name.includes('sheep') || name.includes('ram')) return 'Animals';
+    if (name.includes('dog') || name.includes('cat') || name.includes('spider')) return 'Animals';
+
+    // -- STORAGE --
+    if (name.includes('casket') || name.includes('chest') || name.includes('coffer') || name.includes('trunk')) return 'Storage';
+    if (name.includes('barrel') || name.includes('bin') || name.includes('crate') || name.includes('rack')) return 'Storage';
+    
+    // -- SHIPS --
+    if (name.includes('ship') || name.includes('boat') || name.includes('knarr') || name.includes('corbita')) return 'Boats';
+    if (name.includes('cog') || name.includes('caravel') || name.includes('yacht')) return 'Boats';
+
+    // -- ARMOR --
+    if (name.includes('helm') || name.includes('armor') || name.includes('plate') || name.includes('chain')) return 'Armor';
+    if (name.includes('shield') || name.includes('gauntlet') || name.includes('boot') || name.includes('greave')) return 'Armor';
+
+    // -- EXISTING --
     if (name.includes('brick')) return 'Bricks';
-    if (name.includes('plank') || name.includes('wood')) return 'Wood';
-    if (name.includes('iron') || name.includes('steel') || name.includes('metal')) return 'Metals';
-    if (name.includes('stone') || name.includes('rock')) return 'Stone';
-    if (name.includes('nail') || name.includes('rivet')) return 'Hardware';
-    if (name.includes('tool') || name.includes('hammer') || name.includes('saw')) return 'Tools';
-    if (name.includes('ore') || name.includes('lump')) return 'Ores';
-    if (name.includes('clay') || name.includes('pottery')) return 'Clay';
+    if (name.includes('plank') || name.includes('wood') || name.includes('log') || name.includes('shaft')) return 'Wood';
+    if (name.includes('iron') || name.includes('steel') || name.includes('metal') || name.includes('copper')) return 'Metals';
+    if (name.includes('stone') || name.includes('rock') || name.includes('marble') || name.includes('slate')) return 'Stone';
+    if (name.includes('nail') || name.includes('rivet') || name.includes('lock')) return 'Hardware';
+    if (name.includes('tool') || name.includes('hammer') || name.includes('saw') || name.includes('pickaxe')) return 'Tools';
+    if (name.includes('ore') || name.includes('lump') || name.includes('shard')) return 'Ores';
+    if (name.includes('clay') || name.includes('pottery') || name.includes('jar') || name.includes('bowl')) return 'Clay';
+    
+    // -- TEXTILES --
+    if (name.includes('cotton') || name.includes('cloth') || name.includes('rag') || name.includes('sheet')) return 'Textiles';
+
     return 'Other';
 }
 
 export function getCategoryEmoji(category: string): string {
     switch (category) {
-        case 'Bricks': return 'ðŸ§±';
-        case 'Wood': return 'ðŸªµ';
-        case 'Metals': return 'âš’ï¸';
-        case 'Stone': return 'ðŸª¨';
-        case 'Hardware': return 'ðŸ”©';
-        case 'Tools': return 'ðŸ› ï¸';
-        case 'Ores': return 'â›ï¸';
-        case 'Clay': return 'ðŸº';
-        default: return 'ðŸ“¦';
+        case 'Bricks': return '🧱';
+        case 'Wood': return '🪵';
+        case 'Metals': return '⚒️';
+        case 'Stone': return '🪨';
+        case 'Hardware': return '🔩';
+        case 'Tools': return '🛠️';
+        case 'Ores': return '⛏️';
+        case 'Clay': return '🏺';
+        case 'Animals': return '🐎';
+        case 'Storage': return '🗳️';
+        case 'Boats': return '⛵';
+        case 'Armor': return '🛡️';
+        case 'Textiles': return '🧵';
+        default: return '📦';
     }
 }
 
 /**
- * Get popular items by volume. Returns string names for display? 
- * Better to return objects? 
- * Current usage: popularItems maps to SmartSearch buttons. 
- * I will return { id, name } objects.
+ * Get popular items by volume.
  */
 export function getPopularItems(rawData: MarketItem[], limit: number = 10): { id: string, name: string }[] {
     const itemCounts = new Map<string, number>();
@@ -158,7 +179,7 @@ export function getPopularItems(rawData: MarketItem[], limit: number = 10): { id
 }
 
 /**
- * Get recent searches (Objects now)
+ * Get recent searches
  */
 export function getRecentSearches(): { id: string, name: string }[] {
     try {
