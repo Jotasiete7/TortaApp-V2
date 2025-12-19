@@ -1,12 +1,13 @@
-﻿import React, { useState, useMemo } from 'react';
-import { BrainCircuit, Loader2, TrendingUp, TrendingDown, Info, AlertTriangle, Search, Filter, Layers, Calculator, HelpCircle } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { BrainCircuit, Loader2, TrendingUp, Filter, Layers, Search, HelpCircle } from 'lucide-react';
 import { PredictionResult, MarketItem, BulkAnalysis } from '../../types';
 import { analyzePriceSet, MarketStats } from '../../services/mlEngine';
 import { formatWurmPrice } from '../../services/priceUtils';
 import { extractNameAndQty } from '../../services/fileParser';
 import { PriceHistogram } from './PriceHistogram';
 import { ProfitCalculator } from './ProfitCalculator';
-import { MLHelpModal } from './MLHelpModal';
+// import { MLHelpModal } from './MLHelpModal'; // Unused
+import { InfoTooltip } from './InfoTooltip';
 
 interface MLPredictorProps {
     data: MarketItem[];
@@ -61,6 +62,7 @@ const BulkSelector: React.FC<{
                 <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
                     <Layers className="w-4 h-4 text-purple-400" />
                     Bulk Quantity / Batch Size
+                    <InfoTooltip text="Analyzes price differences for items sold in batches (e.g., 100x Bricks). Helps identify bulk discounts." />
                 </label>
                 <div className="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded">
                     {analysis.hasBulks ? `${analysis.bulkSizes.length} sizes found` : 'No bulk trades found'}
@@ -111,7 +113,7 @@ const BulkSelector: React.FC<{
 
 export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
     const [quality, setQuality] = useState(50);
-    const [showHelp, setShowHelp] = useState(false);
+    // const [showHelp, setShowHelp] = useState(false);
     const [material, setMaterial] = useState('Any');
     const [itemName, setItemName] = useState('');
 
@@ -227,8 +229,9 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                     <BrainCircuit className="w-10 h-10 text-purple-400" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">Price Predictor Engine <span className="text-purple-500 text-sm align-top">PRO</span></h2>
-                <p className="text-slate-400">
+                <p className="text-slate-400 flex items-center justify-center gap-2">
                     Advanced statistical inference based on <span className="text-emerald-400 font-mono">{data.length}</span> records.
+                     <InfoTooltip text="Uses statistical analysis (Median Absolute Deviation) to remove outliers and find the true market value." />
                 </p>
             </div>
 
@@ -239,6 +242,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                         <div className="flex items-center gap-2 mb-4">
                             <Filter className="w-5 h-5 text-purple-400" />
                             <h3 className="text-xl font-semibold text-white">Prediction Context</h3>
+                             <InfoTooltip text="Configure the item filters to narrow down the dataset for analysis." />
                         </div>
 
                         <div className="space-y-2">
@@ -338,8 +342,9 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                             {result && marketStats && (
                                 <div className="w-full animate-fade-in">
                                     <div className="space-y-2 mb-8">
-                                        <div className="text-xs text-purple-400 font-bold uppercase tracking-wider">
+                                        <div className="text-xs text-purple-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
                                             {selectedBulk > 1 ? `Fair Market Value (${selectedBulk}x Batch)` : 'Fair Market Value (Unit)'}
+                                            <InfoTooltip text="The estimated 'true' value of the item, calculated as the median of filtered trades after removing extreme outliers." />
                                         </div>
                                         <div className="text-6xl font-bold text-white tracking-tight flex items-baseline justify-center gap-2 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                                             <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(displayPrice).replace(/([0-9]+)([gsc])/g, '<span class="text-white">$1</span><span class="text-slate-500 text-3xl ml-0.5 mr-3">$2</span>').replace(/(\d+)i/, '<span class="text-slate-300 text-4xl">$1i</span>') }} />
@@ -359,25 +364,33 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     {/* STATS GRID */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                                            <div className="text-xs text-slate-400 mb-1">Confidence</div>
+                                            <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
+                                                Confidence <InfoTooltip text="Statistical certainty based on sample size and price consistency. Higher is better." />
+                                            </div>
                                             <div className={`text-xl font-bold ${result.confidence > 0.7 ? 'text-emerald-400' : 'text-amber-400'}`}>
                                                 {(result.confidence * 100).toFixed(0)}%
                                             </div>
                                         </div>
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                                            <div className="text-xs text-slate-400 mb-1">Volatility</div>
+                                            <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
+                                                Volatility <InfoTooltip text="Standard deviation of prices. High volatility means prices fluctuate wildly." />
+                                            </div>
                                             <div className="text-xl font-bold text-slate-300">
                                                 {formatWurmPrice(marketStats.volatility)}
                                             </div>
                                         </div>
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                                            <div className="text-xs text-slate-400 mb-1">Buy Zone (&lt;P25)</div>
+                                            <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
+                                                Buy Zone (&lt;P25) <InfoTooltip text="25th Percentile: Prices below this are considered a 'Good Deal' for buyers." />
+                                            </div>
                                             <div className="text-xl font-bold text-emerald-400">
                                                 {formatWurmPrice(marketStats.p25)}
                                             </div>
                                         </div>
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                                            <div className="text-xs text-slate-400 mb-1">Sell Zone (&gt;P75)</div>
+                                            <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
+                                                Sell Zone (&gt;P75) <InfoTooltip text="75th Percentile: Prices above this are considered a 'Good Deal' for sellers." />
+                                            </div>
                                             <div className="text-xl font-bold text-rose-400">
                                                 {formatWurmPrice(marketStats.p75)}
                                             </div>
@@ -421,6 +434,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                 <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
                                     <Layers className="w-4 h-4 text-purple-400" />
                                     Analysis Source Data (Top 20)
+                                    <InfoTooltip text="The actual trade records used to calculate the price. Shows up to 20 most relevant recent trades." />
                                 </h3>
                             </div>
                             <div className="overflow-x-auto">
