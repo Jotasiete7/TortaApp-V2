@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
     const isAdmin = role === 'admin' || role === 'moderator';
 
     return (
-        <div className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-20 pt-12">
+        <div className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-20 pt-20">
             <div className="p-6 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-white/5 shadow-lg shadow-amber-900/20">
                     <img src="/logo.png" alt="Torta Logo" className="w-full h-full object-contain" />
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
                     <span>{Math.round((100 - progress) / 100 * 60)}s</span>
                 </div>
                 <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div 
+                    <div
                         className="h-full bg-slate-600 transition-all duration-100 ease-linear"
                         style={{ width: `${progress}%` }}
                     />

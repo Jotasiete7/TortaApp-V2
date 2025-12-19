@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, ShoppingBag, ShoppingCart, Search, Calendar, ChevronDown } from 'lucide-react';
+import { Trophy, ShoppingBag, ShoppingCart, ChevronDown, ChevronUp } from 'lucide-react';
 import { RankingsService, MostActiveTrader, ActiveSeller, ActiveBuyer, PriceChecker, TimePeriod } from '../../services/rankings';
 
 // ==================== SUB-COMPONENTS ====================
@@ -51,6 +51,9 @@ export const Leaderboard = () => {
     const [priceCheckers, setPriceCheckers] = useState<PriceChecker[]>([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<TimePeriod>('all_time');
+    
+    // NEW: Collapsible State (Default: Open)
+    const [isExpanded, setIsExpanded] = useState(true);
 
     useEffect(() => {
         loadRankings();
@@ -82,93 +85,104 @@ export const Leaderboard = () => {
     }
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-4 animate-fade-in border-b border-slate-800 pb-8 mb-8">
             {/* Header & Filters */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Trophy className="w-6 h-6 text-yellow-500" />
-                        Market Leaderboards
-                    </h2>
-                    <p className="text-slate-400">Top traders and community contributors</p>
+                <div 
+                    className="cursor-pointer group flex items-center gap-3"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                >
+                    <div className={`p-2 rounded-lg bg-slate-800 border border-slate-700 group-hover:bg-slate-700 transition-colors`}>
+                        {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <Trophy className="w-5 h-5 text-yellow-500" />
+                            Market Leaderboards
+                        </h2>
+                        {!isExpanded && <p className="text-xs text-slate-500">Click to expand • Top traders & contributors</p>}
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-lg border border-slate-700">
-                    {(['all_time', 'monthly', 'weekly'] as TimePeriod[]).map((p) => (
-                        <button
-                            key={p}
-                            onClick={() => setPeriod(p)}
-                            className={`
-                                px-3 py-1.5 rounded-md text-sm font-medium transition-colors capitalize
-                                ${period === p ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}
-                            `}
-                        >
-                            {p.replace('_', ' ')}
-                        </button>
-                    ))}
+                {isExpanded && (
+                    <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-lg border border-slate-700">
+                        {(['all_time', 'monthly', 'weekly'] as TimePeriod[]).map((p) => (
+                            <button
+                                key={p}
+                                onClick={() => setPeriod(p)}
+                                className={`
+                                    px-3 py-1.5 rounded-md text-sm font-medium transition-colors capitalize
+                                    ${period === p ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}
+                                `}
+                            >
+                                {p.replace('_', ' ')}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Grid (Collapsible) */}
+            {isExpanded && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+
+                    {/* 1. Most Active Traders */}
+                    <RankingCard title="Most Active Traders" icon={Trophy} color="yellow">
+                        {activeTraders.map((t, index) => (
+                            <RankItem
+                                key={`${t.nick}-${index}`}
+                                rank={t.rank}
+                                nick={t.nick}
+                                value={t.wts_count}
+                                subValue="WTS Posts"
+                                badge="📜 Trader"
+                            />
+                        ))}
+                    </RankingCard>
+
+                    {/* 2. Top Sellers */}
+                    <RankingCard title="Top Sellers (Month)" icon={ShoppingBag} color="emerald">
+                        {activeSellers.map((s, index) => (
+                            <RankItem
+                                key={`${s.nick}-${index}`}
+                                rank={s.rank}
+                                nick={s.nick}
+                                value={s.wts_count}
+                                subValue="Listings"
+                                badge="📦 Merchant"
+                            />
+                        ))}
+                    </RankingCard>
+
+                    {/* 3. Top Buyers */}
+                    <RankingCard title="Top Buyers (Month)" icon={ShoppingCart} color="blue">
+                        {activeBuyers.map((b, index) => (
+                            <RankItem
+                                key={`${b.nick}-${index}`}
+                                rank={b.rank}
+                                nick={b.nick}
+                                value={b.wtb_count}
+                                subValue="Requests"
+                                badge="💰 Investor"
+                            />
+                        ))}
+                    </RankingCard>
+
+                     {/* 4. Top Checkers (Replaces appraisers visually if desired, using generic trophy for now) */}
+                     <RankingCard title="Top Contributors" icon={Trophy} color="purple">
+                        {priceCheckers.map((c, index) => (
+                            <RankItem
+                                key={`${c.nick}-${index}`}
+                                rank={c.rank}
+                                nick={c.nick}
+                                value={c.checks}
+                                subValue="Checks"
+                                badge="🔍 Expert"
+                            />
+                        ))}
+                    </RankingCard>
                 </div>
-            </div>
-
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                {/* 1. Most Active Traders */}
-                <RankingCard title="Most Active Traders" icon={Trophy} color="yellow">
-                    {activeTraders.map((t, index) => (
-                        <RankItem
-                            key={`${t.nick}-${index}`}
-                            rank={t.rank}
-                            nick={t.nick}
-                            value={t.wts_count}
-                            subValue="WTS Posts"
-                            badge="📜 Trader"
-                        />
-                    ))}
-                </RankingCard>
-
-                {/* 2. Top Sellers */}
-                <RankingCard title="Top Sellers (Month)" icon={ShoppingBag} color="emerald">
-                    {activeSellers.map((s, index) => (
-                        <RankItem
-                            key={`${s.nick}-${index}`}
-                            rank={s.rank}
-                            nick={s.nick}
-                            value={s.wts_count}
-                            subValue="Listings"
-                            badge="📦 Merchant"
-                        />
-                    ))}
-                </RankingCard>
-
-                {/* 3. Top Buyers */}
-                <RankingCard title="Top Buyers (Month)" icon={ShoppingCart} color="blue">
-                    {activeBuyers.map((b, index) => (
-                        <RankItem
-                            key={`${b.nick}-${index}`}
-                            rank={b.rank}
-                            nick={b.nick}
-                            value={b.wtb_count}
-                            subValue="Requests"
-                            badge="💰 Investor"
-                        />
-                    ))}
-                </RankingCard>
-
-                {/* 4. Price Checkers */}
-                <RankingCard title="Top Appraisers (Week)" icon={Search} color="purple">
-                    {priceCheckers.map((pc, index) => (
-                        <RankItem
-                            key={`${pc.nick}-${index}`}
-                            rank={pc.rank}
-                            nick={pc.nick}
-                            value={pc.pc_count}
-                            subValue="Checks"
-                            badge="🔎 Expert"
-                        />
-                    ))}
-                </RankingCard>
-
-            </div>
+            )}
         </div>
     );
 };
