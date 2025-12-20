@@ -263,8 +263,8 @@ const App: React.FC = () => {
 
     const handlePlayerSelect = (player: string | null) => {
         setSelectedPlayer(player);
-        // Force view to Dashboard if selecting a player, but keep logic flexible
-        // setCurrentView(ViewState.DASHBOARD);
+        // Force view to Dashboard if selecting a player
+        if (player) setCurrentView(ViewState.DASHBOARD);
     };
 
     const renderContent = () => {

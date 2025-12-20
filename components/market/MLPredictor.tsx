@@ -229,10 +229,10 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                     <BrainCircuit className="w-10 h-10 text-purple-400" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">Price Predictor Engine <span className="text-purple-500 text-sm align-top">PRO</span></h2>
-                <p className="text-slate-400 flex items-center justify-center gap-2">
+                <div className="text-slate-400 flex items-center justify-center gap-2">
                     Advanced statistical inference based on <span className="text-emerald-400 font-mono">{data.length}</span> records.
-                     <InfoTooltip text="Uses statistical analysis (Median Absolute Deviation) to remove outliers and find the true market value." />
-                </p>
+                    <InfoTooltip text="Uses statistical analysis (Median Absolute Deviation) to remove outliers and find the true market value." />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -242,7 +242,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                         <div className="flex items-center gap-2 mb-4">
                             <Filter className="w-5 h-5 text-purple-400" />
                             <h3 className="text-xl font-semibold text-white">Prediction Context</h3>
-                             <InfoTooltip text="Configure the item filters to narrow down the dataset for analysis." />
+                            <InfoTooltip text="Configure the item filters to narrow down the dataset for analysis." />
                         </div>
 
                         <div className="space-y-2">

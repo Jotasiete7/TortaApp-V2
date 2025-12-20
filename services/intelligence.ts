@@ -117,15 +117,76 @@ export const IntelligenceService = {
     },
 
     getPlayerStatsAdvanced: async (nick: string): Promise<PlayerStatsAdvanced | null> => {
-        const { data, error } = await supabase.rpc('get_player_stats_v3', { target_nick: nick });
-        if (error) { console.error('Error fetching advanced player stats:', error); return null; }
-        return data && data.length > 0 ? data[0] : null;
+        try {
+            // Query trade_logs directly to calculate stats
+            const { data: logs, error } = await supabase
+                .from('trade_logs')
+                .select('*')
+                .ilike('nick', nick)
+                .order('trade_timestamp_utc', { ascending: false })
+                .limit(1000);
+
+            if (error) {
+                console.error('Error fetching player stats:', error);
+                return null;
+            }
+
+            if (!logs || logs.length === 0) {
+                return null;
+            }
+
+            // Calculate stats from logs
+            const wtsCount = logs.filter(l => l.trade_type === 'WTS').length;
+            const wtbCount = logs.filter(l => l.trade_type === 'WTB').length;
+            const totalVolume = logs.reduce((sum, l) => sum + (l.price || 0), 0);
+            const avgPrice = totalVolume / logs.length;
+            const uniqueItems = new Set(logs.map(l => l.item_name)).size;
+
+            return {
+                nick: nick,
+                total: logs.length, // Use trade count as XP proxy
+                wts_count: wtsCount,
+                wtb_count: wtbCount,
+                avg_price: avgPrice,
+                total_volume: totalVolume,
+                unique_items: uniqueItems,
+                first_seen: logs[logs.length - 1]?.trade_timestamp_utc || new Date().toISOString(),
+                last_seen: logs[0]?.trade_timestamp_utc || new Date().toISOString(),
+                favorite_items: []
+            };
+        } catch (error) {
+            console.error('Error in getPlayerStatsAdvanced:', error);
+            return null;
+        }
     },
 
     getPlayerLogs: async (nick: string, limit: number = 50, offset: number = 0): Promise<PlayerLog[]> => {
-        const { data, error } = await supabase.rpc('get_player_logs', { target_nick: nick, limit_count: limit, offset_count: offset });
-        if (error) { console.error('Error fetching playerLogs:', error); return []; }
-        return data || [];
+        try {
+            const { data, error } = await supabase
+                .from('trade_logs')
+                .select('*')
+                .ilike('nick', nick)
+                .order('trade_timestamp_utc', { ascending: false })
+                .range(offset, offset + limit - 1);
+
+            if (error) {
+                console.error('Error fetching playerLogs:', error);
+                return [];
+            }
+
+            return (data || []).map(log => ({
+                id: log.id,
+                nick: log.nick,
+                item_name: log.item_name || 'Unknown',
+                price: log.price || 0,
+                trade_type: log.trade_type || 'UNKNOWN',
+                server: log.server || 'Unknown',
+                timestamp: log.trade_timestamp_utc
+            }));
+        } catch (error) {
+            console.error('Error in getPlayerLogs:', error);
+            return [];
+        }
     },
 
     getPlayerActivity: async (nick: string): Promise<ActivityPoint[]> => {

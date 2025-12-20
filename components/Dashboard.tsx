@@ -79,8 +79,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon,
 
             {/* SPARKLINE CHART */}
             {chartData && chartData.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 pointer-events-none fade-in-up">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 pointer-events-none fade-in-up overflow-hidden">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                         <AreaChart data={chartData.map((v, i) => ({ i, v }))}>
                             <defs>
                                 <linearGradient id={`gradient-${color}`} x1="0" y1="0" x2="0" y2="1">
@@ -221,25 +221,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
                 <div className="flex gap-4">
                     {myVerifiedNick ? (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-inner">
+                        <button
+                            onClick={() => onPlayerSelect(myVerifiedNick)}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 hover:border-slate-600 transition-all group text-left"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-inner group-hover:scale-105 transition-transform">
                                 {myVerifiedNick.substring(0, 2).toUpperCase()}
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-400 font-medium leading-none mb-0.5">Welcome,</span>
+                                <span className="text-xs text-slate-400 font-medium leading-none mb-0.5 group-hover:text-slate-300">My Profile</span>
                                 <div className="flex items-center gap-1 leading-none">
                                     <span className="font-bold text-white text-sm">{myVerifiedNick}</span>
                                     <Shield className="w-3 h-3 text-emerald-400" />
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setShowIdentity(true)}
-                                className="ml-2 p-1.5 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-400 transition-colors"
-                                title="Manage Identity"
-                            >
-                                <User size={14} />
-                            </button>
-                        </div>
+                        </button>
                     ) : (
                         <button
                             onClick={() => setShowIdentity(true)}
@@ -364,10 +360,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             )}
 
             {selectedPlayer && (
-                <PlayerProfile
-                    playerNick={selectedPlayer}
-                    onClose={() => onPlayerSelect(null)}
-                />
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 animate-fade-in">
+                    <div className="bg-slate-900 rounded-xl border border-slate-700 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <PlayerProfile
+                            playerNick={selectedPlayer}
+                            onClose={() => onPlayerSelect(null)}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );
