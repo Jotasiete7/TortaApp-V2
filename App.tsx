@@ -279,22 +279,21 @@ const App: React.FC = () => {
                         selectedPlayer={selectedPlayer}
                         onPlayerSelect={handlePlayerSelect} // Pass down selection handler
                         onNavigate={handleNavigate}
+                        myVerifiedNick={myVerifiedNick}
                     />
                 );
             case ViewState.MARKET:
                 return (
                     <MarketTable
-                        items={marketData}
+                        data={marketData}
                         referencePrices={referencePrices}
-                        language={language}
-                        selectedPlayer={selectedPlayer} // Pass for highlighting
                     />
                 );
             case ViewState.ANALYTICS:
                 return (
                     <ChartsView
                         data={chartData}
-                        language={language}
+                        rawItems={marketData}
                     />
                 );
             case ViewState.PREDICTOR:
@@ -304,13 +303,13 @@ const App: React.FC = () => {
                             <h1 className="text-3xl font-bold text-white mb-2">Machine Learning Predictor</h1>
                             <p className="text-slate-400">AI-powered price estimation engine based on historical trade data.</p>
                         </div>
-                        <MLPredictor />
+                        <MLPredictor data={marketData} />
                     </div>
                 );
             case ViewState.PRICEMANAGER:
                 return role === 'admin' || role === 'moderator' ? (
                     <PriceManager
-                        currentPrices={referencePrices}
+                        prices={referencePrices}
                         onUpdatePrices={handleUpdatePrices}
                         language={language}
                     />
@@ -322,6 +321,7 @@ const App: React.FC = () => {
                     selectedPlayer={selectedPlayer}
                     onPlayerSelect={handlePlayerSelect}
                     onNavigate={handleNavigate}
+                    myVerifiedNick={myVerifiedNick}
                 />;
             case ViewState.ADMIN:
                 return role === 'admin' || role === 'moderator' ? (
@@ -336,6 +336,7 @@ const App: React.FC = () => {
                     selectedPlayer={selectedPlayer}
                     onPlayerSelect={handlePlayerSelect}
                     onNavigate={handleNavigate}
+                    myVerifiedNick={myVerifiedNick}
                 />;
             case ViewState.SETTINGS:
                 return (
@@ -354,6 +355,7 @@ const App: React.FC = () => {
                     selectedPlayer={selectedPlayer}
                     onPlayerSelect={handlePlayerSelect}
                     onNavigate={handleNavigate}
+                    myVerifiedNick={myVerifiedNick}
                 />;
         }
     };
@@ -377,6 +379,9 @@ const App: React.FC = () => {
 
                 {/* Live Trade Ticker (Only show on Dashboard or Market for relevance) */}
                 {currentView !== ViewState.ADMIN && <LiveTradeTicker />}
+
+                {/* Global Setup Trigger (The Gear) */}
+                <LiveTradeSetup />
 
                 {/* Main Content */}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950 p-6 pt-20 relative">

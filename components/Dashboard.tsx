@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2, Shield, ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Activity, Database, DollarSign, Cpu, Upload, Loader2, Shield, ArrowLeft, Trophy, User } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { LogUploader } from './LogProcessor/LogUploader';
 import { Leaderboard } from './gamification/Leaderboard';
@@ -42,6 +42,7 @@ interface DashboardProps {
     selectedPlayer: string | null;
     onPlayerSelect: (player: string | null) => void;
     onNavigate: (view: ViewState) => void;
+    myVerifiedNick?: string | null; // Added prop for verified nick
 }
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon, color, trend = 'stable', trendValue, chartData }) => {
@@ -110,7 +111,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     language,
     selectedPlayer,
     onPlayerSelect,
-    onNavigate
+    onNavigate,
+    myVerifiedNick
 }) => {
     const t = translations[language];
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -218,13 +220,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                 </div>
                 <div className="flex gap-4">
-                    <button
-                        onClick={() => setShowIdentity(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 rounded-lg transition-colors"
-                    >
-                        <Shield className="w-4 h-4" />
-                        Link Identity
-                    </button>
+                    {myVerifiedNick ? (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-inner">
+                                {myVerifiedNick.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-400 font-medium leading-none mb-0.5">Welcome,</span>
+                                <div className="flex items-center gap-1 leading-none">
+                                    <span className="font-bold text-white text-sm">{myVerifiedNick}</span>
+                                    <Shield className="w-3 h-3 text-emerald-400" />
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowIdentity(true)}
+                                className="ml-2 p-1.5 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-400 transition-colors"
+                                title="Manage Identity"
+                            >
+                                <User size={14} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setShowIdentity(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 rounded-lg transition-colors"
+                        >
+                            <Shield className="w-4 h-4" />
+                            Link Identity
+                        </button>
+                    )}
+
                     <div className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border shadow-lg ${stats.source === 'DB'
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-blue-500/10'
                         : 'bg-slate-800 text-slate-400 border-slate-700'}`}>

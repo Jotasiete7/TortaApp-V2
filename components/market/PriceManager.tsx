@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useRef } from 'react';
 import { Trash2, Plus, Upload, Download, Search, RefreshCw } from 'lucide-react';
 import { formatWurmPrice, parsePriceCSV } from '../../services/priceUtils';
@@ -7,15 +7,17 @@ import { DEFAULT_PRICES_CSV } from '../../services/defaultPrices';
 interface PriceManagerProps {
     prices: Record<string, number>;
     onUpdatePrices: (newPrices: Record<string, number>) => void;
+    language?: 'en' | 'pt'; // Added language prop to match usage in App.tsx
 }
 
-export const PriceManager: React.FC<PriceManagerProps> = ({ prices, onUpdatePrices }) => {
+export const PriceManager: React.FC<PriceManagerProps> = ({ prices, onUpdatePrices, language = 'en' }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [newItemName, setNewItemName] = useState('');
     const [newItemPrice, setNewItemPrice] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const priceList = Object.entries(prices)
+    // FIX: Add default empty object if prices is null/undefined to prevent crash
+    const priceList = Object.entries(prices || {})
         .map(([name, price]) => ({ name, price }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
