@@ -360,8 +360,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             )}
 
             {selectedPlayer && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 animate-fade-in">
-                    <div className="bg-slate-900 rounded-xl border border-slate-700 max-w-6xl w-full h-auto max-h-[calc(100vh-3rem)] overflow-y-auto shadow-2xl">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-2 md:p-6 animate-fade-in">
+                    <div className="bg-slate-900 rounded-xl border border-slate-700 max-w-6xl w-full h-auto max-h-[85vh] overflow-y-auto shadow-2xl">
                         <PlayerProfile
                             nick={selectedPlayer}
                             onBack={() => onPlayerSelect(null)}

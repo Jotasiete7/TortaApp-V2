@@ -44,25 +44,25 @@ const BadgeIconMap: Record<string, React.ElementType> = {
 
 // Map Lucide Interface Names -> Emoji Characters for Vivid SVGs
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '???',
-    'Award': '???',
-    'Star': '?',
-    'Heart': '??',
-    'Gift': '??',
-    'Beaker': '??',
-    'TrendingUp': '??',
-    'Trophy': '??',
-    'Flame': '??',
-    'Zap': '?',
-    'Crown': '??',
-    'Diamond': '??',
-    'Swords': '??',
-    'Scroll': '??',
-    'Map': '???',
-    'Compass': '??',
+    'Shield': '🛡️',
+    'Award': '🏆',
+    'Star': '⭐',
+    'Heart': '❤️',
+    'Gift': '🎁',
+    'Beaker': '🧪',
+    'TrendingUp': '📈',
+    'Trophy': '🏆',
+    'Flame': '🔥',
+    'Zap': '⚡',
+    'Crown': '👑',
+    'Diamond': '💎',
+    'Swords': '⚔️',
+    'Scroll': '📜',
+    'Map': '🗺️',
+    'Compass': '🧭',
     'Anchor': '⚓',
-    'Hammer': '??',
-    'Axe': '??',
+    'Hammer': '🔨',
+    'Axe': '🪓',
     'Pickaxe': '⛏️'
 };
 
@@ -207,7 +207,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack, myVe
         return (
             <div className="text-center p-8 text-slate-400">
                 <p>Player not found.</p>
-                {isOwnProfile && ({isOwnProfile && (<button onClick={onBack} className="mt-4 text-amber-500 hover:underline">Go Back</button>
+                <button onClick={onBack} className="mt-4 text-amber-500 hover:underline">Go Back</button>
             </div>
         );
     }
@@ -287,11 +287,11 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack, myVe
                                     <>
                                         <button onClick={() => setShowBadgeSelector(true)} className="ml-4 text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-slate-300 transition-colors">
                                             Edit Badges
-                                        </button>)}
+                                        </button>
                                         <button onClick={() => setShowGamificationRules(true)} className="text-[10px] bg-slate-700/50 hover:bg-slate-700 px-2 py-0.5 rounded text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1 border border-transparent hover:border-slate-600">
                                             <Scroll className="w-3 h-3" />
                                             Rules & Badges
-                                        </button>)}
+                                        </button>
                                     </>
                                 )}
                             </div>

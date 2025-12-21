@@ -226,21 +226,31 @@ export class LiveTradeMonitor {
     }
 
     public async submitTrade(trade: Trade) {
+        console.log('🔄 LiveTrade: Attempting to submit trade...', trade.nick);
+        
         if (!this.currentUserId) {
+            console.log('⚠️ LiveTrade: UserId not set, fetching...');
             const { data } = await supabase.auth.getUser();
             this.currentUserId = data.user?.id || null;
-            if (!this.currentUserId) return;
+            if (!this.currentUserId) {
+                console.error('❌ LiveTrade: No authenticated user found. Trade skipped.');
+                toast.error('Erro: Usuário não autenticado. Trade ignorado.');
+                return;
+            }
         }
 
         if (!this.isOnline) {
+            console.warn('⚠️ LiveTrade: Offline. Queueing trade.');
             this.queueTrade(trade);
             return;
         }
 
         try {
+            console.log('📤 LiveTrade: Sending RPC...');
             await this.submitTradeInternal(trade);
+            console.log('✅ LiveTrade: RPC Success');
         } catch (err) {
-            console.error('Failed to submit trade:', err);
+            console.error('❌ LiveTrade: Failed to submit trade:', err);
             this.queueTrade(trade);
         }
     }
