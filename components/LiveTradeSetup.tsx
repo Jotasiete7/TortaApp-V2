@@ -323,6 +323,16 @@ export const LiveTradeSetup = () => {
         );
     }
 
+    
+    const handleTestDB = () => {
+        if ((window as any).testTrade) {
+            (window as any).testTrade();
+            toast.info('Trade de teste enviado via Console! Verifique F12.');
+        } else {
+            toast.error('Função de teste não encontrada.');
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 rounded-xl p-0 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col h-[650px] max-h-[90vh]">

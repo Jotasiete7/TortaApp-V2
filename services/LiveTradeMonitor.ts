@@ -332,3 +332,20 @@ export class LiveTradeMonitor {
 }
 
 export const liveTradeMonitor = new LiveTradeMonitor();
+
+
+// DEBUG: Expose to window
+(window as any).liveTrade = liveTradeMonitor;
+(window as any).testTrade = () => {
+    console.log('🧪 Sending TEST trade...');
+    liveTradeMonitor.submitTrade({
+        timestamp: new Date().toISOString(),
+        nick: 'TEST_USER',
+        message: 'WTS Test Item - 100g',
+        type: 'WTS',
+        item: 'Test Item',
+        price: '100g',
+        server: 'Cadence',
+        raw: '{}'
+    });
+};

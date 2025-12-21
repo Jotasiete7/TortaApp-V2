@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+import { TradeUploader } from './services/tradeUploader';
 ﻿import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -243,7 +245,16 @@ const App: React.FC = () => {
         try {
             const parser = new FileParser();
             const items = await parser.parseFile(file);
+            
             setMarketData(items);
+            
+            // 🚀 MANUAL UPLOAD TRIGGER
+            toast.promise(TradeUploader.uploadTrades(items), {
+                loading: 'Salvando trade logs no banco de dados...',
+                success: (data) => `Upload concluído! Salvos: ${data.success}, Erros: ${data.errors}`,
+                error: 'Erro ao salvar logs no banco.'
+            });
+    
             setDataSource('FILE');
 
             // Generate chart data from the parsed items
