@@ -7,7 +7,8 @@ describe('AlertService', () => {
         id: '1',
         term: 'Casket',
         enabled: true,
-        sound: 'notification'
+        sound: 'notification',
+        tradeTypes: [] // Added to satisfy interface
     };
 
     describe('checkAlerts - Keywords', () => {

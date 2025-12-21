@@ -3,7 +3,13 @@ import { Volume2, VolumeX, Sparkles, Monitor, Bell } from 'lucide-react';
 import { SoundService } from '../services/SoundService';
 import { AlertsManager } from './AlertsManager';
 
-export const UserSettings: React.FC = () => {
+interface UserSettingsProps {
+    user?: any;
+    myVerifiedNick?: string | null;
+    role?: string;
+}
+
+export const UserSettings: React.FC<UserSettingsProps> = ({ user, myVerifiedNick, role }) => {
     // Local state for UI feedback, but backing is SoundService/LocalStorage ideally
     const [volume, setVolume] = useState(0.5);
     const [isMuted, setIsMuted] = useState(false);
@@ -121,4 +127,3 @@ export const UserSettings: React.FC = () => {
         </div>
     );
 };
-

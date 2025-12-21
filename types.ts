@@ -1,5 +1,4 @@
-﻿
-// Data Models based on the implied Python structure
+﻿// Data Models based on the implied Python structure
 export interface MarketItem {
     id: string;
     itemId: string; // Canonical ID (e.g. 'sleep_powder')
@@ -9,7 +8,7 @@ export interface MarketItem {
     rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic';
     price: number; // Normalized in COPPER (Unit Price: Total / Qty)
     quantity: number; // The bulk amount (e.g. 1000 for "1k stone")
-    orderType: 'WTB' | 'WTS' | 'UNKNOWN';
+    orderType: 'WTB' | 'WTS' | 'UNKNOWN' | 'WTT';
     seller: string;
     location: string;
     timestamp: string | number; // Updated to support both ISO string (Live) and Epoch (Parser)
@@ -131,6 +130,19 @@ export interface HeatmapDataPoint {
     date: string;
     count: number;
     avgPrice: number;
+}
+
+export interface ItemHistoryPoint {
+    date: string;
+    avgPrice: number;
+    minPrice: number;
+    maxPrice: number;
+    volume: number;
+}
+
+export interface PriceDistributionPoint {
+    range: string;
+    count: number;
 }
 
 // Alerts Types

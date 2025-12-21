@@ -263,6 +263,7 @@ export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
                         orderType: (rawText ? (rawText.toLowerCase().startsWith('wtb') ? 'WTB' : 'WTS') : 'UNKNOWN'),
                         rarity: r.rarity || 'Common',
                         material: 'Unknown',
+                        location: 'Unknown', // Required by MarketItem
                         searchableText: ((canonicalName) + ' ' + (safeSeller) + ' ' + (r.rarity || 'Common')).toLowerCase()
                     };
                 });

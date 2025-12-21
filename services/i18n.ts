@@ -1,5 +1,4 @@
-﻿
-export type Language = 'en' | 'pt';
+﻿export type Language = 'en' | 'pt';
 
 export const translations = {
   en: {
@@ -31,6 +30,10 @@ export const translations = {
     mlReady: 'ML Ready',
     noData: 'No Data',
     
+    // Upload Section
+    uploadLog: 'Upload Log File',
+    uploadLogDesc: 'Upload your Wurm Online console log to analyze trade data.',
+
     // Settings
     appSettings: 'Application Settings',
     language: 'Language / Idioma',
@@ -69,6 +72,10 @@ export const translations = {
     mlReady: 'IA Pronta',
     noData: 'Sem Dados',
     
+    // Upload Section
+    uploadLog: 'Carregar Arquivo de Log',
+    uploadLogDesc: 'Carregue seu log do console Wurm Online para analisar dados de troca.',
+
     // Settings
     appSettings: 'Configurações do Aplicativo',
     language: 'Language / Idioma',

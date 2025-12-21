@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { MarketTable } from './components/market/MarketTable';
@@ -406,6 +406,7 @@ const App: React.FC = () => {
             {showLevelUp && (
                 <LevelUpOverlay
                     level={newLevel}
+                    show={true}
                     onClose={() => setShowLevelUp(false)}
                 />
             )}

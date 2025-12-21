@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 import { MarketItem } from '../types';
 import { LEVELS, XP_PER_TRADE } from '../constants/gamification';
 
@@ -24,14 +24,26 @@ export interface PlayerStatsAdvanced extends PlayerStats {
     xp: number;
     level: number;
     user_id?: string;
+    
+    // Additional fields returned by implementation
+    avg_price: number;
+    total_volume: number;
+    unique_items: number;
+    favorite_items: string[];
 }
 
 export interface PlayerLog {
     id: string;
-    trade_timestamp_utc: string;
+    trade_timestamp_utc: string; // Enriched Log uses this
     trade_type: string;
     message: string;
     server: string;
+    
+    // Additional fields for Frontend Grid
+    nick: string;
+    item_name: string;
+    price: number;
+    timestamp?: string; // Legacy support or alias
 }
 
 export interface ActivityPoint {
@@ -44,10 +56,6 @@ export interface GlobalStats {
     items_indexed: number;
     avg_price: number;
     wts_count: number;
-    wtb_count: number;
-    wtb_count: number;
-    wts_count: number;
-    wtb_count: number;
     wtb_count: number;
 }
 
@@ -171,6 +179,8 @@ export const IntelligenceService = {
                 first_seen: logs[logs.length - 1]?.trade_timestamp_utc || new Date().toISOString(),
                 last_seen: logs[0]?.trade_timestamp_utc || new Date().toISOString(),
                 favorite_items: [],
+                pc_count: 0,
+                fav_server: logs[0]?.server || 'Unknown',
                 // New Gamification Fields
                 xp: xp,
                 level: levelData ? levelData.level : 1,
@@ -202,7 +212,9 @@ export const IntelligenceService = {
                 price: log.price || 0,
                 trade_type: log.trade_type || 'UNKNOWN',
                 server: log.server || 'Unknown',
-                timestamp: log.trade_timestamp_utc
+                trade_timestamp_utc: log.trade_timestamp_utc,
+                timestamp: log.trade_timestamp_utc, // Alias for compatibility
+                message: log.message || ''
             }));
         } catch (error) {
             console.error('Error in getPlayerLogs:', error);
