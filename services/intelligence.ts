@@ -1,4 +1,4 @@
-﻿import { supabase } from './supabase';
+import { supabase } from './supabase';
 import { MarketItem } from '../types';
 import { LEVELS, XP_PER_TRADE } from '../constants/gamification';
 
@@ -24,7 +24,7 @@ export interface PlayerStatsAdvanced extends PlayerStats {
     xp: number;
     level: number;
     user_id?: string;
-    
+
     // Additional fields returned by implementation
     avg_price: number;
     total_volume: number;
@@ -38,7 +38,7 @@ export interface PlayerLog {
     trade_type: string;
     message: string;
     server: string;
-    
+
     // Additional fields for Frontend Grid
     nick: string;
     item_name: string;
@@ -108,18 +108,30 @@ const extractQL = (msg: string): string => {
 
 export const IntelligenceService = {
     getGlobalStats: async (): Promise<GlobalStats | null> => {
+        if (!supabase) {
+            console.error('❌ Supabase client not initialized in getGlobalStats');
+            return null;
+        }
         const { data, error } = await supabase.rpc('get_global_stats');
         if (error) { console.error('Error fetching global stats:', error); return null; }
         return data && data.length > 0 ? data[0] : null;
     },
 
     getTopTraders: async (limit: number = 10): Promise<TraderProfile[]> => {
+        if (!supabase) {
+            console.error('❌ Supabase client not initialized in getTopTraders');
+            return [];
+        }
         const { data, error } = await supabase.rpc('get_top_traders', { limit_count: limit });
         if (error) { console.error('Error fetching top traders:', error); return []; }
         return data || [];
     },
 
     getPlayerStats: async (nick: string): Promise<PlayerStats | null> => {
+        if (!supabase) {
+            console.error('❌ Supabase client not initialized in getPlayerStats');
+            return null;
+        }
         const { data, error } = await supabase.rpc('get_player_stats', { player_nick: nick });
         if (error) { console.error('Error fetching player stats:', error); return null; }
         return data && data.length > 0 ? data[0] : null;
@@ -127,6 +139,11 @@ export const IntelligenceService = {
 
     getPlayerStatsAdvanced: async (nick: string): Promise<PlayerStatsAdvanced | null> => {
         try {
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized in getPlayerStatsAdvanced');
+                return null;
+            }
+
             // Query trade_logs directly to calculate stats
             const { data: logs, error } = await supabase
                 .from('trade_logs')
@@ -170,7 +187,7 @@ export const IntelligenceService = {
 
             return {
                 nick: nick,
-                total: totalTrades, 
+                total: totalTrades,
                 wts_count: wtsCount,
                 wtb_count: wtbCount,
                 avg_price: avgPrice,
@@ -191,8 +208,14 @@ export const IntelligenceService = {
             return null;
         }
     },
+
     getPlayerLogs: async (nick: string, limit: number = 50, offset: number = 0): Promise<PlayerLog[]> => {
         try {
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized in getPlayerLogs');
+                return [];
+            }
+
             const { data, error } = await supabase
                 .from('trade_logs')
                 .select('*')
@@ -223,18 +246,68 @@ export const IntelligenceService = {
     },
 
     getPlayerActivity: async (nick: string): Promise<ActivityPoint[]> => {
-        const { data, error } = await supabase.rpc('get_player_activity_chart', { target_nick: nick });
-        if (error) { console.error('Error fetching player activity:', error); return []; }
-        return data || [];
+        // FALLBACK: Client-side aggregation to avoid persistent RPC 404/PGRST202 errors
+        // Fetch raw logs for the last 90 days (limit 2000 to be safe on bandwidth)
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+        try {
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized in getPlayerActivity');
+                return [];
+            }
+
+            const { data, error } = await supabase
+                .from('trade_logs')
+                .select('trade_timestamp_utc')
+                .ilike('nick', nick)
+                .gte('trade_timestamp_utc', ninetyDaysAgo.toISOString())
+                .limit(2000);
+
+            if (error) {
+                console.error('Error fetching player activity (client-side):', error);
+                return [];
+            }
+
+            if (!data || data.length === 0) return [];
+
+            // Client-side Grouping by Day
+            const activityMap = new Map<string, number>();
+
+            data.forEach(log => {
+                const dateStr = new Date(log.trade_timestamp_utc).toISOString().split('T')[0]; // YYYY-MM-DD
+                activityMap.set(dateStr, (activityMap.get(dateStr) || 0) + 1);
+            });
+
+            // Convert map to array and sort
+            const activityArray: ActivityPoint[] = Array.from(activityMap.entries()).map(([date, count]) => ({
+                activity_date: date,
+                trade_count: count
+            }));
+
+            return activityArray.sort((a, b) => a.activity_date.localeCompare(b.activity_date));
+
+        } catch (err) {
+            console.error("Unexpected error in getPlayerActivity client-fallback", err);
+            return [];
+        }
     },
 
     getTradeLogs: async (limit: number = 50000): Promise<any[]> => {
+        if (!supabase) {
+            console.error('❌ Supabase client not initialized in getTradeLogs');
+            return [];
+        }
         const { data, error } = await supabase.rpc('get_trade_logs_for_market', { limit_count: limit });
         if (error) { console.error('Error fetching trade logs:', error); return []; }
         return data || [];
     },
 
     getDbUsage: async (): Promise<DbUsageStats | null> => {
+        if (!supabase) {
+            console.error('❌ Supabase client not initialized in getDbUsage');
+            return null;
+        }
         const { data, error } = await supabase.rpc('get_db_usage');
         if (error) { console.error('Error fetching DB usage:', error); return null; }
         return data;
@@ -247,37 +320,40 @@ export const IntelligenceService = {
         let supplyMap = new Map<string, { vol: number, prices: number[], timestamps: number[], avgPrice: number, absChange: number }>();
 
         // 1. Fetch SERVER-SIDE Aggregated Data (Optimized RPC)
-        try {
-            let windowHours = 24;
-            if (window === '4h') windowHours = 4;
-            if (window === '12h') windowHours = 12;
-            if (window === '7d') windowHours = 168;
-            if (window === '30d') windowHours = 720;
+        if (supabase) {
+            try {
+                let windowHours = 24;
+                if (window === '4h') windowHours = 4;
+                if (window === '12h') windowHours = 12;
+                if (window === '7d') windowHours = 168;
+                if (window === '30d') windowHours = 720;
 
-            const { data: remoteData, error } = await supabase.rpc('get_market_trends_optimized', {
-                window_hours: windowHours
-            });
-
-            if (error) throw error;
-
-            if (remoteData) {
-                remoteData.forEach((row: any) => {
-                    const key = row.ql ? `${row.name} (${row.ql})` : row.name;
-                    const item = {
-                        vol: row.volume,
-                        prices: [], // Pre-aggregated doesn't give array, but gives necessary stats
-                        timestamps: [],
-                        avgPrice: row.avg_price,
-                        absChange: row.price_change || row.volatility // Use change or volat proxy
-                    };
-
-                    if (row.trade_type === 'WTB') demandMap.set(key, item);
-                    else if (row.trade_type === 'WTS') supplyMap.set(key, item);
+                const { data: remoteData, error } = await supabase.rpc('get_market_trends_optimized', {
+                    window_hours: windowHours
                 });
+
+                if (error) throw error;
+
+                if (remoteData) {
+                    remoteData.forEach((row: any) => {
+                        const key = row.ql ? `${row.name} (${row.ql})` : row.name;
+                        const item = {
+                            vol: row.volume,
+                            prices: [], // Pre-aggregated doesn't give array, but gives necessary stats
+                            timestamps: [],
+                            avgPrice: row.avg_price,
+                            absChange: row.price_change || row.volatility // Use change or volat proxy
+                        };
+
+                        if (row.trade_type === 'WTB') demandMap.set(key, item);
+                        else if (row.trade_type === 'WTS') supplyMap.set(key, item);
+                    });
+                }
+            } catch (e) {
+                console.warn("Failed to fetch optimized trends, falling back to local only or empty", e);
             }
-        } catch (e) {
-            console.warn("Failed to fetch optimized trends, falling back to local only or empty", e);
         }
+
         // 2. Process LOCAL Data (Client-Side Aggregation) - Only if file exists
         if (localData && localData.length > 0) {
             const now = new Date();
@@ -297,19 +373,10 @@ export const IntelligenceService = {
                 const qlBucket = item.quality ? `${Math.floor(item.quality / 10) * 10}ql+` : '';
                 const key = qlBucket ? `${item.name} (${qlBucket})` : item.name;
 
-                // Merge logic: If exists (from DB), ADD volume/stats. If new, create.
-                // Note: Merging Avg and AbsChange accurately is complex. Simple weighted avg or overwrite.
-
                 const processMap = (map: Map<string, any>, type: string) => {
                     const existing = map.get(key) || { vol: 0, prices: [], timestamps: [] };
-
-                    // Simple addition for hybrid demo
                     existing.vol += 1;
                     existing.prices.push(item.price);
-
-                    // Re-calc for local items
-                    // Ideally we would mix with DB stats, but for simplicity, local "boosts" volume
-                    // and we trust DB price stats unless DB is empty.
 
                     if (!map.has(key)) {
                         map.set(key, existing);
@@ -324,30 +391,22 @@ export const IntelligenceService = {
         // 3. Format Output
         const buildTrendItems = (map: Map<string, any>): MarketTrendItem[] => {
             return Array.from(map.entries())
-                // Filter invalid items (Garbage Collection)
                 .filter(([name]) => {
                     const lower = name.toLowerCase();
-                    // Is Unknown?
                     if (lower === 'unknown' || lower.includes('unknown')) return false;
-                    // Is it likely a chat shout? (Starts with @)
                     if (lower.startsWith('@') || lower.startsWith('!')) return false;
-                    // Is it just numbers?
                     if (/^\d+$/.test(lower)) return false;
-                    // Is it too short to be real?
                     if (lower.length < 3) return false;
                     return true;
                 })
                 .map(([name, data]) => {
-                    // If data came from RPC, it has avgPrice directly. If local, it has prices[].
                     let finalAvg = data.avgPrice;
-                    let finalPrice = data.avgPrice; // Fallback
+                    let finalPrice = data.avgPrice;
                     let change = data.absChange || 0;
 
                     if (data.prices && data.prices.length > 0) {
                         finalPrice = data.prices[data.prices.length - 1];
                         const localAvg = data.prices.reduce((a: number, b: number) => a + b, 0) / data.prices.length;
-                        // If we have both, maybe avg them? Or prefer DB? 
-                        // Let's defer to DB if volume is high, else local.
                         if (!finalAvg) finalAvg = localAvg;
                     }
 
@@ -357,7 +416,7 @@ export const IntelligenceService = {
                         price: finalPrice || 0,
                         avgPrice: finalAvg || 0,
                         absoluteChange: change,
-                        change: 0 // Percentage omitted for now or calculated if needed
+                        change: 0
                     };
                 });
         };
@@ -375,13 +434,9 @@ export const IntelligenceService = {
         };
     },
 
-    // --- SPARKLINE DATA (Still Raw for Granularity, or Optimized if new RPC added) ---
-    // For now, keeping legacy logic or update if we had an RPC for charts.
+    // --- SPARKLINE DATA ---
     getSparklineData: async (metric: 'volume' | 'count' | 'avg_price', hours: number = 24): Promise<number[]> => {
-        // Optimized: Could use a database GROUP BY time bucket.
-        // Falling back to raw logs for chart fidelity until migration Phase 3.
         const logs = await IntelligenceService.getTradeLogs(2000);
-        // ... (Existing bucket logic) ...
         const now = new Date();
         const cutoff = new Date();
         cutoff.setHours(now.getHours() - hours);
@@ -429,7 +484,11 @@ export const IntelligenceService = {
     // --- ARBITRAGE OPPORTUNITIES (Optimized) ---
     getArbitrageOpportunities: async (): Promise<ArbitrageOpportunity[]> => {
         try {
-            // Use the NEW SQL RPC
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized in getArbitrageOpportunities');
+                return [];
+            }
+
             const { data, error } = await supabase.rpc('get_arbitrage_opportunities_sql');
             if (error) throw error;
 

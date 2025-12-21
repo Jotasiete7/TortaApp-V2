@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Trophy, TrendingUp, User, Activity, Calendar,
     ShoppingCart, Tag, Hash, Clock, ArrowLeft, Server,
@@ -25,6 +25,7 @@ import {
 interface PlayerProfileProps {
     nick: string;
     onBack: () => void;
+    myVerifiedNick?: string | null;
 }
 
 // Interfaces for History
@@ -43,26 +44,26 @@ const BadgeIconMap: Record<string, React.ElementType> = {
 
 // Map Lucide Interface Names -> Emoji Characters for Vivid SVGs
 const BADGE_TO_EMOJI: Record<string, string> = {
-    'Shield': '🛡️',
-    'Award': '🎖️',
-    'Star': '⭐',
-    'Heart': '❤️',
-    'Gift': '🎁',
-    'Beaker': '🧪',
-    'TrendingUp': '📈',
-    'Trophy': '🏆',
-    'Flame': '🔥',
-    'Zap': '⚡',
-    'Crown': '👑',
-    'Diamond': '💎',
-    'Swords': '⚔️',
-    'Scroll': '📜',
-    'Map': '🗺️',
-    'Compass': '🧭',
-    'Anchor': 'âš“',
-    'Hammer': '🔨',
-    'Axe': '🪓',
-    'Pickaxe': 'â›ï¸'
+    'Shield': '???',
+    'Award': '???',
+    'Star': '?',
+    'Heart': '??',
+    'Gift': '??',
+    'Beaker': '??',
+    'TrendingUp': '??',
+    'Trophy': '??',
+    'Flame': '??',
+    'Zap': '?',
+    'Crown': '??',
+    'Diamond': '??',
+    'Swords': '??',
+    'Scroll': '??',
+    'Map': '???',
+    'Compass': '??',
+    'Anchor': '⚓',
+    'Hammer': '??',
+    'Axe': '??',
+    'Pickaxe': '⛏️'
 };
 
 // VIBRANT BADGE STYLES
@@ -82,7 +83,7 @@ const BADGE_STYLES: Record<string, string> = {
 
 // LEVELING CONSTANTS (now imported from constants/gamification.ts)
 
-export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) => {
+export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack, myVerifiedNick }) => {
     const [stats, setStats] = useState<PlayerStatsAdvanced | null>(null);
     const [logs, setLogs] = useState<PlayerLog[]>([]);
     const [activity, setActivity] = useState<ActivityPoint[]>([]);
@@ -206,7 +207,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
         return (
             <div className="text-center p-8 text-slate-400">
                 <p>Player not found.</p>
-                <button onClick={onBack} className="mt-4 text-amber-500 hover:underline">Go Back</button>
+                {isOwnProfile && ({isOwnProfile && (<button onClick={onBack} className="mt-4 text-amber-500 hover:underline">Go Back</button>
             </div>
         );
     }
@@ -286,11 +287,11 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                                     <>
                                         <button onClick={() => setShowBadgeSelector(true)} className="ml-4 text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-slate-300 transition-colors">
                                             Edit Badges
-                                        </button>
+                                        </button>)}
                                         <button onClick={() => setShowGamificationRules(true)} className="text-[10px] bg-slate-700/50 hover:bg-slate-700 px-2 py-0.5 rounded text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1 border border-transparent hover:border-slate-600">
                                             <Scroll className="w-3 h-3" />
                                             Rules & Badges
-                                        </button>
+                                        </button>)}
                                     </>
                                 )}
                             </div>
@@ -310,7 +311,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
                             </div>
                             {/* XP Tooltip on Hover */}
                             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 text-xs px-2 py-1 rounded border border-slate-700 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
-                                {currentXP} / {isMaxLevel ? 'âˆž' : nextLevelXP} XP ({Math.round(progressPercent)}%)
+                                {currentXP} / {isMaxLevel ? '∞' : nextLevelXP} XP ({Math.round(progressPercent)}%)
                             </div>
                         </div>
 
@@ -541,3 +542,4 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ nick, onBack }) =>
         </div>
     );
 };
+

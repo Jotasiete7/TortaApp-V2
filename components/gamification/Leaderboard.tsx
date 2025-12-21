@@ -18,8 +18,11 @@ const RankingCard = ({ title, icon: Icon, children, color }: any) => (
     </div>
 );
 
-const RankItem = ({ rank, nick, value, subValue, badge }: any) => (
-    <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+const RankItem = ({ rank, nick, value, subValue, badge, onClick }: any) => (
+    <div
+        className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-indigo-500 hover:bg-slate-800 transition-all cursor-pointer group"
+        onClick={() => onClick?.(nick)}
+    >
         <div className="flex items-center gap-3">
             <div className={`
                 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
@@ -31,7 +34,7 @@ const RankItem = ({ rank, nick, value, subValue, badge }: any) => (
                 {rank}
             </div>
             <div>
-                <span className="text-white font-medium block">{nick}</span>
+                <span className="text-white font-medium block group-hover:text-indigo-400 transition-colors">{nick}</span>
                 {badge && <span className="text-xs text-slate-500">{badge}</span>}
             </div>
         </div>
@@ -44,7 +47,11 @@ const RankItem = ({ rank, nick, value, subValue, badge }: any) => (
 
 // ==================== MAIN COMPONENT ====================
 
-export const Leaderboard = () => {
+interface LeaderboardProps {
+    onPlayerSelect?: (nick: string) => void;
+}
+
+export const Leaderboard: React.FC<LeaderboardProps> = ({ onPlayerSelect }) => {
     const [activeTraders, setActiveTraders] = useState<MostActiveTrader[]>([]);
     const [activeSellers, setActiveSellers] = useState<ActiveSeller[]>([]);
     const [activeBuyers, setActiveBuyers] = useState<ActiveBuyer[]>([]);
@@ -77,6 +84,15 @@ export const Leaderboard = () => {
             console.error("Failed to load rankings", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePlayerClick = (nick: string) => {
+        console.log('🎯 Player clicked:', nick);
+        if (onPlayerSelect) {
+            onPlayerSelect(nick);
+        } else {
+            console.warn('⚠️ onPlayerSelect not provided to Leaderboard');
         }
     };
 
@@ -136,6 +152,7 @@ export const Leaderboard = () => {
                                 value={t.wts_count}
                                 subValue="WTS Posts"
                                 badge="📜 Trader"
+                                onClick={handlePlayerClick}
                             />
                         ))}
                     </RankingCard>
@@ -150,6 +167,7 @@ export const Leaderboard = () => {
                                 value={s.wts_count}
                                 subValue="Listings"
                                 badge="📦 Merchant"
+                                onClick={handlePlayerClick}
                             />
                         ))}
                     </RankingCard>
@@ -164,6 +182,7 @@ export const Leaderboard = () => {
                                 value={b.wtb_count}
                                 subValue="Requests"
                                 badge="💰 Investor"
+                                onClick={handlePlayerClick}
                             />
                         ))}
                     </RankingCard>
@@ -178,6 +197,7 @@ export const Leaderboard = () => {
                                 value={c.checks}
                                 subValue="Checks"
                                 badge="🔍 Expert"
+                                onClick={handlePlayerClick}
                             />
                         ))}
                     </RankingCard>

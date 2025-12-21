@@ -79,8 +79,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon,
 
             {/* SPARKLINE CHART */}
             {chartData && chartData.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 pointer-events-none fade-in-up overflow-hidden">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 pointer-events-none overflow-hidden">
+                    <ResponsiveContainer width="99%" height={64} minWidth={0}>
                         <AreaChart data={chartData.map((v, i) => ({ i, v }))}>
                             <defs>
                                 <linearGradient id={`gradient-${color}`} x1="0" y1="0" x2="0" y2="1">
@@ -305,7 +305,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {/* 3. LEADERBOARD (Full Width, Collapsed by default) */}
             <div className="mt-6 mb-2">
-                <Leaderboard />
+                <Leaderboard onPlayerSelect={onPlayerSelect} />
             </div>
 
             {/* 4. SHOUTS (Full Width Line) */}
@@ -361,10 +361,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {selectedPlayer && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 animate-fade-in">
-                    <div className="bg-slate-900 rounded-xl border border-slate-700 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                    <div className="bg-slate-900 rounded-xl border border-slate-700 max-w-6xl w-full h-auto max-h-[calc(100vh-3rem)] overflow-y-auto shadow-2xl">
                         <PlayerProfile
-                            playerNick={selectedPlayer}
-                            onClose={() => onPlayerSelect(null)}
+                            nick={selectedPlayer}
+                            onBack={() => onPlayerSelect(null)}
                         />
                     </div>
                 </div>
