@@ -1,17 +1,13 @@
 ﻿import { useMemo } from 'react';
-import { MarketItem, VolatilityMetrics, SellerInsights } from '../types';
+import { MarketItem, VolatilityMetrics, SellerInsights, ItemHistoryPoint, PriceDistributionPoint, CandlestickDataPoint, HeatmapDataPoint } from '../types';
 import {
-    getDistinctMarketItems, // Updated import
+    getDistinctMarketItems,
     getItemHistory,
     getPriceDistribution,
     getCandlestickData,
     getSupplyHeatmapData,
     convertLiveTradeToMarketItem,
-    LiveTrade,
-    ItemHistoryPoint,
-    PriceDistributionPoint,
-    CandlestickDataPoint,
-    HeatmapDataPoint
+    LiveTrade
 } from '../services/dataUtils';
 import { calculateVolatility } from '../services/volatilityCalculator';
 import { getTopSellers } from '../services/sellerAnalytics';
@@ -88,21 +84,6 @@ export const useChartsEngine = ({
         if (!selectedItemId) return [];
         return getSupplyHeatmapData(combinedItems, selectedItemId);
     }, [selectedItemId, combinedItems]);
-
-    // Note: Volatility and Sellers might need updating to support ID too. 
-    // Assuming they work on the filtered subset passed to them?
-    // Wait, "calculateVolatility" takes (items, itemName). I need to check if it filters internally.
-    // If it filters by name, it will break.
-    // Ideally, I should refactor them too, but for now I can pre-filter the items passed to them?
-    // No, standard is passing all items + ID.
-    // Let's assume for now I need to update them OR I pass filtered list.
-    // Let's check `calculateVolatility` signature later.
-    // For now, I'll pass the ID as the second arg, assuming I'd fix the service or it handles it.
-    // Actually, to be safe, let's pre-filter for these two if they are fragile, 
-    // OR just pass the ID and expect them to be updated/compatible.
-    // `sellerAnalytics.ts` and `volatilityCalculator.ts` likely need similar updates.
-    // I will add TODOs or handle it by passing ID and ensuring they ignore name differences.
-    // Let's assume I will update `calculateVolatility` and `getTopSellers` to accept ID.
 
     const volatilityMetrics = useMemo(() => {
         if (!selectedItemId) return null;

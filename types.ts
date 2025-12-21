@@ -132,3 +132,26 @@ export interface HeatmapDataPoint {
     count: number;
     avgPrice: number;
 }
+
+// Alerts Types
+export interface TradeAlert {
+    id: string;
+    term: string;
+    tradeTypes: ('WTB' | 'WTS' | 'WTT')[];
+    maxPrice?: number | null;
+    minPrice?: number | null;
+    sound?: string;
+    enabled: boolean;
+}
+
+export interface FiredAlert {
+    id: string;
+    term: string;
+    trade: {
+        timestamp: string;
+        nick: string;
+        message: string;
+        type?: 'WTB' | 'WTS' | 'WTT';
+    };
+    firedAt: number;
+}

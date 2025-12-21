@@ -117,10 +117,10 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
                                         <h4 className="text-lg font-semibold text-purple-400 mb-2">4. Clique em "Calculate Fair Price"</h4>
                                         <p className="text-slate-300 mb-2">O sistema vai:</p>
                                         <ul className="space-y-1 text-slate-300 text-sm">
-                                            <li>âœ… Buscar todas as negociações do item</li>
-                                            <li>âœ… Remover outliers (preços extremos)</li>
-                                            <li>âœ… Calcular estatísticas (mediana, quartis)</li>
-                                            <li>âœ… Apresentar o valor justo</li>
+                                            <li>✅ Buscar todas as negociações do item</li>
+                                            <li>✅ Remover outliers (preços extremos)</li>
+                                            <li>✅ Calcular estatísticas (mediana, quartis)</li>
+                                            <li>✅ Apresentar o valor justo</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -146,7 +146,7 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
                                         <p className="text-slate-300 mb-2">Quão confiável é a previsão (0-100%):</p>
                                         <ul className="space-y-1 text-sm text-slate-300">
                                             <li>🎯 <strong>&gt;70%</strong>: Alta confiança - pode confiar no preço</li>
-                                            <li>🛡️strong>50-70%</strong>: Confiança moderada - use com cautela</li>
+                                            <li>🛡️ <strong>50-70%</strong>: Confiança moderada - use com cautela</li>
                                             <li>🎯 <strong>&lt;50%</strong>: Baixa confiança - poucos dados ou muito volátil</li>
                                         </ul>
                                     </div>
@@ -178,7 +178,7 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
 
                         {activeTab === 'strategies' && (
                             <div className="space-y-6">
-                                <h3 className="text-2xl font-bold text-purple-400">🛡️stratégias de Trading</h3>
+                                <h3 className="text-2xl font-bold text-purple-400">🛡️ Estratégias de Trading</h3>
 
                                 <div className="space-y-4">
                                     <div className="bg-slate-800/50 rounded-xl p-5 border border-emerald-700/50">
@@ -193,7 +193,7 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
                                             <p className="text-xs text-slate-400 mb-1">Exemplo:</p>
                                             <p className="text-xs text-slate-300">
                                                 Fair Value: 67s • Buy Zone: &lt;45s<br />
-                                                Você compra por 40s â†’ Revende por 67s = <strong className="text-emerald-400">27s de lucro</strong>
+                                                Você compra por 40s → Revende por 67s = <strong className="text-emerald-400">27s de lucro</strong>
                                             </p>
                                         </div>
                                     </div>
@@ -203,13 +203,13 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
                                         <ol className="space-y-2 text-slate-300 text-sm list-decimal list-inside">
                                             <li>Use o <strong>Bulk Selector</strong> (aparece se houver lotes)</li>
                                             <li>Compare preço unitário de lotes vs. singles</li>
-                                            <li>Compre o lote com <strong>melhor valor</strong> (indicado com 🛡️/li>
+                                            <li>Compre o lote com <strong>melhor valor</strong> (indicado com 🛡️)</li>
                                             <li>Revenda em singles se o multiplicador for favorável</li>
                                         </ol>
                                         <div className="mt-3 p-3 bg-slate-900/50 rounded border border-slate-700">
                                             <p className="text-xs text-slate-400 mb-1">Exemplo:</p>
                                             <p className="text-xs text-slate-300">
-                                                Single: 10s/unidade • Bulk 50x: 8s/unidade (🎯br />
+                                                Single: 10s/unidade • Bulk 50x: 8s/unidade (🎯)<br />
                                                 Compre bulk, revenda singles = <strong className="text-amber-400">2s de lucro por unidade</strong>
                                             </p>
                                         </div>
@@ -220,20 +220,20 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
 
                         {activeTab === 'warnings' && (
                             <div className="space-y-6">
-                                <h3 className="text-2xl font-bold text-rose-400">âš ï¸ Limitações e Avisos</h3>
+                                <h3 className="text-2xl font-bold text-rose-400">⚠️ Limitações e Avisos</h3>
 
                                 <div className="bg-rose-900/20 rounded-xl p-5 border border-rose-700/50">
-                                    <h4 className="text-lg font-semibold text-rose-400 mb-3">O que o ML Predictor NÃƒO faz:</h4>
+                                    <h4 className="text-lg font-semibold text-rose-400 mb-3">O que o ML Predictor NÃO faz:</h4>
                                     <ul className="space-y-2 text-slate-300 text-sm">
-                                        <li>âŒ Não prevê eventos futuros (updates do jogo, etc.)</li>
-                                        <li>âŒ Não garante que você vai encontrar itens naquele preço</li>
-                                        <li>âŒ Não considera sazonalidade ou tendências de longo prazo</li>
-                                        <li>âŒ Não analisa oferta/demanda em tempo real</li>
+                                        <li>❌ Não prevê eventos futuros (updates do jogo, etc.)</li>
+                                        <li>❌ Não garante que você vai encontrar itens naquele preço</li>
+                                        <li>❌ Não considera sazonalidade ou tendências de longo prazo</li>
+                                        <li>❌ Não analisa oferta/demanda em tempo real</li>
                                     </ul>
                                 </div>
 
                                 <div className="bg-amber-900/20 rounded-xl p-5 border border-amber-700/50">
-                                    <h4 className="text-lg font-semibold text-amber-400 mb-3">Quando NÃƒO confiar:</h4>
+                                    <h4 className="text-lg font-semibold text-amber-400 mb-3">Quando NÃO confiar:</h4>
                                     <ul className="space-y-2 text-slate-300 text-sm">
                                         <li>🎯 Confidence &lt; 50%</li>
                                         <li>🎯 Menos de 10 negociações encontradas</li>
@@ -243,12 +243,12 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
                                 </div>
 
                                 <div className="bg-emerald-900/20 rounded-xl p-5 border border-emerald-700/50">
-                                    <h4 className="text-lg font-semibold text-emerald-400 mb-3">âœ… Boas Práticas:</h4>
+                                    <h4 className="text-lg font-semibold text-emerald-400 mb-3">✅ Boas Práticas:</h4>
                                     <ul className="space-y-2 text-slate-300 text-sm">
-                                        <li>âœ… Use com itens que têm muitas negociações</li>
-                                        <li>âœ… Compare com Trade Master para validar</li>
-                                        <li>âœ… Considere o contexto do mercado (eventos, updates)</li>
-                                        <li>âœ… Use como ferramenta de apoio, não como verdade absoluta</li>
+                                        <li>✅ Use com itens que têm muitas negociações</li>
+                                        <li>✅ Compare com Trade Master para validar</li>
+                                        <li>✅ Considere o contexto do mercado (eventos, updates)</li>
+                                        <li>✅ Use como ferramenta de apoio, não como verdade absoluta</li>
                                     </ul>
                                 </div>
                             </div>
@@ -259,7 +259,7 @@ export const MLHelpModal: React.FC<MLHelpModalProps> = ({ isOpen, onClose }) => 
                 {/* Footer */}
                 <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-between items-center">
                     <p className="text-xs text-slate-500">
-                        🛡️ica: Use o ML Predictor junto com o Charts Engine para análises completas!
+                       💡 Dica: Use o ML Predictor junto com o Charts Engine para análises completas!
                     </p>
                     <button
                         onClick={onClose}

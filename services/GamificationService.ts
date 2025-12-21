@@ -1,4 +1,4 @@
-﻿import { supabase } from './supabase';
+import { supabase } from './supabase';
 import { UserStreak, DailyClaimResult } from '../types';
 import { ACHIEVEMENTS, Achievement } from '../constants/gamification';
 
@@ -35,7 +35,7 @@ export const GamificationService = {
             throw error;
         }
         return data as DailyClaimResult;
-    }
+    },
 
     /**
      * Check user's progress towards achievements
@@ -125,4 +125,3 @@ export const GamificationService = {
         }
     }
 };
-

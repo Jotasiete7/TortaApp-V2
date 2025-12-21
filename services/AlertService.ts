@@ -1,6 +1,6 @@
 ﻿import { sendNotification } from '@tauri-apps/plugin-notification';
 import { SoundService } from './SoundService';
-import { TradeAlert, FiredAlert } from '../types/alerts';
+import { TradeAlert, FiredAlert } from '../types';
 import { Money } from '../src/domain/price/Money'; // Import Money class
 
 interface ParsedTrade {
