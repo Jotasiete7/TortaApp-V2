@@ -163,9 +163,11 @@ export class LiveTradeMonitor {
         }
 
         // 3. Listen for Events
-        await listen<{ timestamp: string, nick: string, message: string }>('trade-event', async (event) => {
+        await listen<{ trades: Array<{ timestamp: string, nick: string, message: string }> }>('trade-batch-event', async (event) => {
             console.log("ðŸ“¨ FRONTEND RECEIVED EVENT:", event);
-            const raw = event.payload;
+            const batch = event.payload;
+            if(!batch.trades) return;
+            for(const raw of batch.trades) {
 
             // NEW: Filter Noise before processing
             if (FileParser.isNoise(raw.message)) {
@@ -222,6 +224,7 @@ export class LiveTradeMonitor {
             }
 
             await this.submitTrade(trade);
+            }
         });
     }
 
