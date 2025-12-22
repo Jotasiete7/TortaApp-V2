@@ -228,17 +228,33 @@ export const IntelligenceService = {
                 return [];
             }
 
-            return (data || []).map(log => ({
-                id: log.id,
-                nick: log.nick,
-                item_name: log.item_name || 'Unknown',
-                price: log.price || 0,
-                trade_type: log.trade_type || 'UNKNOWN',
-                server: log.server || 'Unknown',
-                trade_timestamp_utc: log.trade_timestamp_utc,
-                timestamp: log.trade_timestamp_utc, // Alias for compatibility
-                message: log.message || ''
-            }));
+                        return (data || []).map(log => {
+                // Client-side Fallback Parsing (if DB columns are missing)
+                let finalItemName = log.item_name;
+                let finalPrice = log.price;
+
+                if (!finalItemName || finalItemName === 'Unknown') {
+                    // Try to extract from message
+                    const msg = log.message || '';
+                    // Heuristic: remove price part
+                    const cleaned = msg.replace(/\s*-\s*\d+[gsc].*$/i, '')
+                                     .replace(/^\[\d+:\d+:\d+\]\s*/, '') // Remove timestamp if present
+                                     .trim();
+                    if (cleaned) finalItemName = cleaned;
+                }
+
+                return {
+                    id: log.id,
+                    nick: log.nick,
+                    item_name: finalItemName || 'Unknown',
+                    price: finalPrice || 0,
+                    trade_type: log.trade_type || 'UNKNOWN',
+                    server: log.server || 'Unknown',
+                    trade_timestamp_utc: log.trade_timestamp_utc,
+                    timestamp: log.trade_timestamp_utc, // Alias for compatibility
+                    message: log.message || ''
+                };
+            });
         } catch (error) {
             console.error('Error in getPlayerLogs:', error);
             return [];
