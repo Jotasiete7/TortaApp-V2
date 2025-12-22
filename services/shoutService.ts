@@ -47,9 +47,13 @@ export const ShoutService = {
      */
     async getHistory(userId: string): Promise<any[]> {
         try {
-            const { data, error } = await supabase.rpc('get_user_shout_history', {
-                target_user_id: userId
-            });
+            // PATCH: Use direct query instead of RPC
+            const { data, error } = await supabase
+                .from('ticker_messages')
+                .select('*')
+                .eq('created_by', userId)
+                .order('created_at', { ascending: false })
+                .limit(50);
 
             if (error) throw error;
             return data || [];

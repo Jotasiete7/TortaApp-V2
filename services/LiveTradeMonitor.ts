@@ -341,7 +341,31 @@ export const liveTradeMonitor = new LiveTradeMonitor();
 
 // DEBUG: Expose to window
 (window as any).liveTrade = liveTradeMonitor;
-(window as any).testTrade = () => {
+
+        // DEBUG TOOL: Check latest logs for a nickname from Console
+        (window as any).debugLogs = async (nick: string) => {
+            console.log(`🔍 Checking DB for logs of: ${nick}`);
+            const { data, error } = await supabase
+                .from('trade_logs')
+                .select('*')
+                .ilike('nick', nick)
+                .order('trade_timestamp_utc', { ascending: false })
+                .limit(10);
+                
+            if (error) {
+                console.error('❌ Query Error:', error);
+            } else {
+                console.log('📊 Result:', data);
+                if (data && data.length > 0) {
+                     console.log('🕒 Latest Log Time:', data[0].trade_timestamp_utc);
+                     console.log('📝 Latest Message:', data[0].message);
+                } else {
+                     console.log('⚠️ No logs found for this nick.');
+                }
+            }
+        };
+
+        (window as any).testTrade = () => {
     console.log('🧪 Sending TEST trade...');
     liveTradeMonitor.submitTrade({
         timestamp: new Date().toISOString(),

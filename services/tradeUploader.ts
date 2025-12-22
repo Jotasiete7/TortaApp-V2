@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { supabase } from './supabase';
 import { MarketItem } from '../types';
 
@@ -40,8 +41,28 @@ export const TradeUploader = {
         console.log(`LiveTrade: Preparing ${trades.length} trades for upload...`);
         
         // Process one by one using RPC (same as LiveTradeMonitor)
+        
+        let processedCount = 0;
+        const totalItems = trades.length;
+        const toastId = toast.loading(`Iniciando upload de ${totalItems} itens...`);
+        
         for (const item of trades) {
-            if (!item.seller || !item.name) continue;
+            processedCount++;
+            if (processedCount % 50 === 0) {
+                toast.loading(`Processando: ${processedCount}/${totalItems}`, { id: toastId });
+            }
+            
+            
+            // DEBUG LOGGING
+            if (processedCount <= 5) {
+                console.log(`Processing item ${processedCount}:`, item);
+            }
+            
+            if (!item.seller || !item.name) {
+                console.warn(`❌ Invalid item (No seller/name):`, item);
+                continue;
+            }
+
 
             try {
                 const hash = await generateTradeHash(
@@ -63,13 +84,23 @@ export const TradeUploader = {
                 if (error) {
                     console.error('RPC error:', error);
                     results.errors++;
-                } else if (data?.success) {
-                    if (data.is_duplicate) {
-                        results.duplicates++;
+                } else {
+                    // Start Patch: Handle Array Response
+                    const result = Array.isArray(data) ? data[0] : data;
+                    if (result && (result.success || result.trade_id)) {
+                        if (result.is_duplicate) {
+                             results.duplicates++;
+                        } else {
+                             results.success++;
+                        }
                     } else {
-                        results.success++;
+                        // Fallback logging if success is missing but no error
+                        console.warn('RPC returned no error but success flag is missing:', result);
+                        results.errors++;
                     }
+                    // End Patch
                 }
+            
             } catch (err) {
                 console.error('Upload error:', err);
                 results.errors++;
@@ -82,6 +113,8 @@ export const TradeUploader = {
         window.dispatchEvent(new CustomEvent('tradesUploaded', { 
             detail: { success: results.success, duplicates: results.duplicates, errors: results.errors }
         }));
+        
+        toast.dismiss(toastId);
         return results;
     }
 };
