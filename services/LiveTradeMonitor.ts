@@ -252,8 +252,10 @@ export class LiveTradeMonitor {
             console.log('📤 LiveTrade: Sending RPC...');
             await this.submitTradeInternal(trade);
             console.log('✅ LiveTrade: RPC Success');
+            toast.success('Trade salvo!', { duration: 2000 });
         } catch (err) {
-            console.error('❌ LiveTrade: Failed to submit trade:', err);
+            console.error('❌ LiveTrade: RPC FAILURE:', err);
+            toast.error('Falha no envio (RPC)');
             this.queueTrade(trade);
         }
     }
