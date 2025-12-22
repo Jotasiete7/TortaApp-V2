@@ -243,8 +243,7 @@ const App: React.FC = () => {
     const handleFileUpload = async (file: File) => {
         setIsProcessingFile(true);
         try {
-            const parser = new FileParser();
-            const items = await parser.parseFile(file);
+            const items = await parseTradeFile(file);
             
             setMarketData(items);
             

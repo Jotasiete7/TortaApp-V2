@@ -1,26 +1,15 @@
 import { supabase } from './supabase';
-import { MarketItem } from '../src/types'; // Correct import path for types in root/src or relative
-// Wait, types.ts is in root? App.tsx is in root?
-// based on list_dir, types.ts is in root. App.tsx is in root.
-// So from services/tradeUploader.ts, types is ../types.ts
+import { MarketItem } from '../types';
 
-// Check if types.ts is in src/types or types.ts
-// list_dir showed "types.ts" in root.
-// But App.tsx imports types from somewhere.
-// Let's assume user structure: App.tsx uses "import { MarketItem } from './types';" probably.
-// But wait, the file list showed "types.ts" in root.
-// App.tsx imports: we didn't see imports in view_file 150-200.
-// Let's assume standard import for now and fix if needed.
-
-export interface TradeLogInsert {
-    nick: string;
-    item_name: string;
-    price: number;
-    trade_type: 'WTS' | 'WTB' | 'PC' | 'SOLD';
-    server: string;
-    trade_timestamp_utc: string;
-    message: string;
-    user_id?: string;
+async function generateTradeHash(nick: string, message: string, timestamp: string): Promise<string> {
+    const msgBuffer = new TextEncoder().encode(JSON.stringify({
+        nick: nick.toLowerCase(),
+        message: message.toLowerCase(),
+        timestamp
+    }));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export const TradeUploader = {
@@ -37,6 +26,11 @@ export const TradeUploader = {
         const { data: { user } } = await supabase.auth.getUser();
         const userId = user?.id;
 
+        if (!userId) {
+            console.error('❌ No authenticated user');
+            return { success: 0, duplicates: 0, errors: 0 };
+        }
+
         const results = {
             success: 0,
             duplicates: 0,
@@ -45,57 +39,49 @@ export const TradeUploader = {
 
         console.log(`LiveTrade: Preparing ${trades.length} trades for upload...`);
         
-        const BATCH_SIZE = 100;
-        
-        for (let i = 0; i < trades.length; i += BATCH_SIZE) {
-            const chunk = trades.slice(i, i + BATCH_SIZE);
-            const formattedTrades: TradeLogInsert[] = [];
-
-            for (const item of chunk) {
-                if (!item.seller || !item.name) continue;
-
-                let tradeType = item.orderType as any;
-                if (!['WTS', 'WTB', 'PC', 'SOLD'].includes(tradeType)) {
-                     tradeType = 'WTS'; 
-                }
-
-                formattedTrades.push({
-                    nick: item.seller,
-                    item_name: item.name,
-                    price: item.price,
-                    trade_type: tradeType,
-                    server: item.location || 'Cadence',
-                    trade_timestamp_utc: item.timestamp,
-                    message: `${item.orderType} ${item.name} ${item.price}c`,
-                    user_id: userId
-                });
-            }
-
-            if (formattedTrades.length === 0) continue;
+        // Process one by one using RPC (same as LiveTradeMonitor)
+        for (const item of trades) {
+            if (!item.seller || !item.name) continue;
 
             try {
-                const { error, data } = await supabase
-                    .from('trade_logs')
-                    .insert(formattedTrades)
-                    .select();
+                const hash = await generateTradeHash(
+                    item.seller,
+                    `${item.orderType} ${item.name} ${item.price}c`,
+                    new Date(item.timestamp).toISOString()
+                );
+
+                const { data, error } = await supabase.rpc('submit_live_trade', {
+                    p_trade_hash: hash,
+                    p_nick: item.seller,
+                    p_trade_type: item.orderType || 'WTS',
+                    p_message: `${item.orderType} ${item.name} ${item.price}c`,
+                    p_timestamp: new Date(item.timestamp).toISOString(),
+                    p_server: item.location || 'Cadence',
+                    p_user_id: userId
+                });
 
                 if (error) {
-                    console.error('Batch upload error:', error);
-                    results.errors += formattedTrades.length;
-                    if (error.code === '23505') { 
-                         // console.warn('Duplicates in batch');
+                    console.error('RPC error:', error);
+                    results.errors++;
+                } else if (data?.success) {
+                    if (data.is_duplicate) {
+                        results.duplicates++;
+                    } else {
+                        results.success++;
                     }
-                } else {
-                    const count = data ? data.length : formattedTrades.length;
-                    results.success += count;
-                    results.duplicates += (formattedTrades.length - count);
                 }
             } catch (err) {
-                console.error('Unexpected upload error:', err);
-                results.errors += formattedTrades.length;
+                console.error('Upload error:', err);
+                results.errors++;
             }
         }
 
+        console.log(`Upload complete: ${results.success} saved, ${results.duplicates} duplicates, ${results.errors} errors`);
+        
+        // Dispatch event to trigger UI refresh
+        window.dispatchEvent(new CustomEvent('tradesUploaded', { 
+            detail: { success: results.success, duplicates: results.duplicates, errors: results.errors }
+        }));
         return results;
     }
 };

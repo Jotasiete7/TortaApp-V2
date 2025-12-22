@@ -8,6 +8,7 @@ import { Money } from '../src/domain/price/Money';
 import { ParsedTrade, EnrichedTrade } from '../src/domain/trade/Trade';
 import { getCanonicalName, getCanonicalId } from './ItemIdentity';
 import { sanitizeItemName, sanitizeSeller } from './securityUtils';
+import { processLogFile } from './logProcessing/rawLogProcessor';
 
 export interface TradeRecord {
     timestamp: string;
@@ -193,6 +194,68 @@ export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
                 }
 
                 // 2. NDJSON / Log Parsing (Memory Efficient)
+
+                // 3. RAW TEXT LOG PARSING (Wurm Trade.txt format)
+                if (rawRecords.length === 0 && !text.trim().startsWith('[') && !text.trim().startsWith('{')) {
+                    // Looks like raw text log format
+                    try {
+                        const processingDate = new Date();
+                        const result = processLogFile(text, processingDate);
+                        
+                        if (result.records.length > 0) {
+                            // Convert CleanedLog to rawRecords format
+                            rawRecords = result.records.map((record, idx) => {
+                                // Extract item name from message_clean
+                                let extractedName = 'Unknown';
+                                const msg = record.message_clean;
+                                
+                                // 1. Try brackets [Item Name]
+                                const bracketMatch = msg.match(/\[(.*?)\]/);
+                                if (bracketMatch) {
+                                    extractedName = bracketMatch[1];
+                                } else {
+                                    // 2. Fallback: Take first few words after trade type if no brackets
+                                    // Usually message_clean is "Item Name QL:90..." because trade type is removed/handled in rawLogProcessor? 
+                                    // Actually rawLogProcessor.ts removes the "WTS " prefix from message_clean!
+                                    // "message_trimmed = message_trimmed.substring(trade_match[0].length).trim();"
+                                    
+                                    // So message_clean starts with the item name usually.
+                                    // Let's assume the whole start is the item name until 'QL' or numbers or 'price'
+                                    
+                                    // Simple heuristic: Take text until 'QL:' or 'ql:' or end
+                                    const qlIndex = msg.toLowerCase().indexOf('ql:');
+                                    if (qlIndex > -1) {
+                                        extractedName = msg.substring(0, qlIndex).trim();
+                                    } else {
+                                        // If no QL, maybe just the whole message implies the item for now
+                                        extractedName = msg;
+                                    }
+                                    
+                                    // Cleanup: remove leading quantities like "2x" or "100"
+                                    extractedName = extractedName.replace(/^\d+[x\s]+/, '').trim();
+                                }
+
+                                return {
+                                    id: idx,
+                                    timestamp: record.trade_timestamp_utc,
+                                    sender: record.game_nick,
+                                    player: record.game_nick,
+                                    raw_text: record.message_clean,
+                                    raw: record.message_clean,
+                                    main_item: extractedName,
+                                    item_name: extractedName,
+                                    price_s: '', 
+                                    price: 0,
+                                    trade_type: record.trade_type
+                                };
+                            });
+                            console.log(`✅ Parsed ${rawRecords.length} records from raw text log`);
+                        }
+                    } catch (err) {
+                        console.error('Failed to parse as raw text log:', err);
+                    }
+                }
+
                 if (rawRecords.length === 0) {
                     let startIndex = 0;
                     let newlineIndex = text.indexOf('\n');
@@ -213,6 +276,36 @@ export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
                         if (newlineIndex === -1) break;
                         startIndex = newlineIndex + 1;
                         newlineIndex = text.indexOf('\n', startIndex);
+                    }
+                }
+
+
+                // 3. RAW TEXT LOG PARSING (Wurm Trade.txt format)
+                if (rawRecords.length === 0 && !text.trim().startsWith('[') && !text.trim().startsWith('{')) {
+                    // Looks like raw text log format
+                    try {
+                        const processingDate = new Date();
+                        const result = processLogFile(text, processingDate);
+                        
+                        if (result.records.length > 0) {
+                            // Convert CleanedLog to rawRecords format
+                            rawRecords = result.records.map((record, idx) => ({
+                                id: idx,
+                                timestamp: record.trade_timestamp_utc,
+                                sender: record.game_nick,
+                                player: record.game_nick,
+                                raw_text: record.message_clean,
+                                raw: record.message_clean,
+                                main_item: '', // Will be extracted later
+                                item_name: '',
+                                price_s: '', // Will be extracted later
+                                price: 0,
+                                trade_type: record.trade_type
+                            }));
+                            console.log(`✅ Parsed ${rawRecords.length} records from raw text log`);
+                        }
+                    } catch (err) {
+                        console.error('Failed to parse as raw text log:', err);
                     }
                 }
 
