@@ -106,22 +106,6 @@ export const NewsTicker: React.FC = () => {
 
         fetchMessages();
 
-        // Rotate tips every 10 minutes
-        const tipsSettings = tipsService.getSettings();
-        if (tipsSettings.enabled) {
-            const tipInterval = setInterval(() => {
-                setCurrentTipIndex(prev => {
-                    const length = enabledTips.length || 1;
-                    return (prev + 1) % length;
-                });
-                setTipJustChanged(true);
-                // Fade back to normal after 1 minute
-                setTimeout(() => setTipJustChanged(false), 60000);
-            }, tipsSettings.intervalMinutes * 60 * 1000);
-
-            return () => clearInterval(tipInterval);
-        }
-
         // Realtime subscription
         const channel = supabase
             .channel('ticker-updates')
@@ -148,6 +132,27 @@ export const NewsTicker: React.FC = () => {
             clearInterval(refreshInterval);
         };
     }, []);
+
+    // ✅ Separate effect for tips rotation - only runs after tips are loaded
+    useEffect(() => {
+        if (!tipsLoaded || enabledTips.length === 0) return;
+
+        const tipsSettings = tipsService.getSettings();
+        if (!tipsSettings.enabled) return;
+
+        // Rotate tips every X minutes (from settings)
+        const tipInterval = setInterval(() => {
+            setCurrentTipIndex(prev => {
+                const length = enabledTips.length;
+                return (prev + 1) % length;
+            });
+            setTipJustChanged(true);
+            // Fade back to normal after 1 minute
+            setTimeout(() => setTipJustChanged(false), 60000);
+        }, tipsSettings.intervalMinutes * 60 * 1000);
+
+        return () => clearInterval(tipInterval);
+    }, [tipsLoaded, enabledTips]);
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -181,11 +186,14 @@ export const NewsTicker: React.FC = () => {
         return null;
     }
 
-   // Inject tip as synthetic message
+   // Inject tip as synthetic message with numbering
     const currentTip = tipsLoaded && enabledTips.length > 0 ? enabledTips[currentTipIndex % enabledTips.length] : '';
+    const tipNumber = String(currentTipIndex + 1).padStart(2, '0');
+    const numberedTip = currentTip ? `Tip #${tipNumber}: ${currentTip.replace(/^[🎯🛡️⚡💰]\s*Tip:\s*/i, '')}` : '';
+    
     const tipMessage: TickerMessageExtended = {
         id: 'rotating-tip',
-        text: currentTip,
+        text: numberedTip,
         color: 'purple',
         paid: false,
         created_at: new Date().toISOString(),
