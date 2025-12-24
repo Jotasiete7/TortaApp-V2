@@ -78,6 +78,24 @@ const parseAndMerge = (text: string) => {
     return mergedParts;
 };
 
+// 🎲 Helper to shuffle array (Fisher-Yates algorithm)
+const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+};
+
+// 🎲 Helper to generate random interval between 3-7 minutes
+const getRandomInterval = (): number => {
+    const minMinutes = 3;
+    const maxMinutes = 7;
+    const randomMinutes = Math.random() * (maxMinutes - minMinutes) + minMinutes;
+    return randomMinutes * 60 * 1000; // Convert to milliseconds
+};
+
 export const NewsTicker: React.FC = () => {
     const [messages, setMessages] = useState<TickerMessageExtended[]>([]);
     const [emojisLoaded, setEmojisLoaded] = useState(false);
@@ -85,6 +103,7 @@ export const NewsTicker: React.FC = () => {
     const [tipJustChanged, setTipJustChanged] = useState(false);
     const [tipsLoaded, setTipsLoaded] = useState(false);
     const [enabledTips, setEnabledTips] = useState<string[]>([]);
+    const [shuffledTips, setShuffledTips] = useState<string[]>([]);
     const [speed, setSpeed] = useState<number>(() => {
         const saved = localStorage.getItem('ticker_speed');
         return saved ? parseFloat(saved) : 1;
@@ -94,12 +113,14 @@ export const NewsTicker: React.FC = () => {
 
     useEffect(() => {
         emojiService.loadEmojis().then(() => setEmojisLoaded(true));
-        
+
         // Load tips from JSON
         const loadTips = async () => {
             await tipsService.loadTips();
             const tips = tipsService.getEnabledTips('en');
             setEnabledTips(tips);
+            // 🎲 Shuffle tips on load for random order
+            setShuffledTips(shuffleArray(tips));
             setTipsLoaded(true);
         };
         loadTips();
@@ -133,26 +154,42 @@ export const NewsTicker: React.FC = () => {
         };
     }, []);
 
-    // ✅ Separate effect for tips rotation - only runs after tips are loaded
+    // ✅ Separate effect for tips rotation with RANDOM intervals (3-7 min) and RANDOM order
     useEffect(() => {
-        if (!tipsLoaded || enabledTips.length === 0) return;
+        if (!tipsLoaded || shuffledTips.length === 0) return;
 
         const tipsSettings = tipsService.getSettings();
         if (!tipsSettings.enabled) return;
 
-        // Rotate tips every X minutes (from settings)
-        const tipInterval = setInterval(() => {
-            setCurrentTipIndex(prev => {
-                const length = enabledTips.length;
-                return (prev + 1) % length;
-            });
-            setTipJustChanged(true);
-            // Fade back to normal after 1 minute
-            setTimeout(() => setTipJustChanged(false), 60000);
-        }, tipsSettings.intervalMinutes * 60 * 1000);
+        // 🎲 Function to schedule next tip rotation with random interval
+        const scheduleNextTip = () => {
+            const randomInterval = getRandomInterval();
+            console.log(`🎲 Next tip in ${(randomInterval / 60000).toFixed(1)} minutes`);
 
-        return () => clearInterval(tipInterval);
-    }, [tipsLoaded, enabledTips]);
+            return setTimeout(() => {
+                setCurrentTipIndex(prev => {
+                    const nextIndex = prev + 1;
+                    // 🎲 When we reach the end, reshuffle and start over
+                    if (nextIndex >= shuffledTips.length) {
+                        setShuffledTips(shuffleArray(enabledTips));
+                        return 0;
+                    }
+                    return nextIndex;
+                });
+                setTipJustChanged(true);
+                // Fade back to normal after 1 minute
+                setTimeout(() => setTipJustChanged(false), 60000);
+
+                // Schedule the next tip recursively
+                scheduleNextTip();
+            }, randomInterval);
+        };
+
+        // Start the first random interval
+        const timeoutId = scheduleNextTip();
+
+        return () => clearTimeout(timeoutId);
+    }, [tipsLoaded, shuffledTips, enabledTips]);
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -186,11 +223,11 @@ export const NewsTicker: React.FC = () => {
         return null;
     }
 
-   // Inject tip as synthetic message with numbering
-    const currentTip = tipsLoaded && enabledTips.length > 0 ? enabledTips[currentTipIndex % enabledTips.length] : '';
+    // Inject tip as synthetic message with numbering (from shuffled array)
+    const currentTip = tipsLoaded && shuffledTips.length > 0 ? shuffledTips[currentTipIndex % shuffledTips.length] : '';
     const tipNumber = String(currentTipIndex + 1).padStart(2, '0');
     const numberedTip = currentTip ? `Tip #${tipNumber}: ${currentTip.replace(/^[🎯🛡️⚡💰]\s*Tip:\s*/i, '')}` : '';
-    
+
     const tipMessage: TickerMessageExtended = {
         id: 'rotating-tip',
         text: numberedTip,
@@ -203,7 +240,7 @@ export const NewsTicker: React.FC = () => {
         user_first_badge_id: null
     };
     const messagesWithTip = [...messages, tipMessage];
-    
+
     const colorMap = {
         green: 'text-emerald-400',
         red: 'text-rose-400',
@@ -213,8 +250,8 @@ export const NewsTicker: React.FC = () => {
     };
 
 
-        return (
-            <div className="fixed top-0 left-0 right-0 h-8 bg-slate-950 border-b border-slate-800/50 z-[60] overflow-hidden shadow-sm">
+    return (
+        <div className="fixed top-0 left-0 right-0 h-8 bg-slate-950 border-b border-slate-800/50 z-[60] overflow-hidden shadow-sm">
             <div className="flex items-center h-full">
                 {/* Ícone fixo à esquerda */}
                 <div className="flex-shrink-0 px-3 bg-amber-600 h-full flex items-center justify-center z-20 shadow-lg shadow-amber-900/20">
