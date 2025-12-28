@@ -167,6 +167,10 @@ export class LiveTradeMonitor {
         */
         console.log("🚀 LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
 
+        // Marcar como ativo ANTES de chamar o backend
+        this.isCurrentlyWatching = true;
+        this.currentFilePath = filePath;
+
         // 2. Start Watcher (Backend)
         try {
             console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
@@ -176,16 +180,13 @@ export class LiveTradeMonitor {
         } catch (err) {
             console.error("❌ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
             toast.error('Falha ao iniciar watcher: ');
+            // Limpar flags em caso de erro
+            this.isCurrentlyWatching = false;
+            this.currentFilePath = null;
             return;
         }
 
-        // Marcar como ativo
-
-
-        this.isCurrentlyWatching = true;
-
-
-        this.currentFilePath = filePath;
+       
 
 
 
