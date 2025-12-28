@@ -56,6 +56,7 @@ export const LiveTradeSetup = () => {
         const storedConsent = localStorage.getItem('live_monitor_consent') === 'true';
         const storedPath = localStorage.getItem('wurm_log_path');
         const storedSpeed = localStorage.getItem('ticker_speed_global');
+        const storedWatching = localStorage.getItem('live_monitor_watching') === 'true';
 
         setConsent(storedConsent);
         if (storedPath) {
@@ -63,6 +64,22 @@ export const LiveTradeSetup = () => {
             validatePath(storedPath);
         }
         if (storedSpeed) setTickerSpeed(Number(storedSpeed));
+
+        // Auto-restart monitoring if it was previously active
+        if (storedWatching && storedConsent && storedPath) {
+            setIsWatching(true);
+            // Only actually start watching in Tauri environment
+            if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
+                liveTradeMonitor.startWatching(storedPath).then(() => {
+                    console.log('âœ… Monitoramento retomado automaticamente');
+                }).catch((err) => {
+                    console.error('Erro ao retomar monitoramento:', err);
+                    setIsWatching(false);
+                    localStorage.removeItem('live_monitor_watching');
+                });
+            }
+        }
+
 
         setAvailableSounds(SoundService.getAvailableSounds());
     }, []);
@@ -166,6 +183,7 @@ export const LiveTradeSetup = () => {
         setIsWatching(false);
         setFileExists(null);
         localStorage.removeItem('wurm_log_path');
+        localStorage.removeItem('live_monitor_watching');
     };
 
     const handleStart = async () => {
@@ -181,6 +199,7 @@ export const LiveTradeSetup = () => {
         if (typeof window.__TAURI_INTERNALS__ === 'undefined') {
             toast.warning("Modo Browser Detectado: O monitoramento só funciona no App Desktop.");
             setIsWatching(true);
+            localStorage.setItem('live_monitor_watching', 'true');
             setIsOpen(false);
             return;
         }
@@ -195,6 +214,7 @@ export const LiveTradeSetup = () => {
             }
 
             setIsWatching(true);
+            localStorage.setItem('live_monitor_watching', 'true');
             setIsOpen(false);
             toast.success("Monitoramento iniciado! Acompanhe o Live Feed.");
         } catch (error) {
