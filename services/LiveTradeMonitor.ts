@@ -1,4 +1,4 @@
-﻿import { invoke } from '@tauri-apps/api/core';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import localforage from 'localforage';
 import { supabase } from './supabase';
@@ -63,6 +63,11 @@ export class LiveTradeMonitor {
     private currentServer = 'Cadence';
     private currentUserId: string | null = null;
     private alerts: ExtendedTradeAlert[] = [];
+
+    // Prote��o contra m�ltiplas inst�ncias
+    private isCurrentlyWatching = false;
+    private currentUnlisten: (() => void) | null = null;
+    private currentFilePath: string | null = null;
 
     private store: LocalForage;
 
@@ -130,7 +135,19 @@ export class LiveTradeMonitor {
     // --- Public Methods ---
 
     public async startWatching(filePath: string) {
-        console.log("ðŸš€ LiveTradeMonitor: BYPASSING PERMISSION CHECK");
+        // Proteção: Se já está assistindo o mesmo arquivo, não fazer nada
+        if (this.isCurrentlyWatching && this.currentFilePath === filePath) {
+            console.log('⚠️ LiveTradeMonitor: Already watching this file, skipping...');
+            return;
+        }
+
+        // Se está assistindo outro arquivo, parar primeiro
+        if (this.isCurrentlyWatching && this.currentFilePath !== filePath) {
+            console.log('🔄 LiveTradeMonitor: Switching to new file, stopping current watcher...');
+            await this.stopWatching();
+        }
+
+        console.log("🚀 LiveTradeMonitor: BYPASSING PERMISSION CHECK");
         /*
         // 1. Check Permissions (DISABLED)
         */
@@ -140,7 +157,7 @@ export class LiveTradeMonitor {
         try {
             // const allowed = await invoke<boolean>('check_file_access', { path: filePath });
             // if (!allowed) {
-            //    toast.error('Sem permissão de leitura no arquivo.');
+            //    toast.error('Sem permiss�o de leitura no arquivo.');
             //    return;
             // }
         } catch (err) {
@@ -148,30 +165,42 @@ export class LiveTradeMonitor {
             return;
         }
         */
-        console.log("ðŸš€ LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
+        console.log("🚀 LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
 
         // 2. Start Watcher (Backend)
         try {
-            console.log("ðŸš€ LiveTradeMonitor: Requesting backend to watch:", filePath);
+            console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
             const res = await invoke('start_trade_watcher', { path: filePath });
-            console.log('âœ… Backend responded:', res);
+            console.log('✅ Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
-            console.error("âŒ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
+            console.error("❌ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
             toast.error('Falha ao iniciar watcher: ');
             return;
         }
 
+        // Marcar como ativo
+
+
+        this.isCurrentlyWatching = true;
+
+
+        this.currentFilePath = filePath;
+
+
+
         // 3. Listen for Events
-        await listen<{ trades: Array<{ timestamp: string, nick: string, message: string }> }>('trade-batch-event', async (event) => {
-            console.log("ðŸ“¨ FRONTEND RECEIVED EVENT:", event);
+
+
+        const unlisten = await listen<{ trades: Array<{ timestamp: string, nick: string, message: string }> }>('trade-batch-event', async (event) => {
+            console.log("📨 FRONTEND RECEIVED EVENT:", event);
             const batch = event.payload;
             if(!batch.trades) return;
             for(const raw of batch.trades) {
 
             // NEW: Filter Noise before processing
             if (FileParser.isNoise(raw.message)) {
-                console.warn("ðŸš« Valid Filter: Ignored noise message:", raw.message);
+                console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
                 return;
             }
 
@@ -216,7 +245,7 @@ export class LiveTradeMonitor {
 
                 const matched = AlertService.checkAlerts(checkObj, alerts);
                 if (matched) {
-                    console.log('ðŸ”” Alert Triggered:', matched.term);
+                    console.log('🔔 Alert Triggered:', matched.term);
                     AlertService.fireAlert(matched, checkObj);
                 }
             } catch (err) {
@@ -226,35 +255,75 @@ export class LiveTradeMonitor {
             await this.submitTrade(trade);
             }
         });
+
+        // Salvar unlisten para poder parar depois
+        this.currentUnlisten = unlisten;
+    }
+
+    public async stopWatching() {
+        if (!this.isCurrentlyWatching) {
+            console.log('ℹ️ LiveTradeMonitor: Not currently watching, nothing to stop.');
+            return;
+        }
+
+        console.log('🛑 LiveTradeMonitor: Stopping watcher...');
+
+        // Remover listener
+        if (this.currentUnlisten) {
+            this.currentUnlisten();
+            this.currentUnlisten = null;
+        }
+
+        // Parar backend Rust
+        if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
+            try {
+                await invoke('stop_trade_watcher');
+                console.log('✅ Backend watcher stopped');
+            } catch (e) {
+                console.error('❌ Failed to stop backend watcher:', e);
+            }
+        }
+
+        this.isCurrentlyWatching = false;
+        this.currentFilePath = null;
+        console.log('✅ LiveTradeMonitor: Stopped successfully');
+    }
+
+    public isWatching(): boolean {
+        return this.isCurrentlyWatching;
+    }
+
+    public getCurrentFilePath(): string | null {
+        return this.currentFilePath;
     }
 
     public async submitTrade(trade: Trade) {
-        console.log('🔄 LiveTrade: Attempting to submit trade...', trade.nick);
+        console.log('?? LiveTrade: Attempting to submit trade...', trade.nick);
         
         if (!this.currentUserId) {
-            console.log('⚠️ LiveTrade: UserId not set, fetching...');
+            console.log('?? LiveTrade: UserId not set, fetching...');
             const { data } = await supabase.auth.getUser();
             this.currentUserId = data.user?.id || null;
             if (!this.currentUserId) {
-                console.error('❌ LiveTrade: No authenticated user found. Trade skipped.');
-                toast.error('Erro: Usuário não autenticado. Trade ignorado.');
+                console.error('? LiveTrade: No authenticated user found. Trade skipped.');
+                toast.error('Erro: Usu�rio n�o autenticado. Trade ignorado.');
                 return;
             }
         }
 
         if (!this.isOnline) {
-            console.warn('⚠️ LiveTrade: Offline. Queueing trade.');
+            console.warn('?? LiveTrade: Offline. Queueing trade.');
             this.queueTrade(trade);
             return;
         }
 
         try {
-            console.log('📤 LiveTrade: Sending RPC...');
+            console.log('?? LiveTrade: Sending RPC...');
             await this.submitTradeInternal(trade);
-            console.log('✅ LiveTrade: RPC Success');
+            console.log('? LiveTrade: RPC Success');
             toast.success('Trade salvo!', { duration: 2000 });
         } catch (err) {
-            console.error('❌ LiveTrade: RPC FAILURE:', err);
+            console.error('? LiveTrade: RPC FAILURE:', err);
             toast.error('Falha no envio (RPC)');
             this.queueTrade(trade);
         }
@@ -292,12 +361,12 @@ export class LiveTradeMonitor {
 
         this.offlineQueue.push(queuedTrade);
         this.saveOfflineQueue();
-        console.log('ðŸ“¤ Trade queued:', queuedTrade.retryCount);
+        console.log('📤 Trade queued:', queuedTrade.retryCount);
     }
 
     private async handleOnline() {
         this.isOnline = true;
-        console.log('ðŸŒ Online: Processing queue...');
+        console.log('🌐 Online: Processing queue...');
 
         const failedTrades: QueuedTrade[] = [];
         const tempQueue = [...this.offlineQueue];
@@ -316,9 +385,9 @@ export class LiveTradeMonitor {
 
             try {
                 await this.submitTradeInternal(trade);
-                console.log('âœ… Trade submitted after retry');
+                console.log('✅ Trade submitted after retry');
             } catch (err) {
-                console.error('âŒ Retry failed:', err);
+                console.error('❌ Retry failed:', err);
                 this.offlineQueue.push(trade);
             }
         }
@@ -326,13 +395,13 @@ export class LiveTradeMonitor {
         this.saveOfflineQueue();
 
         if (failedTrades.length > 0) {
-            toast.warning(`${failedTrades.length} trades falharam após várias tentativas.`);
+            toast.warning(`${failedTrades.length} trades falharam ap�s v�rias tentativas.`);
         }
     }
 
     private handleOffline() {
         this.isOnline = false;
-        toast.info('Modo Offline: Trades serão salvas.');
+        toast.info('Modo Offline: Trades ser�o salvas.');
     }
 }
 
@@ -344,7 +413,7 @@ export const liveTradeMonitor = new LiveTradeMonitor();
 
         // DEBUG TOOL: Check latest logs for a nickname from Console
         (window as any).debugLogs = async (nick: string) => {
-            console.log(`🔍 Checking DB for logs of: ${nick}`);
+            console.log(`?? Checking DB for logs of: ${nick}`);
             const { data, error } = await supabase
                 .from('trade_logs')
                 .select('*')
@@ -353,20 +422,20 @@ export const liveTradeMonitor = new LiveTradeMonitor();
                 .limit(10);
                 
             if (error) {
-                console.error('❌ Query Error:', error);
+                console.error('? Query Error:', error);
             } else {
-                console.log('📊 Result:', data);
+                console.log('?? Result:', data);
                 if (data && data.length > 0) {
-                     console.log('🕒 Latest Log Time:', data[0].trade_timestamp_utc);
-                     console.log('📝 Latest Message:', data[0].message);
+                     console.log('?? Latest Log Time:', data[0].trade_timestamp_utc);
+                     console.log('?? Latest Message:', data[0].message);
                 } else {
-                     console.log('⚠️ No logs found for this nick.');
+                     console.log('?? No logs found for this nick.');
                 }
             }
         };
 
         (window as any).testTrade = () => {
-    console.log('🧪 Sending TEST trade...');
+    console.log('?? Sending TEST trade...');
     liveTradeMonitor.submitTrade({
         timestamp: new Date().toISOString(),
         nick: 'TEST_USER',
