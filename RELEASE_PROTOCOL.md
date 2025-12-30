@@ -23,8 +23,15 @@ $date = Get-Date -Format 'yyyyMMdd-HHmm'
 Compress-Archive -Path '.\TortaApp-V2' -DestinationPath "C:\Users\Pichau\.gemini\antigravity\backups\TortaApp-V2-v[VERSAO]-$date.zip" -Force
 ```
 
+## 0. Pré-requisitos de Ambiente (CRÍTICO)
+Antes de iniciar qualquer build de release, verifique:
+1.  [ ] Arquivo `src-tauri/.env` existe?
+2.  [ ] Variável `TAURI_SIGNING_PRIVATE_KEY` está definida nele?
+3.  [ ] Se **NÃO**: Pare tudo e siga o guia `RESTORE_KEYS.md`.
+    *   *Sem isso, o auto-update quebrará para todos os usuários.*
+
 ## Checklist de Pré-Release
 1.  [ ] Verificar status do Git (`git status` limpo).
 2.  [ ] Executar build de verificação (`npm run build`).
 3.  [ ] **Executar Double Backup**.
-4.  [ ] Publicar Release.
+4.  [ ] Publicar Release (Ver [AUTO_UPDATE_GUIDE.md](docs/technical/AUTO_UPDATE_GUIDE.md)).
