@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import { TradeUploader } from './services/tradeUploader';
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { MarketTable } from './components/market/MarketTable';
@@ -27,7 +27,6 @@ import { IdentityService } from './services/identity';
 import { supabase } from './services/supabase';
 import { sanitizeItemName, sanitizeSeller } from './services/securityUtils';
 import { getCanonicalName, getCanonicalId } from './services/ItemIdentity';
-import { FeedbackWidget } from './components/FeedbackWidget';
 import { UserSettings } from './components/UserSettings';
 import { LevelUpOverlay } from './components/gamification/LevelUpOverlay';
 import { SoundService } from './services/SoundService';
@@ -244,16 +243,16 @@ const App: React.FC = () => {
         setIsProcessingFile(true);
         try {
             const items = await parseTradeFile(file);
-            
+
             setMarketData(items);
-            
+
             // 🚀 MANUAL UPLOAD TRIGGER
             toast.promise(TradeUploader.uploadTrades(items), {
                 loading: 'Salvando trade logs no banco de dados...',
                 success: (data) => `Upload concluído! Salvos: ${data.success}, Erros: ${data.errors}`,
                 error: 'Erro ao salvar logs no banco.'
             });
-    
+
             setDataSource('FILE');
 
             // Generate chart data from the parsed items
@@ -409,7 +408,6 @@ const App: React.FC = () => {
             </div>
 
             {/* Global Widgets */}
-            <FeedbackWidget />
             <AdCooldownWidget />
 
             {/* Gamification Overlays */}
