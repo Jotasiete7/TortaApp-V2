@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Sparkles, Monitor, Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Volume2, VolumeX, Sparkles, Monitor, Bell, Globe } from 'lucide-react';
 import { SoundService } from '../services/SoundService';
 import { AlertsManager } from './AlertsManager';
 
@@ -14,11 +14,16 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ user, myVerifiedNick
     const [volume, setVolume] = useState(0.5);
     const [isMuted, setIsMuted] = useState(false);
     const [enableAnimations, setEnableAnimations] = useState(true);
+    const [language, setLanguage] = useState<'en' | 'pt'>('en');
 
     useEffect(() => {
         // Init state check
         setIsMuted(SoundService.isMuted());
         setVolume(SoundService.getVolume());
+
+        // Load language preference
+        const savedLang = localStorage.getItem('app_language') || 'en';
+        setLanguage(savedLang as 'en' | 'pt');
     }, []);
 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +37,21 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ user, myVerifiedNick
     const toggleMute = () => {
         const muted = SoundService.toggleMute();
         setIsMuted(muted);
+    };
+
+    const toggleLanguage = () => {
+        const newLang = language === 'en' ? 'pt' : 'en';
+        setLanguage(newLang);
+        localStorage.setItem('app_language', newLang);
+
+        // Dispatch storage event for other components (like NewsTicker)
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'app_language',
+            newValue: newLang,
+            oldValue: language,
+            storageArea: localStorage,
+            url: window.location.href
+        }));
     };
 
     return (
@@ -102,6 +122,31 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ user, myVerifiedNick
                                 />
                                 <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                             </label>
+                        </div>
+                    </div>
+
+                    {/* LANGUAGE SECTION */}
+                    <div className="space-y-4 pt-4 border-t border-slate-700/50">
+                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                            <Globe className="w-5 h-5 text-blue-500" />
+                            Language / Idioma
+                        </h3>
+
+                        <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 flex items-center justify-between">
+                            <div>
+                                <h4 className="text-white font-medium">Interface Language</h4>
+                                <p className="text-xs text-slate-500">
+                                    {language === 'en'
+                                        ? 'Switch between English and Portuguese for tips and interface elements.'
+                                        : 'Alterne entre Inglês e Português para dicas e elementos da interface.'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={toggleLanguage}
+                                className="px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg font-bold text-sm hover:bg-blue-500/20 transition-all"
+                            >
+                                {language === 'en' ? '🇺🇸 EN' : '🇧🇷 PT'}
+                            </button>
                         </div>
                     </div>
 

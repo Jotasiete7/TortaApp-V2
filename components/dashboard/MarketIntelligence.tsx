@@ -20,6 +20,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
             try {
                 // Fetch intelligence (with strict filtering now applied in service)
                 const result = await IntelligenceService.getMarketIntelligence(timeWindow, localData);
+                console.log('📊 Market Intelligence Data:', result);
                 setData(result);
             } catch (error) {
                 console.error("Failed to load market intelligence", error);
@@ -30,11 +31,27 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
         load();
     }, [timeWindow, localData]);
 
-    const TrendItem = ({ item, type, rank }: { item: MarketTrendItem, type: 'demand' | 'supply' | 'volatility', rank: number }) => {
+    const TrendItem = ({ item, type, rank, totalItems }: { item: MarketTrendItem, type: 'demand' | 'supply' | 'volatility', rank: number, totalItems: number }) => {
         const isPositive = type === 'demand' ? true : type === 'supply' ? null : item.absoluteChange > 0;
 
+        // Use avgPrice as fallback when price is 0
+        const displayPrice = item.price || item.avgPrice;
+
+        // Show tooltip above for last 2 items to prevent cutoff
+        const showTooltipAbove = rank >= totalItems - 1;
+
+        // Debug logging
+        if (displayPrice === 0) {
+            console.warn(`⚠️ Zero price for ${item.name}:`, {
+                price: item.price,
+                avgPrice: item.avgPrice,
+                volume: item.volume,
+                absoluteChange: item.absoluteChange
+            });
+        }
+
         return (
-            <div className="flex items-center justify-between p-3 bg-slate-900/40 rounded-lg border border-slate-800/50 hover:bg-slate-800/60 transition-colors group">
+            <div className="flex items-center justify-between p-3 bg-slate-900/40 rounded-lg border border-slate-800/50 hover:bg-slate-800/60 transition-colors group relative">
                 <div className="flex items-center gap-3 overflow-hidden">
                     {/* Rank Badge - Compact */}
                     <div className={`
@@ -54,7 +71,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         <div className="flex items-baseline gap-2 mt-0.5">
                             {/* Price: White, Bold, Monospace numbers for alignment */}
                             <span className="text-sm font-bold text-white tabular-nums tracking-tight leading-none">
-                                <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(item.price) }} />
+                                <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(displayPrice) }} />
                             </span>
 
                             {/* Volume: De-emphasized metadata line */}
@@ -74,6 +91,31 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                             isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />
                         )}
                         <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(Math.abs(item.absoluteChange)) }} />
+                    </div>
+                </div>
+
+                {/* Tooltip on hover - Position above for last 2 items, below otherwise */}
+                <div className={`absolute left-0 ${showTooltipAbove ? 'bottom-full mb-2' : 'top-full mt-2'} w-64 bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-xl z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200`}>
+                    <div className="space-y-2 text-xs">
+                        <div className="font-bold text-white border-b border-slate-700 pb-2">{item.name}</div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <div className="text-slate-500">Current Price:</div>
+                                <div className="text-white font-bold" dangerouslySetInnerHTML={{ __html: formatWurmPrice(item.price) }} />
+                            </div>
+                            <div>
+                                <div className="text-slate-500">Avg Price:</div>
+                                <div className="text-white font-bold" dangerouslySetInnerHTML={{ __html: formatWurmPrice(item.avgPrice) }} />
+                            </div>
+                            <div>
+                                <div className="text-slate-500">Volume:</div>
+                                <div className="text-white font-bold">{item.volume} trades</div>
+                            </div>
+                            <div>
+                                <div className="text-slate-500">Change:</div>
+                                <div className={`font-bold ${item.absoluteChange > 0 ? 'text-emerald-400' : 'text-rose-400'}`} dangerouslySetInnerHTML={{ __html: formatWurmPrice(Math.abs(item.absoluteChange)) }} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,8 +142,8 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                             key={w}
                             onClick={() => setTimeWindow(w)}
                             className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${timeWindow === w
-                                    ? 'bg-indigo-600 text-white shadow-sm'
-                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                                ? 'bg-indigo-600 text-white shadow-sm'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'
                                 }`}
                         >
                             {w}
@@ -122,9 +164,9 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         </div>
                         <span className="text-[10px] text-emerald-500/60 font-semibold">Highest buy interest</span>
                     </div>
-                    <div className="p-3 space-y-1.5 flex-1 min-h-[290px]"> {/* Optimized Padding & Gap */}
+                    <div className="p-3 space-y-1.5 flex-1 min-h-[290px]">
                         {data.topDemand.map((item, i) => (
-                            <TrendItem key={i} item={item} type="demand" rank={i + 1} />
+                            <TrendItem key={i} item={item} type="demand" rank={i + 1} totalItems={data.topDemand.length} />
                         ))}
                         {data.topDemand.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs italic opacity-50">
@@ -151,7 +193,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                     </div>
                     <div className="p-3 space-y-1.5 flex-1 min-h-[290px]">
                         {data.topSupply.map((item, i) => (
-                            <TrendItem key={i} item={item} type="supply" rank={i + 1} />
+                            <TrendItem key={i} item={item} type="supply" rank={i + 1} totalItems={data.topSupply.length} />
                         ))}
                         {data.topSupply.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs italic opacity-50">
@@ -178,7 +220,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                     </div>
                     <div className="p-3 space-y-1.5 flex-1 min-h-[290px]">
                         {data.topVolatility.map((item, i) => (
-                            <TrendItem key={i} item={item} type="volatility" rank={i + 1} />
+                            <TrendItem key={i} item={item} type="volatility" rank={i + 1} totalItems={data.topVolatility.length} />
                         ))}
                         {data.topVolatility.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs italic opacity-50">
