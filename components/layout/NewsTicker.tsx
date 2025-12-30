@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../services/supabase';
 import { Megaphone, Award } from 'lucide-react';
 import { emojiService } from '../../services/emojiService';
+import { useTranslation } from 'react-i18next';
 
 // Tipos estendidos para incluir novos campos
 interface TickerMessageExtended {
@@ -16,76 +17,8 @@ interface TickerMessageExtended {
     user_first_badge_id?: string | null;
 }
 
-// Interface for bilingual tips
-interface BilingualTip {
-    en: string;
-    pt: string;
-}
-
-// Rotating Tips - Helpful advice shown every 3-7 minutes (bilingual)
-const ROTATING_TIPS: BilingualTip[] = [
-    {
-        en: "Double-click any trade in the Live Feed to copy a quick message!",
-        pt: "Clique duas vezes em qualquer trade no Feed ao Vivo para copiar uma mensagem rápida!"
-    },
-    {
-        en: "Use the Smart Search with filters to find the best deals instantly!",
-        pt: "Use a Busca Inteligente com filtros para encontrar as melhores ofertas instantaneamente!"
-    },
-    {
-        en: "Complete achievements to unlock exclusive badges and level up faster!",
-        pt: "Complete conquistas para desbloquear badges exclusivos e subir de nível mais rápido!"
-    },
-    {
-        en: "Check Market Intelligence for price trends and trading insights!",
-        pt: "Confira a Inteligência de Mercado para tendências de preços e insights de trading!"
-    },
-    {
-        en: "Enable Live Monitor to auto-feed trades - no manual uploads needed!",
-        pt: "Ative o Monitor ao Vivo para alimentar trades automaticamente - sem uploads manuais!"
-    },
-    {
-        en: "Verify your nick with the @TORTA token for auto-verification!",
-        pt: "Verifique seu nick com o token @TORTA para verificação automática!"
-    },
-    {
-        en: "Reach Level 50 'Legendary Whale' by processing 10M+ trades!",
-        pt: "Alcance o Nível 50 'Baleia Lendária' processando 10M+ de trades!"
-    },
-    {
-        en: "Smart Alerts highlight underpriced items automatically!",
-        pt: "Alertas Inteligentes destacam itens com preços baixos automaticamente!"
-    },
-    {
-        en: "Use Charts Engine to visualize price history and market trends!",
-        pt: "Use o Motor de Gráficos para visualizar histórico de preços e tendências de mercado!"
-    },
-    {
-        en: "Paid Shouts appear in the ticker - support the community!",
-        pt: "Shouts Pagos aparecem no ticker - apoie a comunidade!"
-    },
-    {
-        en: "The pie emoji 🥧 shows when the ticker completes a full loop!",
-        pt: "O emoji de torta 🥧 aparece quando o ticker completa um loop completo!"
-    },
-    {
-        en: "Search debounce prevents lag - type freely without freezing!",
-        pt: "O debounce de busca previne travamentos - digite livremente sem congelar!"
-    },
-    {
-        en: "Customize ticker speed in Settings for your preferred reading pace!",
-        pt: "Personalize a velocidade do ticker nas Configurações para seu ritmo de leitura!"
-    },
-    {
-        en: "Advanced Tools section has manual log upload for historic data!",
-        pt: "A seção Ferramentas Avançadas tem upload manual de logs para dados históricos!"
-    },
-    {
-        en: "Auto-updater keeps your app fresh - check for updates regularly!",
-        pt: "O atualizador automático mantém seu app atualizado - verifique atualizações regularmente!"
-    }
-];
-
+// Tip Keys matching JSON keys
+const TIP_KEYS = Array.from({ length: 15 }, (_, i) => String(i + 1));
 
 // Helper para renderizar texto com links
 const renderMessageWithLinks = (text: string): React.ReactNode[] => {
@@ -112,7 +45,6 @@ const renderMessageWithLinks = (text: string): React.ReactNode[] => {
 };
 
 // Helper to merge adjacent strings from emoji service
-// This prevents digits like '1', '0', '0' from being split into separate flex items
 const parseAndMerge = (text: string) => {
     const rawParts = emojiService.parseText(text);
     const mergedParts: (string | { type: 'emoji', path: string, alt: string })[] = [];
@@ -148,12 +80,15 @@ const getRandomInterval = (): number => {
 };
 
 export const NewsTicker: React.FC = () => {
+    const { t } = useTranslation('common');
     const [messages, setMessages] = useState<TickerMessageExtended[]>([]);
     const [emojisLoaded, setEmojisLoaded] = useState(false);
     const [currentTipIndex, setCurrentTipIndex] = useState(0);
     const [tipJustChanged, setTipJustChanged] = useState(false);
-    const [language, setLanguage] = useState<'en' | 'pt'>('en');
-    const [shuffledTips, setShuffledTips] = useState<BilingualTip[]>([]);
+
+    // Using simple keys now
+    const [shuffledKeys, setShuffledKeys] = useState<string[]>([]);
+
     const [speed, setSpeed] = useState<number>(() => {
         const saved = localStorage.getItem('ticker_speed');
         return saved ? parseFloat(saved) : 1;
@@ -162,17 +97,11 @@ export const NewsTicker: React.FC = () => {
     // ✅ Ref to store timer and prevent multiple simultaneous timers
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-
-
     useEffect(() => {
         emojiService.loadEmojis().then(() => setEmojisLoaded(true));
 
-        // Load language preference from localStorage
-        const savedLang = localStorage.getItem('app_language') || 'en';
-        setLanguage(savedLang as 'en' | 'pt');
-
-        // 🎲 Shuffle tips on load for random order
-        setShuffledTips(shuffleArray(ROTATING_TIPS));
+        // 🎲 Shuffle tips keys on load
+        setShuffledKeys(shuffleArray(TIP_KEYS));
 
         fetchMessages();
 
@@ -192,10 +121,10 @@ export const NewsTicker: React.FC = () => {
             )
             .subscribe();
 
-        // 🎯 AUTO-REFRESH: Polling a cada 60 segundos (backup + garantia)
+        // 🎯 AUTO-REFRESH: Polling a cada 60 segundos
         const refreshInterval = setInterval(() => {
             fetchMessages();
-        }, 60000); // 60 segundos
+        }, 60000);
 
         return () => {
             supabase.removeChannel(channel);
@@ -203,24 +132,13 @@ export const NewsTicker: React.FC = () => {
         };
     }, []);
 
-    // ✅ Listen for language changes from Settings
+    // ✅ Separate effect for tips rotation
     useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'app_language' && e.newValue) {
-                setLanguage(e.newValue as 'en' | 'pt');
-            }
-        };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
-
-    // ✅ Separate effect for tips rotation with RANDOM intervals (3-7 min) and RANDOM order
-    useEffect(() => {
-        if (shuffledTips.length === 0) return;
+        if (shuffledKeys.length === 0) return;
 
         // 🎲 Function to schedule next tip rotation with random interval
         const scheduleNextTip = () => {
-            // ✅ Clear any existing timer first to prevent multiple timers
+            // ✅ Clear any existing timer first
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
                 timerRef.current = null;
@@ -233,17 +151,16 @@ export const NewsTicker: React.FC = () => {
                 setCurrentTipIndex(prev => {
                     const nextIndex = prev + 1;
                     // 🎲 When we reach the end, reshuffle and start over
-                    if (nextIndex >= shuffledTips.length) {
-                        setShuffledTips(shuffleArray(ROTATING_TIPS));
+                    if (nextIndex >= shuffledKeys.length) {
+                        setShuffledKeys(shuffleArray(TIP_KEYS));
                         return 0;
                     }
                     return nextIndex;
                 });
                 setTipJustChanged(true);
-                // Fade back to normal after 1 minute
                 setTimeout(() => setTipJustChanged(false), 60000);
 
-                // Schedule the next tip recursively
+                // Schedule next
                 scheduleNextTip();
             }, randomInterval);
         };
@@ -252,13 +169,12 @@ export const NewsTicker: React.FC = () => {
         scheduleNextTip();
 
         return () => {
-            // ✅ Clean up timer on unmount or when shuffledTips changes
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
                 timerRef.current = null;
             }
         };
-    }, [shuffledTips]);
+    }, [shuffledKeys]);
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -292,10 +208,12 @@ export const NewsTicker: React.FC = () => {
         return null;
     }
 
-    // Inject tip as synthetic message with numbering (from shuffled array)
-    const currentTip = shuffledTips.length > 0 ? shuffledTips[currentTipIndex % shuffledTips.length] : null;
+    // Pick tip key and translate
+    const currentTipKey = shuffledKeys.length > 0 ? shuffledKeys[currentTipIndex % shuffledKeys.length] : null;
     const tipNumber = String(currentTipIndex + 1).padStart(2, '0');
-    const numberedTip = currentTip ? `Tip #${tipNumber}: ${currentTip[language]}` : '';
+    // Use t() to get text. Assuming keys in json are "1", "2"... 
+    const tipText = currentTipKey ? t(`tips.${currentTipKey}`) : '';
+    const numberedTip = currentTipKey ? `Tip #${tipNumber}: ${tipText}` : '';
 
     const tipMessage: TickerMessageExtended = {
         id: 'rotating-tip',
@@ -329,7 +247,6 @@ export const NewsTicker: React.FC = () => {
 
                 {/* Container do Marquee */}
                 <div className="flex-1 overflow-hidden relative h-full flex items-center">
-                    {/* Alinhamento corrigido: flex items-center para centralizar verticalmente */}
                     <div className="animate-marquee whitespace-nowrap flex items-center h-full">
                         {[...messagesWithTip, ...messagesWithTip].map((msg, index) => (
                             <div key={`${msg.id}-${index}`} className="flex items-center mx-8 h-full">
@@ -346,7 +263,7 @@ export const NewsTicker: React.FC = () => {
                                     ) : (
                                         // ANÚNCIO ADMIN
                                         <div className="mr-3 px-2 py-0.5 bg-amber-500 text-black text-xs font-bold rounded flex items-center h-5">
-                                            PAID
+                                            {t('ticker.paid')}
                                         </div>
                                     )
                                 )}

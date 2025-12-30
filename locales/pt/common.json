@@ -1,14 +1,69 @@
 {
     "settings": {
-        "title": "Configurações",
-        "language": "Idioma / Language",
-        "visuals": "Efeitos Visuais",
-        "audio": "Áudio e Sons"
+        "title": "Configuração do App",
+        "subtitle": "Personalize sua experiência de Trading.",
+        "audio": {
+            "title": "Áudio e Sons",
+            "muted": "MUDO",
+            "active": "ATIVO",
+            "master_volume": "Volume Principal",
+            "description": "Controla todos os efeitos sonoros (Nível, Notificações, Cliques)."
+        },
+        "visuals": {
+            "title": "Efeitos Visuais",
+            "levelup_title": "Celebrações de Nível",
+            "levelup_desc": "Mostra confetes e animações em tela cheia ao subir de nível."
+        },
+        "language": {
+            "title": "Language / Idioma",
+            "interface_title": "Idioma da Interface",
+            "description": "Alterne entre Inglês e Português para dicas e elementos da interface."
+        },
+        "alerts": {
+            "title": "Alertas (Experimental)",
+            "high_price_title": "Alertas de Preço Alto",
+            "high_price_desc": "Notifica quando itens raros aparecem (Em Breve)."
+        }
     },
     "market": {
         "title": "Inteligência de Mercado",
         "demand": "Maior Demanda (WTB)",
         "supply": "Maior Oferta (WTS)",
-        "volatility": "Maior Volatilidade"
+        "volatility": "Maior Volatilidade",
+        "demand_desc": "Maior interesse de compra",
+        "supply_desc": "Novas listagens",
+        "volatility_desc": "Maiores oscilações",
+        "deep_dive": "Ver Análise Detalhada →",
+        "empty_demand": "Sem picos de demanda",
+        "empty_supply": "Sem novas ofertas",
+        "empty_volatility": "Mercado estável",
+        "loading": "Analisando dados do mercado...",
+        "tooltip": {
+            "price": "Preço Atual:",
+            "avg": "Preço Médio:",
+            "volume": "Volume:",
+            "change": "Variação:",
+            "trades": "negócios"
+        }
+    },
+    "tips": {
+        "1": "Clique duas vezes em qualquer trade no Feed ao Vivo para copiar uma mensagem rápida!",
+        "2": "Use a Busca Inteligente com filtros para encontrar as melhores ofertas instantaneamente!",
+        "3": "Complete conquistas para desbloquear badges exclusivos e subir de nível mais rápido!",
+        "4": "Confira a Inteligência de Mercado para tendências de preços e insights de trading!",
+        "5": "Ative o Monitor ao Vivo para alimentar trades automaticamente - sem uploads manuais!",
+        "6": "Verifique seu nick com o token @TORTA para verificação automática!",
+        "7": "Alcance o Nível 50 'Baleia Lendária' processando 10M+ de trades!",
+        "8": "Alertas Inteligentes destacam itens com preços baixos automaticamente!",
+        "9": "Use o Motor de Gráficos para visualizar histórico de preços e tendências de mercado!",
+        "10": "Shouts Pagos aparecem no ticker - apoie a comunidade!",
+        "11": "O emoji de torta 🥧 aparece quando o ticker completa um loop completo!",
+        "12": "O debounce de busca previne travamentos - digite livremente sem congelar!",
+        "13": "Personalize a velocidade do ticker nas Configurações para seu ritmo de leitura!",
+        "14": "A seção Ferramentas Avançadas tem upload manual de logs para dados históricos!",
+        "15": "O atualizador automático mantém seu app atualizado - verifique atualizações regularmente!"
+    },
+    "ticker": {
+        "paid": "PAGO"
     }
 }

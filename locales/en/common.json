@@ -1,14 +1,69 @@
 {
     "settings": {
-        "title": "Settings",
-        "language": "Language / Idioma",
-        "visuals": "Visual Effects",
-        "audio": "Audio & Sounds"
+        "title": "App Configuration",
+        "subtitle": "Customize your Trading experience.",
+        "audio": {
+            "title": "Audio & Sounds",
+            "muted": "MUTED",
+            "active": "ACTIVE",
+            "master_volume": "Master Volume",
+            "description": "Controls all sound effects (Level Up, Notifications, Clicks)."
+        },
+        "visuals": {
+            "title": "Visual Effects",
+            "levelup_title": "Level Up Celebrations",
+            "levelup_desc": "Show full-screen confetti and animations when you gain a level."
+        },
+        "language": {
+            "title": "Language / Idioma",
+            "interface_title": "Interface Language",
+            "description": "Switch between English and Portuguese for tips and interface elements."
+        },
+        "alerts": {
+            "title": "Alerts (Experimental)",
+            "high_price_title": "High Price Alerts",
+            "high_price_desc": "Notify when rare items appear (Coming Soon)."
+        }
     },
     "market": {
         "title": "Market Intelligence",
         "demand": "Top Demand (WTB)",
         "supply": "Top Supply (WTS)",
-        "volatility": "Top Volatility"
+        "volatility": "Top Volatility",
+        "demand_desc": "Highest buy interest",
+        "supply_desc": "New listings",
+        "volatility_desc": "Largest swings",
+        "deep_dive": "Deep Dive Analysis →",
+        "empty_demand": "No demand spikes detected",
+        "empty_supply": "No new supply detected",
+        "empty_volatility": "Market is stable",
+        "loading": "Analyzing market data...",
+        "tooltip": {
+            "price": "Current Price:",
+            "avg": "Avg Price:",
+            "volume": "Volume:",
+            "change": "Change:",
+            "trades": "trades"
+        }
+    },
+    "tips": {
+        "1": "Double-click any trade in the Live Feed to copy a quick message!",
+        "2": "Use the Smart Search with filters to find the best deals instantly!",
+        "3": "Complete achievements to unlock exclusive badges and level up faster!",
+        "4": "Check Market Intelligence for price trends and trading insights!",
+        "5": "Enable Live Monitor to auto-feed trades - no manual uploads needed!",
+        "6": "Verify your nick with the @TORTA token for auto-verification!",
+        "7": "Reach Level 50 'Legendary Whale' by processing 10M+ trades!",
+        "8": "Smart Alerts highlight underpriced items automatically!",
+        "9": "Use Charts Engine to visualize price history and market trends!",
+        "10": "Paid Shouts appear in the ticker - support the community!",
+        "11": "The pie emoji 🥧 shows when the ticker completes a full loop!",
+        "12": "Search debounce prevents lag - type freely without freezing!",
+        "13": "Customize ticker speed in Settings for your preferred reading pace!",
+        "14": "Advanced Tools section has manual log upload for historic data!",
+        "15": "Auto-updater keeps your app fresh - check for updates regularly!"
+    },
+    "ticker": {
+        "paid": "PAID"
     }
 }

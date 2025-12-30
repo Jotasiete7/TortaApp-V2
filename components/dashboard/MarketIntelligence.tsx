@@ -3,6 +3,7 @@ import { ArrowUpRight, ArrowDownRight, Activity, TrendingUp, TrendingDown, HelpC
 import { MarketTrendItem, MarketIntelligenceData, IntelligenceService } from '../../services/intelligence';
 import { formatWurmPrice } from '../../services/priceUtils';
 import { MarketItem, ViewState } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface MarketIntelligenceProps {
     onNavigate: (view: ViewState) => void;
@@ -10,6 +11,7 @@ interface MarketIntelligenceProps {
 }
 
 export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNavigate, localData }) => {
+    const { t } = useTranslation('common');
     const [data, setData] = React.useState<MarketIntelligenceData | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [timeWindow, setTimeWindow] = React.useState<'4h' | '12h' | '24h' | '7d' | '30d'>('7d');
@@ -100,19 +102,19 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         <div className="font-bold text-white border-b border-slate-700 pb-2">{item.name}</div>
                         <div className="grid grid-cols-2 gap-2">
                             <div>
-                                <div className="text-slate-500">Current Price:</div>
+                                <div className="text-slate-500">{t('market.tooltip.price')}</div>
                                 <div className="text-white font-bold" dangerouslySetInnerHTML={{ __html: formatWurmPrice(item.price) }} />
                             </div>
                             <div>
-                                <div className="text-slate-500">Avg Price:</div>
+                                <div className="text-slate-500">{t('market.tooltip.avg')}</div>
                                 <div className="text-white font-bold" dangerouslySetInnerHTML={{ __html: formatWurmPrice(item.avgPrice) }} />
                             </div>
                             <div>
-                                <div className="text-slate-500">Volume:</div>
-                                <div className="text-white font-bold">{item.volume} trades</div>
+                                <div className="text-slate-500">{t('market.tooltip.volume')}</div>
+                                <div className="text-white font-bold">{item.volume} {t('market.tooltip.trades')}</div>
                             </div>
                             <div>
-                                <div className="text-slate-500">Change:</div>
+                                <div className="text-slate-500">{t('market.tooltip.change')}</div>
                                 <div className={`font-bold ${item.absoluteChange > 0 ? 'text-emerald-400' : 'text-rose-400'}`} dangerouslySetInnerHTML={{ __html: formatWurmPrice(Math.abs(item.absoluteChange)) }} />
                             </div>
                         </div>
@@ -122,7 +124,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
         );
     };
 
-    if (loading) return <div className="h-64 flex items-center justify-center text-slate-500 animate-pulse">Analyzing market data...</div>;
+    if (loading) return <div className="h-64 flex items-center justify-center text-slate-500 animate-pulse">{t('market.loading')}</div>;
     if (!data) return null;
 
     return (
@@ -133,7 +135,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                     <div className="p-2 bg-indigo-500/10 rounded-lg">
                         <BarChart2 className="w-5 h-5 text-indigo-400" />
                     </div>
-                    <h2 className="text-xl font-bold text-white">Market Intelligence</h2>
+                    <h2 className="text-xl font-bold text-white">{t('market.title')}</h2>
                 </div>
 
                 <div className="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700">
@@ -160,9 +162,9 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                     <div className="px-4 py-3 border-b border-emerald-500/10 bg-gradient-to-r from-emerald-500/5 to-transparent flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <TrendingUp className="w-4 h-4 text-emerald-400" />
-                            <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">Top Demand (WTB)</h3>
+                            <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">{t('market.demand')}</h3>
                         </div>
-                        <span className="text-[10px] text-emerald-500/60 font-semibold">Highest buy interest</span>
+                        <span className="text-[10px] text-emerald-500/60 font-semibold">{t('market.demand_desc')}</span>
                     </div>
                     <div className="p-3 space-y-1.5 flex-1 min-h-[290px]">
                         {data.topDemand.map((item, i) => (
@@ -170,7 +172,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         ))}
                         {data.topDemand.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs italic opacity-50">
-                                <span>No demand spikes detected</span>
+                                <span>{t('market.empty_demand')}</span>
                             </div>
                         )}
                     </div>
@@ -178,7 +180,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         onClick={() => onNavigate(ViewState.MARKET)}
                         className="w-full py-2 text-[10px] uppercase font-bold text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/5 transition-colors border-t border-slate-800"
                     >
-                        Deep Dive Analysis &rarr;
+                        {t('market.deep_dive')}
                     </button>
                 </div>
 
@@ -187,9 +189,9 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                     <div className="px-4 py-3 border-b border-cyan-500/10 bg-gradient-to-r from-cyan-500/5 to-transparent flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Activity className="w-4 h-4 text-cyan-400" />
-                            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">Top Supply (WTS)</h3>
+                            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">{t('market.supply')}</h3>
                         </div>
-                        <span className="text-[10px] text-cyan-500/60 font-semibold">New listings</span>
+                        <span className="text-[10px] text-cyan-500/60 font-semibold">{t('market.supply_desc')}</span>
                     </div>
                     <div className="p-3 space-y-1.5 flex-1 min-h-[290px]">
                         {data.topSupply.map((item, i) => (
@@ -197,7 +199,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         ))}
                         {data.topSupply.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs italic opacity-50">
-                                <span>No new supply detected</span>
+                                <span>{t('market.empty_supply')}</span>
                             </div>
                         )}
                     </div>
@@ -205,7 +207,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         onClick={() => onNavigate(ViewState.MARKET)}
                         className="w-full py-2 text-[10px] uppercase font-bold text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/5 transition-colors border-t border-slate-800"
                     >
-                        Deep Dive Analysis &rarr;
+                        {t('market.deep_dive')}
                     </button>
                 </div>
 
@@ -214,9 +216,9 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                     <div className="px-4 py-3 border-b border-purple-500/10 bg-gradient-to-r from-purple-500/5 to-transparent flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <TrendingDown className="w-4 h-4 text-purple-400" />
-                            <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider">Top Volatility</h3>
+                            <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider">{t('market.volatility')}</h3>
                         </div>
-                        <span className="text-[10px] text-purple-500/60 font-semibold">Largest swings</span>
+                        <span className="text-[10px] text-purple-500/60 font-semibold">{t('market.volatility_desc')}</span>
                     </div>
                     <div className="p-3 space-y-1.5 flex-1 min-h-[290px]">
                         {data.topVolatility.map((item, i) => (
@@ -224,7 +226,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         ))}
                         {data.topVolatility.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs italic opacity-50">
-                                <span>Market is stable</span>
+                                <span>{t('market.empty_volatility')}</span>
                             </div>
                         )}
                     </div>
@@ -232,7 +234,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ onNaviga
                         onClick={() => onNavigate(ViewState.MARKET)}
                         className="w-full py-2 text-[10px] uppercase font-bold text-slate-500 hover:text-purple-400 hover:bg-purple-500/5 transition-colors border-t border-slate-800"
                     >
-                        Deep Dive Analysis &rarr;
+                        {t('market.deep_dive')}
                     </button>
                 </div>
 
