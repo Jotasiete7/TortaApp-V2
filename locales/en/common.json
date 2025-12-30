@@ -1,0 +1,14 @@
+{
+    "settings": {
+        "title": "Settings",
+        "language": "Language / Idioma",
+        "visuals": "Visual Effects",
+        "audio": "Audio & Sounds"
+    },
+    "market": {
+        "title": "Market Intelligence",
+        "demand": "Top Demand (WTB)",
+        "supply": "Top Supply (WTS)",
+        "volatility": "Top Volatility"
+    }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../services/supabase';
 import { Megaphone, Award } from 'lucide-react';
 import { emojiService } from '../../services/emojiService';
@@ -159,6 +159,9 @@ export const NewsTicker: React.FC = () => {
         return saved ? parseFloat(saved) : 1;
     });
 
+    // ✅ Ref to store timer and prevent multiple simultaneous timers
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
 
 
     useEffect(() => {
@@ -217,10 +220,16 @@ export const NewsTicker: React.FC = () => {
 
         // 🎲 Function to schedule next tip rotation with random interval
         const scheduleNextTip = () => {
+            // ✅ Clear any existing timer first to prevent multiple timers
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null;
+            }
+
             const randomInterval = getRandomInterval();
             console.log(`🎲 Next tip in ${(randomInterval / 60000).toFixed(1)} minutes`);
 
-            return setTimeout(() => {
+            timerRef.current = setTimeout(() => {
                 setCurrentTipIndex(prev => {
                     const nextIndex = prev + 1;
                     // 🎲 When we reach the end, reshuffle and start over
@@ -240,9 +249,15 @@ export const NewsTicker: React.FC = () => {
         };
 
         // Start the first random interval
-        const timeoutId = scheduleNextTip();
+        scheduleNextTip();
 
-        return () => clearTimeout(timeoutId);
+        return () => {
+            // ✅ Clean up timer on unmount or when shuffledTips changes
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null;
+            }
+        };
     }, [shuffledTips]);
 
     useEffect(() => {

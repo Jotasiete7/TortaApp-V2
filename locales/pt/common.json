@@ -1,0 +1,14 @@
+{
+    "settings": {
+        "title": "Configurações",
+        "language": "Idioma / Language",
+        "visuals": "Efeitos Visuais",
+        "audio": "Áudio e Sons"
+    },
+    "market": {
+        "title": "Inteligência de Mercado",
+        "demand": "Maior Demanda (WTB)",
+        "supply": "Maior Oferta (WTS)",
+        "volatility": "Maior Volatilidade"
+    }
+}
