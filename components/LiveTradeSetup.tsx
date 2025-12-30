@@ -40,7 +40,7 @@ export const LiveTradeSetup = () => {
     // Alert Input
     const [newAlertTerm, setNewAlertTerm] = useState('');
     const [newAlertSound, setNewAlertSound] = useState('notification');
-    const [newAlertTypes, setNewAlertTypes] = useState<('WTB'|'WTS'|'WTT')[]>([]);
+    const [newAlertTypes, setNewAlertTypes] = useState<('WTB' | 'WTS' | 'WTT')[]>([]);
     const [availableSounds, setAvailableSounds] = useState<string[]>([]);
 
     // Ads Input
@@ -243,16 +243,16 @@ export const LiveTradeSetup = () => {
             message: `WTS ${alert.term} 50s`,
             type: 'WTS' as const
         };
-        
+
         toast.info(`Testando alerta: ${alert.term}`);
-        
+
         import('@tauri-apps/plugin-notification').then(({ sendNotification }) => {
             sendNotification({
                 title: `TortaApp: ${alert.term}`,
                 body: `${mockTrade.nick}: ${mockTrade.message}`,
             });
         });
-        
+
         SoundService.play(alert.sound || 'notification');
     };
 
@@ -310,9 +310,9 @@ export const LiveTradeSetup = () => {
         input.click();
     };
 
-    const toggleTradeType = (type: 'WTB'|'WTS'|'WTT') => {
-        setNewAlertTypes(prev => 
-            prev.includes(type) 
+    const toggleTradeType = (type: 'WTB' | 'WTS' | 'WTT') => {
+        setNewAlertTypes(prev =>
+            prev.includes(type)
                 ? prev.filter(t => t !== type)
                 : [...prev, type]
         );
@@ -322,7 +322,7 @@ export const LiveTradeSetup = () => {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className={`fixed bottom-24 right-6 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-auto px-4 overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden'}`}
+                className={`fixed bottom-6 right-6 rounded-full shadow-lg transition-all z-50 group flex items-center justify-center ${isWatching ? 'bg-emerald-600 hover:bg-emerald-700 w-auto px-4 overflow-hidden' : 'bg-slate-700 hover:bg-slate-600 border border-slate-500 w-14 h-14 hover:w-auto hover:px-4 overflow-hidden'}`}
                 title="Configurar Live Monitor (Ctrl+M)"
             >
                 {isWatching ? (
@@ -343,7 +343,7 @@ export const LiveTradeSetup = () => {
         );
     }
 
-    
+
     const handleTestDB = () => {
         if ((window as any).testTrade) {
             (window as any).testTrade();
@@ -756,10 +756,10 @@ export const LiveTradeSetup = () => {
                                         >
                                             {timerConfig.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />} Som
                                         </button>
-                                         <div className="w-1/2 flex flex-col justify-end">
+                                        <div className="w-1/2 flex flex-col justify-end">
                                             <label className="text-[9px] uppercase font-bold text-slate-500 mb-1">Volume</label>
-                                            <input 
-                                                type="range" 
+                                            <input
+                                                type="range"
                                                 min="0" max="1" step="0.1"
                                                 value={volume}
                                                 onChange={(e) => setVolume(parseFloat(e.target.value))}
