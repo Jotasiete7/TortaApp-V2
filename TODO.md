@@ -39,6 +39,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas (docs, secrets, resources) e limpeza da raiz. | ✅ Concluído (12/12) |
 | 016 | 🟡 Média | [Feature] | **Controle de Volume** | Persistência de volume e mute para alertas e sons do app. | ✅ Concluído (12/12) |
 | 017 | 🔴 Alta | [Feature] | **Simplificação do Parser** | Remover modo legado e usar apenas AdvancedParser como modo único. | ✅ Concluído (14/12) |
+| 018 | 🔴 Alta | [DevOps] | **Auto-Update Signing (CI/CD)** | Corrigir automação de chaves/assinatura para updates funcionarem (Release v2.0.4). | ⬜ Pendente |
 
 ---
 
@@ -54,29 +55,32 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 17
-**Concluídas:** 15 (88.2%)
-**Pendentes:** 2 (11.8%)
+**Total de Tarefas:** 18
+**Concluídas:** 15 (83.3%)
+**Pendentes:** 3 (16.7%)
 
-**Última Atualização:** 14/12/2024 - Versão "Advanced Only Mode" 🚀
+**Última Atualização:** 30/12/2024 - Versão 2.0.3 "Fat Rabbit" 🐇
 
 ---
 
-## 📝 Notas da Sessão (14/12/2024)
+## 📝 Notas da Sessão (30/12/2024) - Release v2.0.3 "Fat Rabbit" 🐇
 
 ### ✅ Realizado Hoje:
-1.  **Simplificação do Parser**:
-    *   Removido parser legado (`StandardLogParser`)
-    *   Removida trait `LogParser` e abstrações desnecessárias
-    *   Removida flag `USE_ADVANCED_PARSING`
-    *   Sistema agora usa apenas `AdvancedParser` como modo único
-    *   Redução de ~50 linhas de código
-    *   Compilação bem-sucedida (9m 27s) com apenas 2 warnings
+1.  **Refinamento visual (UI/UX)**:
+    -   Settings redesenhadas (Grid layout compacto)
+    -   Sidebar com tipografia balanceada e logo ajustado
+    -   Botão "Monitor" com pulso e melhor visibilidade
+2.  **Funcionalidades**:
+    -   Sistema i18n completo (Toggle EN/PT)
+    -   NewsTicker bilíngue
+3.  **Release Engineering**:
+    -   Bump de versão `v2.0.3`
+    -   Build manual de MSI/EXE bem-sucedido
+    -   `latest.json` gerado (Manual Mode)
 
-### ⚠️ Próximos Passos:
--   Testar o watcher com logs reais
--   Verificar se campos avançados estão sendo populados corretamente
--   Validar performance com arquivos grandes
+### ⚠️ Próximos Passos (Dívida Técnica):
+-   **Resolver assinatura digital**: O ambiente Windows está dificultando a propagação de chaves privadas via env vars. Para a v2.0.4, precisamos de um pipeline de assinatura robusto ou usar GitHub Actions para gerar os artefatos assinados.
+-   Reabilitar Auto-Update no `latest.json`.
 
 ## 📝 Nota de Performance
 **IMPORTANTE**: App.tsx ajustado para limite variável:

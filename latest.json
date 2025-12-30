@@ -1,10 +1,10 @@
 {
     "version": "2.0.3",
-    "notes": "v2.0.3 - Torta Fat Rabbit 🐇\n\n- Nova Interface Compacta\n- Sidebar Refinada\n- Performance Otimizada",
+    "notes": "v2.0.3 - Torta Fat Rabbit 🐇\n\n- Nova Interface Compacta\n- Sidebar Refinada\n- Performance Otimizada\n\n(Install manually - Auto-update disabled for this version)",
     "pub_date": "2025-12-30T15:30:00Z",
     "platforms": {
         "windows-x86_64": {
-            "signature": "⚠️ ABRA O TERMINAL E RODE: 'npx tauri signer sign src-tauri/target/release/bundle/msi/TortaApp_2.0.3_x64_en-US.msi' E COLE O RESULTADO AQUI ⚠️",
+            "signature": "",
             "url": "https://github.com/Jotasiete7/TortaApp-V2/releases/download/v2.0.3/TortaApp_2.0.3_x64_en-US.msi"
         }
     }
