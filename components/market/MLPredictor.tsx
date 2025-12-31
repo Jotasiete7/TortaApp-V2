@@ -53,16 +53,17 @@ const BulkSelector: React.FC<{
     selected: number;
     onSelect: (bulk: number) => void;
 }> = ({ analysis, selected, onSelect }) => {
+    const { t } = useTranslation('common'); // Added hook within subcomponent
     return (
         <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700 mt-4 animate-fade-in">
             <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
                     <Layers className="w-4 h-4 text-purple-400" />
-                    Bulk Quantity / Batch Size
-                    <InfoTooltip text="Analyzes price differences for items sold in batches (e.g., 100x Bricks). Helps identify bulk discounts." />
+                    {t('ml_predictor.bulk_quantity')}
+                    <InfoTooltip text={t('ml_predictor.bulk_tooltip')} />
                 </label>
                 <div className="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded">
-                    {analysis.hasBulks ? `${analysis.bulkSizes.length} sizes found` : 'No bulk trades found'}
+                    {analysis.hasBulks ? t('ml_predictor.sizes_found', { count: analysis.bulkSizes.length }) : t('ml_predictor.no_bulk')}
                 </div>
             </div>
 
@@ -108,7 +109,10 @@ const BulkSelector: React.FC<{
 };
 
 
+import { useTranslation } from 'react-i18next'; // Added
+
 export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
+    const { t } = useTranslation('common'); // Added
     const [quality, setQuality] = useState(50);
     const [material, setMaterial] = useState('Any');
     const [itemName, setItemName] = useState('');
@@ -256,10 +260,10 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                 <div className="inline-flex p-4 bg-purple-500/10 rounded-full mb-2">
                     <BrainCircuit className="w-10 h-10 text-purple-400" />
                 </div>
-                <h2 className="text-3xl font-bold text-white">Price Predictor Engine <span className="text-purple-500 text-sm align-top">PRO</span></h2>
+                <h2 className="text-3xl font-bold text-white">{t('ml_predictor.title')} <span className="text-purple-500 text-sm align-top">{t('ml_predictor.pro')}</span></h2>
                 <div className="text-slate-400 flex items-center justify-center gap-2">
-                    Advanced statistical inference based on <span className="text-emerald-400 font-mono">{data.length}</span> records.
-                    <InfoTooltip text="Uses statistical analysis (Median Absolute Deviation) to remove outliers and find the true market value." />
+                    <span dangerouslySetInnerHTML={{ __html: t('ml_predictor.subtitle', { count: data.length }) }}></span>
+                    <InfoTooltip text={t('ml_predictor.fair_value_tooltip')} />
                 </div>
             </div>
 
@@ -269,12 +273,12 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-6 sticky top-6">
                         <div className="flex items-center gap-2 mb-4">
                             <Filter className="w-5 h-5 text-purple-400" />
-                            <h3 className="text-xl font-semibold text-white">Prediction Context</h3>
-                            <InfoTooltip text="Configure the item filters to narrow down the dataset for analysis." />
+                            <h3 className="text-xl font-semibold text-white">{t('ml_predictor.context_title')}</h3>
+                            <InfoTooltip text={t('ml_predictor.context_tooltip')} />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Item Name</label>
+                            <label className="text-sm font-medium text-slate-300">{t('ml_predictor.item_label')}</label>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
@@ -294,13 +298,13 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Material / Type</label>
+                            <label className="text-sm font-medium text-slate-300">{t('ml_predictor.material_label')}</label>
                             <select
                                 value={material}
                                 onChange={(e) => setMaterial(e.target.value)}
                                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-purple-500/50 outline-none custom-select"
                             >
-                                <option value="Any">Any Material</option>
+                                <option value="Any">{t('ml_predictor.any_material')}</option>
                                 {availableMaterials.map(m => (
                                     <option key={m} value={m}>{m}</option>
                                 ))}
@@ -317,7 +321,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
 
                         <div className="space-y-4 pt-2 border-t border-slate-700/50">
                             <div className="flex justify-between">
-                                <label className="text-sm font-medium text-slate-300">Target Quality (QL)</label>
+                                <label className="text-sm font-medium text-slate-300">{t('ml_predictor.quality_label')}</label>
                                 <span className="text-sm font-bold text-purple-400">{quality}ql</span>
                             </div>
                             <input
@@ -335,7 +339,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                             disabled={loading || data.length === 0}
                             className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20"
                         >
-                            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Calculate Fair Price'}
+                            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : t('ml_predictor.calculate_btn')}
                         </button>
                     </div>
                 </div>
@@ -351,9 +355,9 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4 border border-slate-700">
                                         <TrendingUp className="w-10 h-10 opacity-20" />
                                     </div>
-                                    <h4 className="text-xl font-medium text-slate-300">Ready to Predict</h4>
+                                    <h4 className="text-xl font-medium text-slate-300">{t('ml_predictor.ready_title')}</h4>
                                     <p className="text-sm max-w-xs mx-auto">
-                                        Select an item to analyze historical trends and calculate a fair market value.
+                                        {t('ml_predictor.ready_desc')}
                                     </p>
 
                                     {/* ZERO PRICE FEEDBACK */}
@@ -362,13 +366,13 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                         <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-300 text-sm max-w-sm mx-auto animate-in slide-in-from-bottom-2 fade-in">
                                             <div className="flex items-center justify-center gap-2 font-bold mb-1 text-white">
                                                 <TrendingUp className="w-5 h-5 text-blue-400" />
-                                                Market Activity Detected
+                                                {t('ml_predictor.market_activity_title')}
                                             </div>
                                             <p className="opacity-90 mb-2">
-                                                Found {zeroPriceCount} listings with no explicit price.
+                                                {t('ml_predictor.market_activity_desc', { count: zeroPriceCount })}
                                             </p>
                                             <p className="text-xs bg-slate-900/50 p-2 rounded text-slate-400">
-                                                💡 <b>Insight:</b> This indicates active interest (WTB) or unpriced sellers. Check the trade chat for details.
+                                                💡 <b>{t('ml_predictor.market_activity_insight')}</b>
                                             </p>
                                         </div>
                                     )}
@@ -376,7 +380,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     {marketStats === null && itemName && zeroPriceCount === 0 && (
                                         <div className="flex flex-col items-center gap-2 text-rose-400 text-sm mt-4 p-4 bg-rose-500/10 rounded-xl border border-rose-500/20 animate-in slide-in-from-bottom-2">
                                             <Search className="w-5 h-5" />
-                                            <span>No trades found for "<b>{itemName}</b>" with material "<b>{material}</b>".</span>
+                                            <span>{t('ml_predictor.no_trades', { item: itemName, material: material })}</span>
                                         </div>
                                     )}
                                 </div>
@@ -385,8 +389,8 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                             {loading && (
                                 <div className="text-slate-500 space-y-4">
                                     <Loader2 className="w-16 h-16 mx-auto animate-spin text-purple-500" />
-                                    <p className="animate-pulse text-lg">Crunching numbers...</p>
-                                    <p className="text-xs text-slate-600">Analyzing {data.length.toLocaleString()} records • Removing outliers • Calculating quartiles</p>
+                                    <p className="animate-pulse text-lg">{t('ml_predictor.crunching')}</p>
+                                    <p className="text-xs text-slate-600">{t('ml_predictor.analyzing_desc', { count: data.length.toLocaleString() })}</p>
                                 </div>
                             )}
 
@@ -394,19 +398,19 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                 <div className="w-full animate-fade-in">
                                     <div className="space-y-2 mb-8">
                                         <div className="text-xs text-purple-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                                            {selectedBulk > 1 ? `Fair Market Value (${selectedBulk}x Batch)` : 'Fair Market Value (Unit)'}
-                                            <InfoTooltip text="The estimated 'true' value of the item, calculated as the median of filtered trades after removing extreme outliers." />
+                                            {selectedBulk > 1 ? t('ml_predictor.fair_value_bulk', { bulk: selectedBulk }) : t('ml_predictor.fair_value_unit')}
+                                            <InfoTooltip text={t('ml_predictor.fair_value_tooltip')} />
                                         </div>
                                         <div className="text-6xl font-bold text-white tracking-tight flex items-baseline justify-center gap-2 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                                             <span dangerouslySetInnerHTML={{ __html: formatWurmPrice(displayPrice).replace(/([0-9]+)([gsc])/g, '<span class="text-white">$1</span><span class="text-slate-500 text-3xl ml-0.5 mr-3">$2</span>').replace(/(\d+)i/, '<span class="text-slate-300 text-4xl">$1i</span>') }} />
                                         </div>
                                         <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
                                             <span className="bg-slate-800 px-2 py-0.5 rounded text-slate-300">
-                                                Based on {marketStats.sampleSize} trades
+                                                {t('ml_predictor.based_on', { count: marketStats.sampleSize })}
                                             </span>
                                             {marketStats.outliersRemoved > 0 && (
                                                 <span className="bg-rose-900/30 text-rose-400 px-2 py-0.5 rounded border border-rose-900/50">
-                                                    {marketStats.outliersRemoved} outliers removed
+                                                    {t('ml_predictor.outliers_removed', { count: marketStats.outliersRemoved })}
                                                 </span>
                                             )}
                                         </div>
@@ -416,7 +420,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                                             <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
-                                                Confidence <InfoTooltip text="Statistical certainty based on sample size and price consistency. Higher is better." />
+                                                {t('ml_predictor.confidence')} <InfoTooltip text={t('ml_predictor.confidence_tooltip')} />
                                             </div>
                                             <div className={`text-xl font-bold ${result.confidence > 0.7 ? 'text-emerald-400' : 'text-amber-400'}`}>
                                                 {(result.confidence * 100).toFixed(0)}%
@@ -424,7 +428,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                         </div>
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                                             <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
-                                                Volatility <InfoTooltip text="Standard deviation of prices. High volatility means prices fluctuate wildly." />
+                                                {t('ml_predictor.volatility')} <InfoTooltip text={t('ml_predictor.volatility_tooltip')} />
                                             </div>
                                             <div className="text-xl font-bold text-slate-300">
                                                 {formatWurmPrice(marketStats.volatility)}
@@ -432,7 +436,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                         </div>
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                                             <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
-                                                Buy Zone (&lt;P25) <InfoTooltip text="25th Percentile: Prices below this are considered a 'Good Deal' for buyers." />
+                                                {t('ml_predictor.buy_zone')} <InfoTooltip text={t('ml_predictor.buy_zone_tooltip')} />
                                             </div>
                                             <div className="text-xl font-bold text-emerald-400">
                                                 {formatWurmPrice(marketStats.p25)}
@@ -440,7 +444,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                         </div>
                                         <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                                             <div className="text-xs text-slate-400 mb-1 flex items-center justify-center gap-1">
-                                                Sell Zone (&gt;P75) <InfoTooltip text="75th Percentile: Prices above this are considered a 'Good Deal' for sellers." />
+                                                {t('ml_predictor.sell_zone')} <InfoTooltip text={t('ml_predictor.sell_zone_tooltip')} />
                                             </div>
                                             <div className="text-xl font-bold text-rose-400">
                                                 {formatWurmPrice(marketStats.p75)}
@@ -451,7 +455,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     <div className="w-full bg-slate-950/50 rounded-xl p-4 border border-slate-800 mb-8">
                                         <div className="flex items-center justify-between mb-4">
                                             <h5 className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
-                                                <Layers className="w-4 h-4" /> Price Distribution
+                                                <Layers className="w-4 h-4" /> {t('ml_predictor.price_distribution')}
                                             </h5>
                                         </div>
                                         <PriceHistogram
@@ -474,8 +478,8 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                             <div className="p-4 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center">
                                 <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
                                     <Layers className="w-4 h-4 text-purple-400" />
-                                    Analysis Source Data (Top 20)
-                                    <InfoTooltip text="The actual trade records used to calculate the price. Shows up to 20 most relevant recent trades." />
+                                    {t('ml_predictor.source_data')}
+                                    <InfoTooltip text={t('ml_predictor.source_data_tooltip')} />
                                 </h3>
                             </div>
                             <div className="overflow-x-auto">
