@@ -1,12 +1,8 @@
 import { MarketItem } from '../types';
 
 /**
- * fileParser.ts
- * 
- * Optimized V2.1 (Manus AI)
- * - Improved `extractNameAndQty` to handle "2k", "100x", names with spaces.
- * - Improved Parse Logic for Rarity (Word Boundaries).
- * - General Robustness improvements.
+ * fileParser.ts - Versão 2.2 (Robust Pattern Hunter)
+ * Otimizado para extrair Preço, QL e Nome de forma independente.
  */
 
 // Helper to calculate a simple hash for deduplication
@@ -45,187 +41,45 @@ export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
 export const extractNameAndQty = (itemName: string): { cleanName: string, quantity: number } => {
     if (!itemName) return { cleanName: '', quantity: 1 };
 
-    // 1. Normaliza a string (remove espaços extras, etc.)
     let name = itemName.trim();
     let quantity = 1;
 
-    // 2. Regex para capturar padrões de quantidade no início da string:
-    // Exemplos: "100x", "2k", "50 ", "1000 "
-    // O padrão (\d+k|\d+) captura números inteiros ou números seguidos de 'k' (para milhares).
-    // O padrão [x\s]+ captura 'x' ou um ou mais espaços.
+    // Regex para capturar padrões de quantidade no início da string
     const qtyRegex = /^(\d+k|\d+)\s*[x\s]+/i;
     const match = name.match(qtyRegex);
 
     if (match) {
         let qtyStr = match[1].toLowerCase();
-
         if (qtyStr.endsWith('k')) {
-            // Converte "2k" para 2000
             quantity = parseFloat(qtyStr.replace('k', '')) * 1000;
         } else {
-            // Converte "100" para 100
             quantity = parseInt(qtyStr, 10);
         }
-
-        // Remove o prefixo de quantidade da string original
         name = name.substring(match[0].length).trim();
     }
 
-    // 3. Limpeza final: remove espaços em excesso
     const cleanName = name.replace(/\s+/g, ' ').trim();
-
     return { cleanName, quantity };
 };
 
-export const parseRecords = (logContent: string): MarketItem[] => {
-    const lines = logContent.split(/\r?\n/);
-    const records: MarketItem[] = [];
-    const now = Date.now(); // Fallback timestamp if parsing fails
-
-    // Regex for standard Wurm logs timestamps: [HH:mm:ss]
-    const timeRegex = /^\[(\d{2}):(\d{2}):(\d{2})\]\s+(.*)/;
-
-    // Regex for Trade channel messages
-    // Format: "PlayerName (Server) WTS/WTB [Item Name] QL:X ..."
-    // We need to be flexible.
-
-    lines.forEach((line) => {
-        if (!line.trim()) return;
-
-        const timeMatch = line.match(timeRegex);
-        let message = line;
-        let timestamp = now;
-
-        if (timeMatch) {
-            // Construct a rudimentary timestamp (assuming today for simplicity, usually need Date parsing)
-            const [_, h, m, s] = timeMatch;
-            const d = new Date();
-            d.setHours(parseInt(h), parseInt(m), parseInt(s));
-            timestamp = d.getTime();
-            message = timeMatch[4];
-        }
-
-        // Filter valid trade messages
-        if (!message.includes('WTS') && !message.includes('WTB') && !message.includes('WTT')) {
-            return;
-        }
-
-        // Extract Order Type (Robust Regex Fix)
-        const prefix = message.substring(0, 50).toLowerCase(); // Check start of message
-        const isWTB = /\bwtb\b/i.test(prefix);
-        const isWTS = /\bwts\b/i.test(prefix);
-
-        let orderType: 'WTS' | 'WTB' | 'UNKNOWN' = 'UNKNOWN';
-        if (isWTB) orderType = 'WTB';
-        else if (isWTS) orderType = 'WTS';
-
-        // Extract Nickname (first word usually, or before (Server))
-        // Simple heuristic: First word is nick.
-        const parts = message.split(' ');
-        let nick = parts[0];
-
-        // Handling Server Tags usually: "Nick (Cad) WTS..."
-        if (parts[1]?.startsWith('(') && parts[1]?.endsWith(')')) {
-            // It's a cross-server message, nick is correct.
-        }
-
-        // Extract Price (Patterns: "1s", "50c", "1g", "1.5s")
-        // Regex looks for digits followed by g, s, or c.
-        const priceRegex = /(\d+(?:\.\d+)?)\s*(g|s|c)/i;
-        const priceMatch = message.match(priceRegex);
-        let price = 0;
-
-        if (priceMatch) {
-            const val = parseFloat(priceMatch[1]);
-            const unit = priceMatch[2].toLowerCase();
-            if (unit === 'g') price = val * 10000;
-            else if (unit === 's') price = val * 100;
-            else price = val;
-        }
-
-        // Extract Quality (QL)
-        // Patterns: "QL:50", "ql 90", "90ql"
-        const qlRegex = /(?:ql[:\s]*)(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)ql/i;
-        const qlMatch = message.match(qlRegex);
-        let quality = 50; // Default QL
-        if (qlMatch) {
-            quality = parseFloat(qlMatch[1] || qlMatch[2]);
-        }
-
-        // Extract Rarity (Manus Improved Logic)
-        let rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic' = 'Common';
-        // Use word boundaries to avoid 'rarely' being detected as 'Rare'
-        if (/\bfantastic\b/i.test(message)) rarity = 'Fantastic';
-        else if (/\bsupreme\b/i.test(message)) rarity = 'Supreme';
-        else if (/\brare\b/i.test(message)) rarity = 'Rare';
-
-        // Extract Item Name
-        // This is the hardest part. Removing WTS/WTB, removing Price, removing QL.
-        // We defer semantic cleaning to ItemIdentity, but here we do structural cleaning.
-        let paramsToRemove = [
-            nick,
-            'WTS', 'WTB', 'WTT', ':', '>',
-            // Server tags
-            /\([a-z]+\)/gi,
-            // Price strings
-            priceMatch ? priceMatch[0] : '',
-            // QL strings
-            qlMatch ? qlMatch[0] : '',
-            // Rarity strings (optional, keep them for now or strip?)
-            // Usually we strip them in ItemIdentity. Let's keep name as raw as possible but without the obvious trash.
-        ];
-
-        let rawName = message;
-
-        // Remove known structural parts
-        paramsToRemove.forEach(p => {
-            if (!p) return;
-            if (typeof p === 'string') {
-                rawName = rawName.replace(p, '');
-            } else {
-                rawName = rawName.replace(p, '');
-            }
-        });
-
-        // Use the new extractor for quantity and clean name
-        const { cleanName, quantity } = extractNameAndQty(rawName);
-
-        records.push({
-            id: simpleHash(message + timestamp),
-            timestamp,
-            name: cleanName, // Validated/Cleaned Name
-            price,
-            quantity,
-            quality,
-            seller: nick,
-            orderType,
-            material: 'Unknown', // Material detection is handled elsewhere or could be here
-            rarity,
-            raw_message: message
-        });
-    });
-
-    return records;
-};
-
-// --- COMPATIBILITY LAYER (Fix for LiveTradeMonitor build error) ---
 // --- COMPATIBILITY LAYER (Fix for LiveTradeMonitor build error) ---
 export const FileParser = {
     isNoise: (message: string): boolean => {
         const lower = message.toLowerCase();
-        // Common crafting/spam variations to ignore in Trade Monitor
         const noiseTriggers = [
             'you create', 'you improve', 'you continue', 'finished',
-            'starts to', 'fizzles', 'fails', 'you carefully'
+            'starts to', 'fizzles', 'fails', 'you carefully',
+            'you disable receiving', 'view the full trade', 'please pm the person',
+            'this is the trade channel', 'only messages starting with'
         ];
         return noiseTriggers.some(t => lower.includes(t));
     },
     normalizePrice: (message: string): number => {
-        if (!message) return 0;
-        const s = message.toLowerCase().trim();
-        let totalCopper = 0.0;
+        if (!message) return 0.0;
+        const s = String(message).toLowerCase().trim();
 
-        // Improved Regex: Captures numbers followed by g, s, c, i OR gold, silver, copper, iron
+        let totalCopper = 0.0;
+        // Regex caçador de unidades: g/gold, s/silver, c/copper, i/iron
         const regex = /([\d.]+)\s*(gold|silver|copper|iron|g|s|c|i)\b/g;
         let match;
         let foundMatch = false;
@@ -236,12 +90,103 @@ export const FileParser = {
             const unit = match[2];
 
             if (!isNaN(val)) {
-                if (unit.startsWith('g')) totalCopper += val * 10000;
-                else if (unit.startsWith('s')) totalCopper += val * 100;
+                if (unit.startsWith('g')) totalCopper += val * 10000.0;
+                else if (unit.startsWith('s')) totalCopper += val * 100.0;
                 else if (unit.startsWith('c')) totalCopper += val;
-                else if (unit.startsWith('i')) totalCopper += val / 100;
+                else if (unit.startsWith('i')) totalCopper += val / 100.0;
             }
         }
-        return foundMatch ? totalCopper : 0;
+        return foundMatch ? totalCopper : 0.0;
     }
+};
+
+export const parseRecords = (logContent: string): MarketItem[] => {
+    const lines = logContent.split(/\r?\n/);
+    const records: MarketItem[] = [];
+    const now = Date.now();
+
+    const timeRegex = /^\[(\d{2}):(\d{2}):(\d{2})\]\s+(.*)/;
+
+    lines.forEach((line) => {
+        if (!line.trim()) return;
+
+        const timeMatch = line.match(timeRegex);
+        let message = line;
+        let timestamp = now;
+
+        if (timeMatch) {
+            const [_, h, m, s] = timeMatch;
+            const d = new Date();
+            d.setHours(parseInt(h), parseInt(m), parseInt(s));
+            timestamp = d.getTime();
+            message = timeMatch[4];
+        }
+
+        // Noise Filter Check
+        if (FileParser.isNoise(message)) return;
+
+        // 1. Identificar Tipo de Ordem (Robust Regex)
+        // Check first 30 chars for WTS/WTB to avoid confusion
+        const prefix = message.substring(0, 30).toLowerCase();
+        const isWTB = /\bwtb\b/i.test(prefix);
+        const isWTS = /\bwts\b/i.test(prefix);
+
+        // Filter out non-trade messages (unless we want EVERYTHING)
+        if (!isWTB && !isWTS && !message.toLowerCase().includes('wtt')) {
+            return;
+        }
+
+        const orderType = isWTB ? 'WTB' : (isWTS ? 'WTS' : 'UNKNOWN');
+
+        // Extract Nickname (first word usually)
+        const parts = message.split(' ');
+        let nick = parts[0];
+
+        // 2. Caçar o Preço na mensagem (Independent)
+        const priceCopper = FileParser.normalizePrice(message);
+
+        // Regex used for cleaning price text from name
+        const priceRegex = /([\d.]+)\s*(gold|silver|copper|iron|g|s|c|i)\b/gi;
+
+        // 3. Caçar o QL (Independent)
+        const qlMatch = message.match(/QL[:\s]*(\d+(\.\d+)?)|(\d+(\.\d+)?)ql/i);
+        const quality = qlMatch ? parseFloat(qlMatch[1] || qlMatch[3]) : 50.0;
+
+        // 4. Caçar Raridade
+        let rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic' = 'Common';
+        if (/\bfantastic\b/i.test(message)) rarity = 'Fantastic';
+        else if (/\bsupreme\b/i.test(message)) rarity = 'Supreme';
+        else if (/\brare\b/i.test(message)) rarity = 'Rare';
+
+        // 5. Limpar o Nome do Item (O que sobrar é o nome)
+        let cleanText = message
+            .replace(nick, "") // Remove nick
+            .replace(/\b(wts|wtb|wtt)\b/gi, "") // Remove known trade markers
+            .replace(priceRegex, "") // Remove price text
+            .replace(/QL[:\s]*(\d+(\.\d+)?)|(\d+(\.\d+)?)ql/gi, "") // Remove QL text
+            .replace(/\([a-z]+\)/gi, "") // Remove server tags
+            .replace(/\[|\]/g, "") // Remove brackets
+            .replace(/[:>]/g, "") // Remove separators
+            .replace(/\s+/g, " ") // Remove double spaces
+            .trim();
+
+        // Extração final de quantidade do nome limpo
+        const { cleanName, quantity } = extractNameAndQty(cleanText);
+
+        records.push({
+            id: simpleHash(message + timestamp),
+            timestamp,
+            name: cleanName,
+            price: priceCopper,
+            quantity,
+            quality,
+            seller: nick,
+            orderType,
+            material: 'Unknown',
+            rarity,
+            raw_message: message
+        });
+    });
+
+    return records;
 };
