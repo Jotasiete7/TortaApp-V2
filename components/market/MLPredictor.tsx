@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { BrainCircuit, Loader2, TrendingUp, Filter, Layers, Search, HelpCircle } from 'lucide-react';
+import { BrainCircuit, Loader2, TrendingUp, Filter, Layers, Search, HelpCircle, AlertTriangle } from 'lucide-react';
 import { PredictionResult, MarketItem, BulkAnalysis } from '../../types';
 import { analyzePriceSet, MarketStats } from '../../services/mlEngine';
 import { formatWurmPrice } from '../../services/priceUtils';
 import { extractNameAndQty } from '../../services/fileParser';
 import { PriceHistogram } from './PriceHistogram';
 import { ProfitCalculator } from './ProfitCalculator';
-// import { MLHelpModal } from './MLHelpModal'; // Unused
 import { InfoTooltip } from './InfoTooltip';
 
 interface MLPredictorProps {
@@ -22,7 +21,6 @@ const analyzeBulks = (items: MarketItem[]): BulkAnalysis => {
 
     const hasBulks = bulkSizes.length > 0;
 
-    // Calculate multipliers based on unit prices
     const bulkMultipliers = bulkSizes.map(size => {
         const bulkItems = items.filter(item => item.quantity === size);
         const singleItems = items.filter(item => item.quantity === 1);
@@ -50,7 +48,6 @@ const analyzeBulks = (items: MarketItem[]): BulkAnalysis => {
     };
 };
 
-// --- COMPONENT: BULK SELECTOR ---
 const BulkSelector: React.FC<{
     analysis: BulkAnalysis;
     selected: number;
@@ -113,7 +110,6 @@ const BulkSelector: React.FC<{
 
 export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
     const [quality, setQuality] = useState(50);
-    // const [showHelp, setShowHelp] = useState(false);
     const [material, setMaterial] = useState('Any');
     const [itemName, setItemName] = useState('');
 
@@ -121,13 +117,12 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
     const [result, setResult] = useState<PredictionResult | null>(null);
     const [marketStats, setMarketStats] = useState<MarketStats | null>(null);
     const [relevantTrades, setRelevantTrades] = useState<MarketItem[]>([]);
+    const [zeroPriceCount, setZeroPriceCount] = useState(0); // FEEDBACK FIX
 
-    // Bulk State
     const [bulkAnalysis, setBulkAnalysis] = useState<BulkAnalysis | null>(null);
     const [selectedBulk, setSelectedBulk] = useState<number>(1);
     const [showBulks, setShowBulks] = useState(false);
 
-    // 1. Extração Dinâmica de Materiais
     const availableMaterials = useMemo(() => {
         if (data.length === 0) return ['Iron', 'Wood', 'Cotton'];
         const mats = new Set<string>();
@@ -140,7 +135,6 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
         return Array.from(mats).sort();
     }, [data]);
 
-    // 2. Extração Dinâmica de Nomes
     const availableItemNames = useMemo(() => {
         if (data.length === 0) return [];
         const names = new Set<string>();
@@ -158,38 +152,43 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
         setBulkAnalysis(null);
         setSelectedBulk(1);
         setShowBulks(false);
+        setZeroPriceCount(0);
 
-        await new Promise(resolve => setTimeout(resolve, 800)); // Little more drama
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         try {
             const searchExtraction = extractNameAndQty(itemName);
             const cleanSearchTerm = searchExtraction.cleanName.toLowerCase();
 
             // 1. Filtragem Inteligente
-            const relevantItems = data.filter(item => {
+            const filteredItems = data.filter(item => {
                 const matchMat = material === 'Any' || (item.material && item.material.toLowerCase() === material.toLowerCase());
                 const matchName = cleanSearchTerm === '' || item.name.toLowerCase().includes(cleanSearchTerm);
-                return matchMat && matchName && item.price > 0;
+                return matchMat && matchName;
             });
 
-            setRelevantTrades(relevantItems.slice(0, 20));
+            // Separate into Valid (Price > 0) and Invalid (Price == 0)
+            const pricedItems = filteredItems.filter(item => item.price > 0);
+            const unpricedItems = filteredItems.filter(item => item.price === 0);
 
-            if (relevantItems.length === 0) {
+            setRelevantTrades(pricedItems.slice(0, 20));
+            setZeroPriceCount(unpricedItems.length);
+
+            if (pricedItems.length === 0) {
                 setLoading(false);
                 return;
             }
 
             // 2. Análise de Bulks
-            const analysis = analyzeBulks(relevantItems);
+            const analysis = analyzeBulks(pricedItems);
             setBulkAnalysis(analysis);
             setShowBulks(analysis.hasBulks);
 
-            // 3. Análise Estatística Avançada (Median, Quartiles)
-            const unitPrices = relevantItems.map(i => i.price);
+            // 3. Análise Estatística Avançada
+            const unitPrices = pricedItems.map(i => i.price);
             const stats = analyzePriceSet(unitPrices);
             setMarketStats(stats);
 
-            // 4. Projeção baseada em Fair Price (Mediana Robusta)
             const basePredictedPrice = stats.fairPrice;
 
             let confidence = 0.95;
@@ -211,7 +210,6 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
         }
     };
 
-    // Derived display price
     const displayPrice = useMemo(() => {
         if (!result) return 0;
         let price = result.predictedPrice;
@@ -314,7 +312,6 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
 
                 {/* RIGHT COLUMN: RESULTS */}
                 <div className="lg:col-span-8 space-y-6">
-                    {/* MAIN RESULT CARD */}
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-amber-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                         <div className="relative h-full bg-slate-900 border border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-6 min-h-[300px]">
@@ -328,6 +325,27 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     <p className="text-sm max-w-xs mx-auto">
                                         Select an item to analyze historical trends and calculate a fair market value.
                                     </p>
+
+                                    {/* ZERO PRICE FEEDBACK */}
+                                    {zeroPriceCount > 0 && (
+                                        <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-sm max-w-sm mx-auto animate-in slide-in-from-bottom-2 fade-in">
+                                            <div className="flex items-center justify-center gap-2 font-bold mb-1">
+                                                <AlertTriangle className="w-5 h-5" />
+                                                Found {zeroPriceCount} matching items...
+                                            </div>
+                                            <p className="opacity-90">
+                                                ...but they have <strong className="text-white">Price: 0</strong> (e.g. WTB offers without price).
+                                                The predictor requires completed trades or listings with prices.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {marketStats === null && itemName && zeroPriceCount === 0 && (
+                                        <div className="flex flex-col items-center gap-2 text-rose-400 text-sm mt-4 p-4 bg-rose-500/10 rounded-xl border border-rose-500/20 animate-in slide-in-from-bottom-2">
+                                            <Search className="w-5 h-5" />
+                                            <span>No trades found for "<b>{itemName}</b>" with material "<b>{material}</b>".</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -397,7 +415,6 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                         </div>
                                     </div>
 
-                                    {/* PRICE HISTOGRAM */}
                                     <div className="w-full bg-slate-950/50 rounded-xl p-4 border border-slate-800 mb-8">
                                         <div className="flex items-center justify-between mb-4">
                                             <h5 className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
@@ -412,16 +429,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                         />
                                     </div>
 
-                                    {/* PROFIT CALCULATOR */}
                                     <ProfitCalculator fairPrice={displayPrice} />
-
-                                </div>
-                            )}
-
-                            {!result && !loading && marketStats === null && itemName && (
-                                <div className="flex flex-col items-center gap-2 text-rose-400 text-sm mt-4 p-4 bg-rose-500/10 rounded-xl border border-rose-500/20">
-                                    <Search className="w-5 h-5" />
-                                    <span>No trades found for "<b>{itemName}</b>" with material "<b>{material}</b>".</span>
                                 </div>
                             )}
                         </div>

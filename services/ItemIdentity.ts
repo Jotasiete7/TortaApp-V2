@@ -4,11 +4,10 @@
  * Service responsible for Semantic Normalization of item names.
  * Ensures that "Large Anvil", "large anvil", and "Lg Anvil" are treated as the same entity.
  * 
- * ARCHITECTURAL CHANGE (v2.1):
- * - Separates Identity (ID) from Display Name.
- * - ID is strictly lowercase alphanumeric + underscores.
- * - Display Name is title-cased and pretty.
- * - Semantic rules for items like "Sleep Powder" are explicit.
+ * PATCH APPLIED:
+ * - Added (Server) tag stripping (e.g. (Cad), (Har))
+ * - Added WTB/WTS/WTT to ignored terms
+ * - Improved cleaning logic
  */
 
 // 1. Semantic Item Configuration (The "Truth" Table)
@@ -37,11 +36,13 @@ const ALIAS_MAP: Record<string, string> = {
 };
 
 // Words to ignore during normalization (Noise)
+// ADDED: wtb, wts, wtt
 const IGNORED_TERMS = new Set([
     'rare', 'supreme', 'fantastic',
     'common', 'unfinished', 'bulk',
     'ql', 'wt', 'dmg', 'ea', 'each', 'x',
-    'completed', 'quality'
+    'completed', 'quality',
+    'wtb', 'wts', 'wtt', 'wtt>', 'wts>', 'wtb>'
 ]);
 
 // Prefixes that should not be part of the ID (Mechanical Cleaning)
@@ -68,7 +69,7 @@ const SERVICE_TERMS = new Set([
     'hiring',
     'selling',
     'buying',
-    'trading'
+    'trading' // 'trading' might be risky if "Trading Post" exists? But standard items don't start with Trading.
 ]);
 
 // Materials to strip ONLY if semantic rule applies
@@ -103,19 +104,23 @@ export const resolveItemIdentity = (rawName: string): ItemIdentity => {
     }
 
     // 0. Service Filtering (Fail Fast)
-    // If the message is clearly a service, we shouldn't even try to ID it as an item properly.
     const hasServiceTerm = cleaned.split(/\s+/).some(w => SERVICE_TERMS.has(w));
     if (hasServiceTerm) {
-        // Optionally return 'Service' if we want to track them, but for Market charts we want Items.
-        // Let's mark as unknown for charts.
         // return { id: 'unknown', displayName: 'Unknown' };
     }
 
     // 1. Basic Cleaning
-    cleaned = cleaned.replace(/\[.*?\]/g, ''); // Remove brackets
-    cleaned = cleaned.replace(/\b(ql|dmg|wt)[:\s]*[\d.]+/g, ''); // Remove metrics
-    cleaned = cleaned.replace(/\b\d+ql\b/g, ''); // Remove 90ql
-    cleaned = cleaned.replace(/\sx\d+/g, ''); // Remove x30
+    // REMOVE (Server) Tags like (Cad), (Har), (Pvp)
+    cleaned = cleaned.replace(/^\([a-z0-9]+\)\s*/i, '');
+    // Remove brackets
+    cleaned = cleaned.replace(/\[.*?\]/g, '');
+    // Remove metrics
+    cleaned = cleaned.replace(/\b(ql|dmg|wt)[:\s]*[\d.]+/g, '');
+    cleaned = cleaned.replace(/\b\d+ql\b/g, '');
+    cleaned = cleaned.replace(/\sx\d+/g, '');
+
+    // Explicitly remove WTB/WTS if they are at start (redundant with IGNORED_TERMS but safer)
+    cleaned = cleaned.replace(/^(wtb|wts|wtt)\s+/i, '');
 
     // 2. Tokenize & Filter
     const words = cleaned.split(/[\s-]+/);
@@ -123,6 +128,7 @@ export const resolveItemIdentity = (rawName: string): ItemIdentity => {
 
     for (const w of words) {
         if (/^\d+$/.test(w)) continue; // Skip pure numbers
+        if (/^\d+[kgms]$/.test(w)) continue; // Skip quantities like 2k, 500g, 10m
         if (IGNORED_TERMS.has(w)) continue; // Skip noise
         if (IGNORED_PREFIXES.has(w)) continue; // Skip prefixes (Impure, etc.)
         if (SERVICE_TERMS.has(w)) continue; // Skip service words
@@ -143,28 +149,21 @@ export const resolveItemIdentity = (rawName: string): ItemIdentity => {
     const tentativeId = trimmed.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
     // 5. Semantic Rules Check
-    // Check if the string ENDS with a known semantic type (heuristic)
-    // Or check if the cleaning result matches a semantic key
-
-    // Heuristic: Check if it contains "sleep powder"
     let finalName = trimmed;
 
     // Hardcoded Semantic Check (Robust)
-    // This allows identifying "Wheat Sleep Powder" as "Sleep Powder"
     for (const [key, config] of Object.entries(SEMANTIC_ITEMS)) {
         const readableKey = key.replace(/_/g, ' ');
-        if (trimmed.includes(readableKey.replace('sleep powder', 'sleep powder'))) { // Simple containment check
-            // Actually, we should check if the NORMALIZED string ends with the key words
+        if (trimmed.includes(readableKey.replace('sleep powder', 'sleep powder'))) {
             if (trimmed.endsWith(config.displayName.toLowerCase())) {
                 if (config.collapseMaterials) {
-                    // Strip materials if configured
-                    finalName = config.displayName.toLowerCase(); // Force it to the base name
+                    finalName = config.displayName.toLowerCase();
                 }
             }
         }
     }
 
-    // Specific fix for Sleep Powder to match user request precisely
+    // Specific fix for Sleep Powder
     if (trimmed.includes('sleep powder')) {
         finalName = 'sleep powder';
     }
