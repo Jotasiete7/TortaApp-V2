@@ -209,15 +209,18 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
             const targetQL = quality;
             const targetMat = material === 'Any' ? 'iron' : material.toLowerCase();
 
+            // ✅ BUGFIX: Normalize material name (remove spaces) before lookup
+            const normalizedMat = targetMat.replace(/\s+/g, '');
+
             // Re-import maps logic (Simplified replicate)
-            const matMult = (targetMat === 'glimmersteel') ? 5.0 :
-                (targetMat === 'seryll') ? 6.0 :
-                    (targetMat === 'adamantine') ? 7.0 :
-                        (targetMat === 'moonmetal') ? 8.5 :
-                            (targetMat === 'gold') ? 3.0 :
-                                (targetMat === 'silver') ? 2.5 :
-                                    (targetMat === 'steel') ? 1.5 :
-                                        (targetMat === 'copper') ? 1.2 : 1.0;
+            const matMult = (normalizedMat === 'glimmersteel') ? 5.0 :
+                (normalizedMat === 'seryll') ? 6.0 :
+                    (normalizedMat === 'adamantine') ? 7.0 :
+                        (normalizedMat === 'moonmetal') ? 8.5 :
+                            (normalizedMat === 'gold') ? 3.0 :
+                                (normalizedMat === 'silver') ? 2.5 :
+                                    (normalizedMat === 'steel') ? 1.5 :
+                                        (normalizedMat === 'copper') ? 1.2 : 1.0;
 
             const qlExp = 1.8; // Default
 
@@ -303,6 +306,10 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-purple-500/50 outline-none custom-select"
                             >
                                 <option value="Any">{t('ml_predictor.any_material')}</option>
+                                <option value="Iron">Iron</option>
+                                <option value="Steel">Steel</option>
+                                <option value="Glimmersteel">Glimmersteel</option>
+                                <option value="Seryll">Seryll</option>
                                 {availableMaterials.map(m => (
                                     <option key={m} value={m}>{m}</option>
                                 ))}

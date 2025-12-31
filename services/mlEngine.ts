@@ -1,11 +1,15 @@
 /**
- * mlEngine.ts (v2.1)
+ * mlEngine.ts (v2.1.1 - BUGFIX)
  * Service responsible for Machine Learning calculations (Z-Score, Volatility, Advanced Stats).
  * 
  * FEATURES V2.1:
  * - Time Decay (Exponential Moving Average)
  * - QL Power Regression
  * - Material Normalization
+ * 
+ * BUGFIXES V2.1.1:
+ * - Fixed timestamp validation (prevents NaN)
+ * - Fixed IQR=0 edge case (prevents removing all data)
  */
 
 import { MarketItem } from '../types';
@@ -219,10 +223,11 @@ export const analyzePriceSet = (rawPrices: number[], itemsContext?: MarketItem[]
 
         // Time Decay Weight Calculation
         const now = Date.now();
-        const ageMs = now - item.timestamp; // timestamp is unix ms? or seconds? Usually ms in JS.
-        // Assuming timestamp is MS. If it's huge, good.
-        // Lambda for 30 days decay? 
-        // 30 days = 2592000000 ms. 
+        // ✅ BUGFIX: Validate timestamp exists and is valid, fallback to 'now' if missing
+        const timestamp = (item.timestamp && item.timestamp > 0) ? item.timestamp : now;
+        const ageMs = Math.max(0, now - timestamp); // Ensure non-negative age
+        // Lambda for 30 days decay
+        // 30 days = 2592000000 ms
         // We want weight 0.5 at 30 days? exp(-lambda * 2.59e9) = 0.5 => lambda ~= 2.6e-10
         const DECAY_CONSTANT = 2.6e-10;
         const weight = Math.exp(-DECAY_CONSTANT * ageMs);
@@ -235,11 +240,19 @@ export const analyzePriceSet = (rawPrices: number[], itemsContext?: MarketItem[]
     const q1 = MLEngine.calculatePercentile(pricesOnly, 0.25);
     const q3 = MLEngine.calculatePercentile(pricesOnly, 0.75);
     const iqr = q3 - q1;
-    const lower = q1 - 1.5 * iqr;
-    const upper = q3 + 1.5 * iqr;
-
-    const cleanData = normalizedData.filter(d => d.price >= lower && d.price <= upper);
-    const outliersCount = normalizedData.length - cleanData.length;
+    
+    // ✅ BUGFIX: Handle IQR=0 case (all prices are identical)
+    let cleanData = normalizedData;
+    let outliersCount = 0;
+    
+    if (iqr > 0) {
+        // Only filter outliers if there's actual variance
+        const lower = q1 - 1.5 * iqr;
+        const upper = q3 + 1.5 * iqr;
+        cleanData = normalizedData.filter(d => d.price >= lower && d.price <= upper);
+        outliersCount = normalizedData.length - cleanData.length;
+    }
+    // If IQR=0, all prices are the same, so no outliers to remove
 
     // 4. Weighted Median Calculation
     const cleanPrices = cleanData.map(d => d.price);
