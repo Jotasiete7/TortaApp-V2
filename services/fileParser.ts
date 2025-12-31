@@ -217,15 +217,27 @@ export const FileParser = {
         return noiseTriggers.some(t => lower.includes(t));
     },
     normalizePrice: (message: string): number => {
-        const priceRegex = /(\d+(?:\.\d+)?)\s*(g|s|c)/i;
-        const priceMatch = message.match(priceRegex);
-        if (priceMatch) {
-            const val = parseFloat(priceMatch[1]);
-            const unit = priceMatch[2].toLowerCase();
-            if (unit === 'g') return val * 10000;
-            if (unit === 's') return val * 100;
-            return val;
+        if (!message) return 0;
+        const s = message.toLowerCase().trim();
+        let totalCopper = 0.0;
+
+        // Improved Regex: Captures numbers followed by g, s, c, i OR gold, silver, copper, iron
+        const regex = /([\d.]+)\s*(gold|silver|copper|iron|g|s|c|i)\b/g;
+        let match;
+        let foundMatch = false;
+
+        while ((match = regex.exec(s)) !== null) {
+            foundMatch = true;
+            const val = parseFloat(match[1]);
+            const unit = match[2];
+
+            if (!isNaN(val)) {
+                if (unit.startsWith('g')) totalCopper += val * 10000;
+                else if (unit.startsWith('s')) totalCopper += val * 100;
+                else if (unit.startsWith('c')) totalCopper += val;
+                else if (unit.startsWith('i')) totalCopper += val / 100;
+            }
         }
-        return 0;
+        return foundMatch ? totalCopper : 0;
     }
 };
