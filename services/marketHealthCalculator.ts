@@ -1,74 +1,71 @@
-﻿import { MarketItem } from '../types';
-import { calculateVolatility } from './volatilityCalculator';
 
-export interface MarketHealthMetrics {
-    msi: number; // 0-100 Market Stability Index
-    liquidityScore: number; // 0-100
-    volatilityScore: number; // 0-100 (Inverted: 100 = Stable)
-    priceScore: number; // 0-100 (Price Consistency)
-    health: 'Critical' | 'Poor' | 'Stable' | 'Healthy' | 'Thriving';
-    trend: 'improving' | 'deteriorating' | 'stable';
-}
+import { MarketItem } from '../types';
 
-/**
- * Calculates the Market Stability Index (MSI)
- * A composite metric to determine if a market item is "Healthy".
- * Formula: (Liquidity * 0.4) + (Stability * 0.4) + (Demand * 0.2)
- */
-export const calculateMarketHealth = (items: MarketItem[], itemName: string): MarketHealthMetrics => {
-    // Reuse existing volatility calculator for base metrics
-    // @ts-ignore - Assuming update to service
-    const volatility = calculateVolatility(items, itemName);
+export const calculateMarketHealth = (items: MarketItem[], itemName?: string) => {
+    // 1. Filter Data
+    const relevantItems = itemName
+        ? items.filter(i => i.name === itemName)
+        : items; // Global health if no item selected (TODO: limit to top 50)
 
-    // 1. Liquidity Score: Based on Volume and Unique Days
-    // We want high volume and frequent trades.
-    // For a game like Wurm, 1 trade/day is decent, 10/day is high.
+    if (!relevantItems.length) return null;
 
-    // Get distinct days
-    const days = new Set(items.filter(i => i.name.toLowerCase() === itemName.toLowerCase()).map(i => {
-        const ts = typeof i.timestamp === 'string' ? i.timestamp : new Date(i.timestamp).toISOString();
-        return ts.split('T')[0];
-    })).size;
-    const totalVolume = items.filter(i => i.name.toLowerCase() === itemName.toLowerCase()).length;
+    // 2. Calculate Metrics
 
-    // Simple heuristic: 
-    // < 5 trades total = Low Liquidity
-    // > 50 trades = High Liquidity
-    const volumeScore = Math.min(100, (totalVolume / 20) * 100);
+    // A. Liquidity (volume of trades)
+    // Score based on trade count. 50 trades = 100 score? 
+    // Let's say 10 trades/week is "Healthy" (60).
+    const tradeCount = relevantItems.length;
+    let liquidityScore = Math.min((tradeCount / 20) * 100, 100);
 
-    // Consistency: trades on > 50% of observed days
-    // This requires knowing the total window, which we approximate by (maxDate - minDate)
-    // For MVP, we use the volumeScore mostly.
-    const liquidityScore = volumeScore;
+    // B. Stability (Inverse of Volatility)
+    // We need price variance.
+    const prices = relevantItems.map(i => i.price);
+    const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const variance = prices.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / prices.length;
+    const stdDev = Math.sqrt(variance);
 
-    // 2. Volatility Score (Already 0-100 where 100 is stable)
-    // calculateVolatility returns a "Volatility Score" where 0 is stable? 
-    // Let's check: "score: 0-100 normalized volatility score". 
-    // Usually "High Volatility Score" = Bad.
-    // We want "Stability Score". So we invert it.
-    // Actually, looking at volatilityCalculator.ts: 
-    // "priceVolatility... min(100, (stdDev/avg)*100)" -> High is Volatile.
-    // So 100 is bad. 0 is perfect stability.
-    // We want 100 = Healthy.
-    const volatilityScore = Math.max(0, 100 - volatility.score);
+    // CV (Coefficient of Variation)
+    const cv = mean > 0 ? (stdDev / mean) : 0;
+    // If CV is 0 (stable), score is 100. If CV is 1.0 (volatile), score is 0.
+    let stabilityScore = Math.max(0, 100 - (cv * 100));
 
-    // 3. Price Consistency (Spread)
-    // How close are Min/Max?
-    // Use supplyConsistency from volatility metrics
-    const priceScore = volatility.supplyConsistency; // This is actually supply consistency, not price.
-    // Let's use 100 - priceVariance normalized?
-    // Actually, let's allow the volatilityScore to carry the weight of price stability.
+    // C. Reliability (Seller Diversity + Sample Size)
+    const sellers = new Set(relevantItems.map(i => i.seller)).size;
+    // 5 sellers = 100 score. 1 seller = 20 score.
+    const diversityScore = Math.min((sellers / 5) * 100, 100);
+    // Penalty for low sample size
+    const reliabilityScore = diversityScore * (Math.min(tradeCount, 10) / 10);
 
-    // Composite Calculation
-    // MSI = (Liquidity * 0.4) + (Stability * 0.4) + (DemandStability * 0.2)
-    const msi = Math.round(
-        (liquidityScore * 0.4) +
-        (volatilityScore * 0.4) +
-        (volatility.demandStability * 0.2)
-    );
+    // Trend (Last 3 vs First 3)
+    let trend: 'improving' | 'deteriorating' | 'stable' = 'stable';
+    if (relevantItems.length >= 6) { // Need at least some history
+        // timestamp sort
+        const sorted = [...relevantItems].sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1));
+        const mid = Math.floor(sorted.length / 2);
+        const firstHalf = sorted.slice(0, mid);
+        const lastHalf = sorted.slice(mid);
 
-    // Health Category
-    let health: MarketHealthMetrics['health'] = 'Stable';
+        const price1 = firstHalf.reduce((a, b) => a + b.price, 0) / firstHalf.length;
+        const price2 = lastHalf.reduce((a, b) => a + b.price, 0) / lastHalf.length;
+
+        if (price2 > price1 * 1.05) trend = 'improving'; // Price going up is "improving" for sellers
+        else if (price2 < price1 * 0.95) trend = 'deteriorating';
+    }
+
+    const healthData = {
+        liquidityScore: isNaN(liquidityScore) ? 0 : liquidityScore,
+        stabilityScore: isNaN(stabilityScore) ? 0 : stabilityScore,
+        reliabilityScore: isNaN(reliabilityScore) ? 0 : reliabilityScore,
+        priceScore: 0, // Legacy
+        trend
+    };
+
+    // Composite Index (Weighted)
+    // 40% Liquidity, 40% Stability, 20% Reliability
+    const msi = (healthData.liquidityScore * 0.4) + (healthData.stabilityScore * 0.4) + (healthData.reliabilityScore * 0.2);
+
+    // Determine Health Label
+    let health = 'Stable';
     if (msi >= 80) health = 'Thriving';
     else if (msi >= 60) health = 'Healthy';
     else if (msi >= 40) health = 'Stable';
@@ -76,11 +73,8 @@ export const calculateMarketHealth = (items: MarketItem[], itemName: string): Ma
     else health = 'Critical';
 
     return {
-        msi,
-        liquidityScore,
-        volatilityScore,
-        priceScore: volatilityScore, // Proxy
+        msi: Math.round(msi) || 0,
         health,
-        trend: volatility.trend === 'rising' ? 'improving' : volatility.trend === 'falling' ? 'deteriorating' : 'stable'
+        ...healthData
     };
 };

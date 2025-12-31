@@ -1,276 +1,186 @@
-﻿import { MarketItem, ChartDataPoint, ItemHistoryPoint, PriceDistributionPoint, CandlestickDataPoint, HeatmapDataPoint } from '../types';
-import { FileParser } from './fileParser';
-import { sanitizeItemName, sanitizeSeller } from './securityUtils';
-import { resolveItemIdentity } from './ItemIdentity';
 
-export interface LiveTrade {
-    timestamp: string;
-    nick: string;
-    message: string;
-    type?: 'WTB' | 'WTS' | 'WTT';
-}
+import {
+    MarketItem,
+    ItemHistoryPoint,
+    PriceDistributionPoint,
+    LiveTrade,
+    CandlestickDataPoint,
+    HeatmapDataPoint
+} from '../types';
 
 /**
- * Get list of unique items for the dropdown.
- * ARCHITECTURAL CHANGE: Returns { id, name } objects, unique by ID.
- * This ensures "Sleep Powder" (id: sleep_powder) appears only once.
+ * Parses raw logs (simulated or real).
+ * Currently just formats the data to ensure clean numbers.
  */
-export const getDistinctItems = (items: MarketItem[]): string[] => {
-    // Backward compatibility wrapper
-    const uniqueIds = new Set<string>();
-    const names: string[] = [];
-
-    items.forEach(i => {
-        if (i.itemId && !uniqueIds.has(i.itemId)) {
-            uniqueIds.add(i.itemId);
-            names.push(i.name); 
-        } else if (!i.itemId && i.name) {
-            names.push(i.name);
-        }
-    });
-    return names.sort();
-};
-
-export const getDistinctMarketItems = (items: MarketItem[]): { id: string, name: string }[] => {
-    const map = new Map<string, string>();
-
-    items.forEach(i => {
-        if (!i.itemId) return; 
-        if (!map.has(i.itemId)) {
-            map.set(i.itemId, i.name);
-        }
-    });
-
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
-};
-
-
-/**
- * Generates specific history for ONE item type, FILTERED BY ID.
- */
-export const getItemHistory = (items: MarketItem[], targetId: string): ItemHistoryPoint[] => {
-    const filtered = items.filter(i => i.itemId === targetId && i.price > 0);
-    const groups: { [date: string]: { total: number, min: number, max: number, count: number } } = {};
-
-    filtered.forEach(item => {
-        let date: string;
-        try {
-            date = typeof item.timestamp === 'string' ? new Date(item.timestamp).toISOString().split('T')[0] : new Date(item.timestamp).toISOString().split('T')[0];
-        } catch (e) {
-            return;
-        }
-
-        if (!groups[date]) {
-            groups[date] = { total: 0, min: item.price, max: item.price, count: 0 };
-        }
-
-        groups[date].total += item.price;
-        groups[date].min = Math.min(groups[date].min, item.price);
-        groups[date].max = Math.max(groups[date].max, item.price);
-        groups[date].count++;
-    });
-
-    const result = Object.keys(groups).map(date => ({
-        date,
-        avgPrice: groups[date].total / groups[date].count,
-        minPrice: groups[date].min,
-        maxPrice: groups[date].max,
-        volume: groups[date].count
-    }));
-
-    return result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+export const cleanRawData = (items: MarketItem[]): MarketItem[] => {
+    return items
+        .filter(i => i.price > 0 && i.quantity > 0)
+        .map(i => ({
+            ...i,
+            price: Number(i.price), // Ensure number
+            quantity: Number(i.quantity)
+        }));
 };
 
 /**
- * Generates a histogram of prices for an item to see "Fair Value" clusters
+ * Get distinct items for the dropdown.
  */
-export const getPriceDistribution = (items: MarketItem[], targetId: string): PriceDistributionPoint[] => {
-    const filtered = items.filter(i => i.itemId === targetId && i.price > 0);
-    if (filtered.length === 0) return [];
+export const getDistinctMarketItems = (items: MarketItem[]) => {
+    const unique = new Map();
+    items.forEach(item => {
+        // Filter Junk / Log Headers
+        if (!item.name || item.name.length < 3) return;
+        if (item.name.startsWith('(') || item.name.startsWith('#')) return;
+        if (item.name.includes('Thank You') || item.name.includes('http')) return;
+        if (item.name.toLowerCase().includes('started')) return;
 
-    const prices = filtered.map(i => i.price).sort((a, b) => a - b);
-    const min = prices[0];
-    const max = prices[prices.length - 1];
+        if (!unique.has(item.name)) {
+            unique.set(item.name, { id: item.itemId, name: item.name });
+        }
+    });
+    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
+};
 
-    const bucketCount = 10;
+/**
+ * Get aggregated history for the chart.
+ */
+export const getItemHistory = (items: MarketItem[], itemId: string): ItemHistoryPoint[] => {
+    const specificItems = items.filter(i => i.itemId === itemId);
+
+    // Group by Date (YYYY-MM-DD)
+    const grouped = new Map<string, MarketItem[]>();
+
+    specificItems.forEach(item => {
+        // Handle timestamp (ISO string or Epoch)
+        let dateKey = '';
+        if (typeof item.timestamp === 'string' && item.timestamp.includes('T')) {
+            dateKey = item.timestamp.split('T')[0];
+        } else {
+            // Fallback for epoch or loose string
+            const d = new Date(item.timestamp);
+            if (!isNaN(d.getTime())) {
+                dateKey = d.toISOString().split('T')[0];
+            } else {
+                dateKey = 'Unknown';
+            }
+        }
+
+        if (!grouped.has(dateKey)) {
+            grouped.set(dateKey, []);
+        }
+        grouped.get(dateKey)?.push(item);
+    });
+
+    // Calculate averages per day
+    const history: ItemHistoryPoint[] = [];
+
+    // Sort keys to ensure chronological order
+    const sortedKeys = Array.from(grouped.keys()).sort();
+
+    sortedKeys.forEach(date => {
+        if (date === 'Unknown') return;
+
+        const dayItems = grouped.get(date) || [];
+        const totalVolume = dayItems.reduce((acc, i) => acc + i.quantity, 0);
+        const totalPrice = dayItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+
+        const prices = dayItems.map(i => i.price);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+
+        history.push({
+            date,
+            avgPrice: Math.round(totalPrice / totalVolume),
+            minPrice,
+            maxPrice,
+            volume: totalVolume
+        });
+    });
+
+    return history;
+};
+
+/**
+ * Get price distribution (Histogram)
+ */
+export const getPriceDistribution = (items: MarketItem[], itemId: string): PriceDistributionPoint[] => {
+    const specificItems = items.filter(i => i.itemId === itemId);
+    const prices = specificItems.map(i => i.price);
+
+    if (prices.length === 0) return [];
+
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
     const range = max - min;
-    const step = range / bucketCount || 1; 
+    const bucketCount = 5;
+    const bucketSize = range / bucketCount || 100; // default 1 copper if no range
 
     const buckets = new Array(bucketCount).fill(0);
+    const bucketLabels = new Array(bucketCount).fill('');
+
+    // Initialize labels
+    for (let i = 0; i < bucketCount; i++) {
+        const start = Math.floor(min + (i * bucketSize));
+        const end = Math.floor(min + ((i + 1) * bucketSize));
+        bucketLabels[i] = `${start}-${end}`;
+    }
 
     prices.forEach(p => {
-        const bucketIndex = Math.min(Math.floor((p - min) / step), bucketCount - 1);
+        let bucketIndex = Math.floor((p - min) / bucketSize);
+        if (bucketIndex >= bucketCount) bucketIndex = bucketCount - 1; // Catch max value
         buckets[bucketIndex]++;
     });
 
-    return buckets.map((count, i) => {
-        const start = min + (i * step);
-        const end = min + ((i + 1) * step);
-        const label = start < 100
-            ? `${start.toFixed(2)}c - ${end.toFixed(2)}c`
-            : `${(start / 100).toFixed(2)}s - ${(end / 100).toFixed(2)}s`;
-
-        return { range: label, count };
-    });
+    return buckets.map((count, i) => ({
+        range: bucketLabels[i],
+        count
+    }));
 };
 
 /**
- * Legacy global chart generator (kept for dashboard mini-charts if needed)
+ * Generate OHLC Data for Candlestick Chart
  */
-export const generateChartDataFromHistory = (items: MarketItem[]): ChartDataPoint[] => {
-    const groups: { [date: string]: { totalCopper: number, count: number } } = {};
-    items.forEach(item => {
-        if (item.price <= 0) return;
+export const getCandlestickData = (items: MarketItem[], itemId: string): CandlestickDataPoint[] => {
+    const history = getItemHistory(items, itemId);
 
-        let dateKey: string;
-        try {
-            dateKey = typeof item.timestamp === 'string' ? new Date(item.timestamp).toISOString().split('T')[0] : new Date(item.timestamp).toISOString().split('T')[0];
-        } catch (e) {
-            return;
-        }
-
-        if (!groups[dateKey]) groups[dateKey] = { totalCopper: 0, count: 0 };
-        groups[dateKey].totalCopper += item.price;
-        groups[dateKey].count += 1;
-    });
-    const chartData: ChartDataPoint[] = Object.keys(groups).map(date => {
-        const g = groups[date];
-        return {
-            date: date,
-            avgPrice: Math.floor(g.totalCopper / g.count),
-            volume: g.count
-        };
-    });
-    return chartData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return history.map(h => ({
+        date: h.date,
+        open: h.avgPrice, // Simplified: using avg as open
+        close: h.avgPrice, // Simplified: using avg as close
+        high: h.maxPrice,
+        low: h.minPrice,
+        volume: h.volume
+    }));
 };
 
 /**
- * Generate candlestick (OHLC) data for an item
+ * Generate Heatmap Data
  */
-export const getCandlestickData = (items: MarketItem[], targetId: string): CandlestickDataPoint[] => {
-    const filtered = items.filter(i => i.itemId === targetId && i.price > 0);
-
-    const dailyData = new Map<string, MarketItem[]>();
-    filtered.forEach(item => {
-        const ts = typeof item.timestamp === 'string' ? new Date(item.timestamp) : new Date(item.timestamp);
-        const date = ts.toISOString().split('T')[0];
-        if (!dailyData.has(date)) {
-            dailyData.set(date, []);
-        }
-        dailyData.get(date)!.push(item);
-    });
-
-    const candlesticks: CandlestickDataPoint[] = [];
-    dailyData.forEach((dayItems, date) => {
-        const sorted = dayItems.sort((a, b) => {
-            const ta = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp;
-            const tb = typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp;
-            return ta - tb;
-        });
-
-        const open = sorted[0].price;
-        const close = sorted[sorted.length - 1].price;
-        const high = Math.max(...sorted.map(i => i.price));
-        const low = Math.min(...sorted.map(i => i.price));
-        const volume = sorted.length;
-
-        candlesticks.push({ date, open, high, low, close, volume });
-    });
-
-    return candlesticks.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+export const getSupplyHeatmapData = (items: MarketItem[], itemId: string): HeatmapDataPoint[] => {
+    const history = getItemHistory(items, itemId);
+    return history.map(h => ({
+        date: h.date,
+        count: h.volume, // Using volume as "count/intensity"
+        avgPrice: h.avgPrice
+    }));
 };
 
 /**
- * Generate supply heatmap data (daily listing counts)
- */
-export const getSupplyHeatmapData = (items: MarketItem[], targetId: string): HeatmapDataPoint[] => {
-    const filtered = items.filter(i => i.itemId === targetId);
-
-    const dailyCounts = new Map<string, { count: number; totalPrice: number }>();
-    filtered.forEach(item => {
-        const ts = typeof item.timestamp === 'string' ? new Date(item.timestamp) : new Date(item.timestamp);
-        const date = ts.toISOString().split('T')[0];
-        if (!dailyCounts.has(date)) {
-            dailyCounts.set(date, { count: 0, totalPrice: 0 });
-        }
-        const data = dailyCounts.get(date)!;
-        data.count++;
-        data.totalPrice += item.price;
-    });
-
-    const heatmapData: HeatmapDataPoint[] = [];
-    dailyCounts.forEach((data, date) => {
-        heatmapData.push({
-            date,
-            count: data.count,
-            avgPrice: data.totalPrice / data.count
-        });
-    });
-
-    return heatmapData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-};
-
-/**
- * Converts a Real-Time Trade (ParsedTrade) into a MarketItem for Charts.
- * ARCHITECTURAL CHANGE: Uses resolveItemIdentity for robust ID/Name.
+ * Helper to normalize LiveTrade to MarketItem
  */
 export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
-    // 1. Initial Name Extraction (Heuristic)
-    let rawName = trade.message;
-    if (trade.message.includes('[')) {
-        const match = trade.message.match(/\[(.*?)\]/);
-        if (match) rawName = match[1];
-    }
-
-    // 2. Smart Parsing: Quantity & Price
-    let quantity = 1;
-    const qtyMatch = trade.message.match(/(\d+)\s*x/i) || trade.message.match(/x\s*(\d+)/i);
-    if (qtyMatch) {
-        quantity = parseInt(qtyMatch[1], 10);
-    }
-
-    let price = FileParser.normalizePrice(trade.message);
-    const isTotal = /\b(all|total|bulk|lot)\b/i.test(trade.message);
-
-    if (quantity > 1 && isTotal) {
-        price = price / quantity;
-    }
-
-    // 3. Identity Layer (v2.1)
-    // Resolving strict ID and display name
-    const { id: itemId, displayName } = resolveItemIdentity(rawName);
-
-    const safeName = sanitizeItemName(displayName);
-    const safeSeller = sanitizeSeller(trade.nick);
-
-    // 4. Handle Date
-    const today = new Date();
-    const parts = trade.timestamp.split(':');
-    if (parts.length >= 2) {
-        today.setHours(Number(parts[0]), Number(parts[1]), Number(parts[2] || 0));
-    }
-
-    // Determine Rarity from Message (Basic Heuristic for Live Trades)
-    let rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic' = 'Common';
-    const lowerMsg = trade.message.toLowerCase();
-    if (lowerMsg.includes('fantastic')) rarity = 'Fantastic';
-    else if (lowerMsg.includes('supreme')) rarity = 'Supreme';
-    else if (lowerMsg.includes('rare')) rarity = 'Rare';
- 
     return {
-        id: `live-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-        itemId,      // Traceability: Canonical ID (Strict)
-        name: safeName, // Display Name
-        rawName,     // Traceability: Original String
-        seller: safeSeller,
-        price: price, // Normalized Unit Price
-        quantity: quantity,
-        quality: 0,
-        rarity: rarity,
-        material: 'Unknown',
-        orderType: trade.type || 'UNKNOWN',
-        location: 'Unknown',
-        timestamp: today.toISOString(),
-        searchableText: (safeName + ' ' + safeSeller + ' ' + rarity).toLowerCase()
+        id: `live-${trade.hash}`, // Virtual ID
+        itemId: trade.itemName.toLowerCase().replace(/ /g, '_'), // Normalize ID
+        name: trade.itemName,
+        material: 'unknown',
+        quality: 10, // Default for live items if not parsed
+        rarity: 'Common',
+        price: trade.price,
+        quantity: 1, // Usually live trades are single emits or we don't know qty
+        orderType: trade.type,
+        seller: trade.nick,
+        location: 'Live',
+        timestamp: trade.timestamp
     };
 };
