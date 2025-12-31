@@ -103,12 +103,12 @@ const MetricPill = ({ label, value, icon }: { label: string, value: number, icon
     else color = 'bg-red-500/20 text-red-400 border-red-500/30';
 
     return (
-        <div className={`flex flex-col items-center justify-center p-2 rounded-lg border ${color} border-opacity-50 transition-all hover:bg-opacity-30`}>
-            <div className="flex items-center gap-1 mb-1 opacity-80">
+        <div className={`flex flex-col items-center justify-center p-3 rounded-lg border ${color} bg-opacity-20 border-opacity-40 transition-all hover:bg-opacity-30 min-w-[100px]`}>
+            <div className="flex items-center gap-1.5 mb-1 opacity-90">
                 {icon}
-                <span className="text-[10px] uppercase font-bold tracking-wider">{label}</span>
+                <span className="text-xs uppercase font-bold tracking-wider">{label}</span>
             </div>
-            <span className="text-xl font-mono font-bold">{Math.round(value)}</span>
+            <span className="text-2xl font-mono font-bold">{Math.round(value)}</span>
         </div>
     );
 };
