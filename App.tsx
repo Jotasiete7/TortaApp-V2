@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 import { TradeUploader } from './services/tradeUploader';
 import React, { useState, useEffect } from 'react';
@@ -303,6 +304,7 @@ const App: React.FC = () => {
                     <ChartsView
                         data={chartData}
                         rawItems={marketData}
+                        referencePrices={referencePrices}
                     />
                 );
             case ViewState.PREDICTOR:

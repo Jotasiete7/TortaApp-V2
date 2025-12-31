@@ -34,6 +34,11 @@ export const getDistinctMarketItems = (items: MarketItem[]) => {
         if (item.name.includes('Thank You') || item.name.includes('http')) return;
         if (item.name.toLowerCase().includes('started')) return;
 
+        // Filter Multi-Item Ads / Massive Lines (Fix for "By Wagoner..." spam)
+        if (item.name.length > 55) return;
+        if (item.name.includes('||')) return;
+        if (item.name.split(',').length > 3) return; // More than 3 commas usually = list
+
         if (!unique.has(item.name)) {
             unique.set(item.name, { id: item.itemId, name: item.name });
         }

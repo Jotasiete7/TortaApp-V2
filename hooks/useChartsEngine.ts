@@ -19,6 +19,19 @@ interface UseChartsEngineProps {
     rawItems: MarketItem[];
     liveTrades: LiveTrade[];
     selectedItemId: string;
+    referencePrices?: Record<string, number>; // New Prop for Sprint 4
+}
+
+export interface PriceBenchmarks {
+    referencePrice?: number;
+    advertisedPrice?: number; // Avg of WTS
+    bulkPrice?: {
+        min: number;
+        max: number;
+        avg: number;
+        tier: '1k+' | '100+' | 'none';
+        count: number;
+    };
 }
 
 interface UseChartsEngineResult {
@@ -48,17 +61,21 @@ interface UseChartsEngineResult {
 
     // Memory (v2.3)
     narrativeTimeline: MarketSnapshot[];
+
+    // Price Intelligence (v2.4 - Sprint 4)
+    benchmarks: PriceBenchmarks;
 }
 
 /**
- * useChartsEngine (v2.3)
+ * useChartsEngine (v2.4)
  * 
- * Integrated with MarketStoryEngine AND MarketMemoryService.
+ * Integrated with Price Intelligence (Benchmarks, Reference, Bulk).
  */
 export const useChartsEngine = ({
     rawItems = [],
     liveTrades = [],
-    selectedItemId
+    selectedItemId,
+    referencePrices = {}
 }: UseChartsEngineProps): UseChartsEngineResult => {
 
     const [narrativeTimeline, setNarrativeTimeline] = useState<MarketSnapshot[]>([]);
@@ -144,6 +161,69 @@ export const useChartsEngine = ({
     }, [selectedItemId, marketStory]); // Refresh when story updates (saves new snapshot)
 
 
+    // 6. Price Intelligence (Benchmarks)
+    const benchmarks = useMemo((): PriceBenchmarks => {
+        if (!selectedItemId) return {};
+
+        const relevantItems = combinedItems.filter(i => i.itemId === selectedItemId);
+        if (relevantItems.length === 0) return {};
+
+        // A. Reference Price
+        // Find item name primarily
+        const itemName = relevantItems[0]?.name;
+        // Lookup key in referencePrices (usually lowercase keys if normalized)
+        const refPrice = referencePrices[itemName?.toLowerCase()] || referencePrices[selectedItemId];
+
+        // B. Advertised Price (WTS)
+        // WTS orders usually represent "Ask" price.
+        const wtsItems = relevantItems.filter(i => i.orderType === 'WTS');
+        let advertisedPrice = undefined;
+        if (wtsItems.length > 0) {
+            const sum = wtsItems.reduce((acc, i) => acc + i.price, 0);
+            advertisedPrice = Math.round(sum / wtsItems.length);
+        }
+
+        // C. Adaptive Bulk Price (Tiered Logic)
+        // Tier 1: 1000+ units
+        const tier1Items = relevantItems.filter(i => i.quantity >= 1000);
+        let bulkPrice = undefined;
+
+        if (tier1Items.length > 0) {
+            const prices = tier1Items.map(i => i.price);
+            bulkPrice = {
+                min: Math.min(...prices),
+                max: Math.max(...prices),
+                avg: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+                tier: '1k+' as const,
+                count: tier1Items.length
+            };
+        } else {
+            // Tier 2: 100+ units (Fallback for heavy items like concrete)
+            // Using 90 as threshold to catch almost-100s
+            const tier2Items = relevantItems.filter(i => i.quantity >= 90);
+            if (tier2Items.length > 0) {
+                const prices = tier2Items.map(i => i.price);
+                bulkPrice = {
+                    min: Math.min(...prices),
+                    max: Math.max(...prices),
+                    avg: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+                    tier: '100+' as const,
+                    count: tier2Items.length
+                };
+            } else {
+                bulkPrice = { min: 0, max: 0, avg: 0, tier: 'none' as const, count: 0 };
+            }
+        }
+
+        return {
+            referencePrice: refPrice,
+            advertisedPrice,
+            bulkPrice
+        };
+
+    }, [selectedItemId, combinedItems, referencePrices]);
+
+
     // A. Smart Suggestion (Market Movers)
     const suggestedItem = useMemo(() => {
         if (distinctItems.length === 0) return null;
@@ -167,6 +247,7 @@ export const useChartsEngine = ({
         liveTradeCount: liveTrades.length,
         suggestedItem,
         marketStory,
-        narrativeTimeline
+        narrativeTimeline,
+        benchmarks
     };
 };
