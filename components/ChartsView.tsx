@@ -231,29 +231,29 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [], reference
                         )}
                     </div>
 
-                    {/* --- PRICE INTELLIGENCE PANEL (NEW V4) --- */}
+                    {/* --- PRICE INTELLIGENCE PANEL (V5 with Translations) --- */}
                     {selectedItem && (
                         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg animate-fade-in">
                             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                                 <Scale className="w-5 h-5 text-indigo-400" />
-                                Price Benchmarks & Intelligence
+                                {t('price_benchmarks')}
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* 1. Tabulated / Reference Price */}
                                 <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
                                     <div className="flex items-center gap-2 mb-2 text-slate-400">
                                         <Tag className="w-4 h-4" />
-                                        <span className="text-xs uppercase font-bold tracking-wider">Reference</span>
+                                        <span className="text-xs uppercase font-bold tracking-wider">{t('ref_price_label')}</span>
                                     </div>
                                     {benchmarks.referencePrice ? (
                                         <div>
                                             <p className="text-2xl font-mono text-purple-400 font-bold">{formatWurmPrice(benchmarks.referencePrice)}</p>
-                                            <p className="text-xs text-slate-500 mt-1">Manual tabulated price</p>
+                                            <p className="text-xs text-slate-500 mt-1">{t('ref_price_desc')}</p>
                                         </div>
                                     ) : (
                                         <div className="text-slate-600">
-                                            <p className="text-sm italic">Not set</p>
-                                            <button onClick={() => alert("Go to Price Manager to set a reference.")} className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 underline">Unknown</button>
+                                            <p className="text-sm italic">{t('not_set')}</p>
+                                            <button onClick={() => alert(t('go_price_manager'))} className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 underline">{t('unknown')}</button>
                                         </div>
                                     )}
                                 </div>
@@ -262,15 +262,15 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [], reference
                                 <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
                                     <div className="flex items-center gap-2 mb-2 text-slate-400">
                                         <Globe className="w-4 h-4" />
-                                        <span className="text-xs uppercase font-bold tracking-wider">Advertised (WTS)</span>
+                                        <span className="text-xs uppercase font-bold tracking-wider">{t('advertised_label')}</span>
                                     </div>
                                     {benchmarks.advertisedPrice ? (
                                         <div>
                                             <p className="text-2xl font-mono text-amber-400 font-bold">{formatWurmPrice(benchmarks.advertisedPrice)}</p>
-                                            <p className="text-xs text-slate-500 mt-1">Average asking price</p>
+                                            <p className="text-xs text-slate-500 mt-1">{t('advertised_desc')}</p>
                                         </div>
                                     ) : (
-                                        <p className="text-slate-600 text-sm italic">No active lists</p>
+                                        <p className="text-slate-600 text-sm italic">{t('no_active_lists')}</p>
                                     )}
                                 </div>
 
@@ -283,7 +283,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [], reference
 
                                     <div className="flex items-center gap-2 mb-2 text-slate-400">
                                         <Package className="w-4 h-4" />
-                                        <span className="text-xs uppercase font-bold tracking-wider">Bulk Reality</span>
+                                        <span className="text-xs uppercase font-bold tracking-wider">{t('bulk_label')}</span>
                                     </div>
                                     {benchmarks.bulkPrice && benchmarks.bulkPrice.tier !== 'none' ? (
                                         <div>
@@ -298,7 +298,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [], reference
                                             </div>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded border ${benchmarks.bulkPrice.tier === '1k+' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-slate-600/20 text-slate-400 border-slate-600/30'}`}>
-                                                    Tier: {benchmarks.bulkPrice.tier}
+                                                    {t('tier_label')}: {benchmarks.bulkPrice.tier}
                                                 </span>
                                                 <span className="text-xs text-slate-500">
                                                     (Avg: {formatWurmPrice(benchmarks.bulkPrice.avg)})
@@ -306,7 +306,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [], reference
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-slate-600 text-sm italic">No bulk trades found</p>
+                                        <p className="text-slate-600 text-sm italic">{t('no_bulk_found')}</p>
                                     )}
                                 </div>
                             </div>

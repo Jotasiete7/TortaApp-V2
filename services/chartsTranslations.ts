@@ -1,4 +1,5 @@
-﻿import { useState, useEffect } from 'react';
+
+import { useState, useEffect } from 'react';
 
 type Language = 'en' | 'pt';
 
@@ -95,7 +96,21 @@ export const chartsTranslations: Translations = {
     'predictions_disclaimer': { en: 'Predictions are based on historical data using linear regression. Actual prices may vary due to market events, game updates, or external factors.', pt: 'Previsões baseadas em dados históricos usando regressão linear. Preços reais podem variar devido a eventos de mercado, atualizações do jogo ou fatores externos.' },
     'not_enough_data': { en: 'Not enough data for prediction (minimum 5 data points required)', pt: 'Dados insuficientes para previsão (mínimo de 5 pontos necessários)' },
     'current_price': { en: 'Current Price', pt: 'Preço Atual' },
-    'predicted_price': { en: 'Predicted', pt: 'Previsto' }
+    'predicted_price': { en: 'Predicted', pt: 'Previsto' },
+
+    // Price Intelligence (Sprint 4)
+    'price_benchmarks': { en: 'Price Benchmarks & Intelligence', pt: 'Benchmarks & Inteligência' },
+    'ref_price_label': { en: 'Reference', pt: 'Referência' },
+    'ref_price_desc': { en: 'Manual tabulated price', pt: 'Preço tabelado manual' },
+    'advertised_label': { en: 'Advertised (WTS)', pt: 'Anunciado (WTS)' },
+    'advertised_desc': { en: 'Average asking price', pt: 'Média de preços pedidos' },
+    'bulk_label': { en: 'Bulk Reality', pt: 'Realidade Atacado' },
+    'no_bulk_found': { en: 'No bulk trades found', pt: 'Sem trades de atacado' },
+    'no_active_lists': { en: 'No active lists', pt: 'Sem ofertas ativas' },
+    'tier_label': { en: 'Tier', pt: 'Nível' },
+    'not_set': { en: 'Not set', pt: 'Não definido' },
+    'unknown': { en: 'Unknown', pt: 'Desconhecido' },
+    'go_price_manager': { en: 'Go to Price Manager to set a reference.', pt: 'Vá ao Gerenciador de Preços para definir.' }
 };
 
 export const useChartsTranslation = () => {
