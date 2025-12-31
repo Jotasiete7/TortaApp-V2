@@ -146,7 +146,4 @@ export const useChartsTranslation = () => {
     return { t, language, setLanguage, toggleLanguage };
 };
 
-export const InfoTooltip = ({ text }: { text: string }) => {
-    // Implementation placeholder - handled by main component
-    return null;
-};
+
