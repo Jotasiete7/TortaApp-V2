@@ -151,5 +151,10 @@
         "total_revenue": "Receita Total",
         "net_profit": "Lucro Líquido",
         "margin": "Margem"
+    },
+    "price_forecast": {
+        "not_enough_data": "Dados insuficientes para gerar previsão. Carregue mais trades históricos.",
+        "price_projection": "Projeção de Preço (Próximos 7 dias)",
+        "predictions_disclaimer": "Previsões são baseadas em análise estatística de dados históricos. Não garantem resultados futuros. Use como referência, não como certeza absoluta."
     }
 }

@@ -151,5 +151,10 @@
         "total_revenue": "Total Revenue",
         "net_profit": "Net Profit",
         "margin": "Margin"
+    },
+    "price_forecast": {
+        "not_enough_data": "Not enough data to generate forecast. Load more historical trades.",
+        "price_projection": "Price Projection (Next 7 days)",
+        "predictions_disclaimer": "Predictions are based on statistical analysis of historical data. They do not guarantee future results. Use as reference, not absolute certainty."
     }
 }
