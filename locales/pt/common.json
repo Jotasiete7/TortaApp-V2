@@ -128,7 +128,16 @@
         "bulk_quantity": "Quantidade em Lote / Tamanho do Lote",
         "bulk_tooltip": "Analisa diferenças de preço para itens vendidos em lotes (ex: 100x Tijolos). Ajuda a identificar descontos por volume.",
         "sizes_found": "{{count}} tamanhos encontrados",
-        "no_bulk": "Nenhum trade em lote encontrado"
+        "no_bulk": "Nenhum trade em lote encontrado",
+        "table_item": "Item",
+        "table_qty": "Qtd",
+        "table_unit_price": "Preço Un.",
+        "table_bulk": "Lote (1k)",
+        "table_seller": "Vendedor",
+        "legend_buy_zone": "Zona de Compra",
+        "legend_fair_price": "Preço Justo",
+        "legend_sell_zone": "Zona de Venda",
+        "deals_count": "{{count}} negócios"
     },
     "profit_simulator": {
         "title": "Simulador de Lucro",

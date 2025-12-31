@@ -128,7 +128,16 @@
         "bulk_quantity": "Bulk Quantity / Batch Size",
         "bulk_tooltip": "Analyzes price differences for items sold in batches (e.g., 100x Bricks). Helps identify bulk discounts.",
         "sizes_found": "{{count}} sizes found",
-        "no_bulk": "No bulk trades found"
+        "no_bulk": "No bulk trades found",
+        "table_item": "Item",
+        "table_qty": "Qty",
+        "table_unit_price": "Unit Price",
+        "table_bulk": "Bulk (1k)",
+        "table_seller": "Seller",
+        "legend_buy_zone": "Buy Zone",
+        "legend_fair_price": "Fair Price",
+        "legend_sell_zone": "Sell Zone",
+        "deals_count": "{{count}} deals"
     },
     "profit_simulator": {
         "title": "Profit Simulator",
