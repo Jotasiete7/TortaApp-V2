@@ -1,6 +1,6 @@
 
-import { useMemo } from 'react';
-import { MarketItem, VolatilityMetrics, SellerInsights, ItemHistoryPoint, PriceDistributionPoint, CandlestickDataPoint, HeatmapDataPoint } from '../types';
+import { useMemo, useEffect, useState } from 'react';
+import { MarketItem, VolatilityMetrics, SellerInsights, ItemHistoryPoint, PriceDistributionPoint, CandlestickDataPoint, HeatmapDataPoint, MarketSnapshot } from '../types';
 import {
     getDistinctMarketItems,
     getItemHistory,
@@ -13,6 +13,7 @@ import {
 import { calculateVolatility } from '../services/volatilityCalculator';
 import { getTopSellers } from '../services/sellerAnalytics';
 import { MarketStoryEngine, MarketPhase, MarketMood } from '../services/MarketStoryEngine';
+import { MarketMemoryService } from '../services/MarketMemoryService';
 
 interface UseChartsEngineProps {
     rawItems: MarketItem[];
@@ -44,18 +45,23 @@ interface UseChartsEngineResult {
         mood: MarketMood;
         insights: string[];
     } | null;
+
+    // Memory (v2.3)
+    narrativeTimeline: MarketSnapshot[];
 }
 
 /**
- * useChartsEngine (v2.2)
+ * useChartsEngine (v2.3)
  * 
- * Integrated with MarketStoryEngine for narrative analysis.
+ * Integrated with MarketStoryEngine AND MarketMemoryService.
  */
 export const useChartsEngine = ({
     rawItems = [],
     liveTrades = [],
     selectedItemId
 }: UseChartsEngineProps): UseChartsEngineResult => {
+
+    const [narrativeTimeline, setNarrativeTimeline] = useState<MarketSnapshot[]>([]);
 
     // 1. Data Merging (Static + Live)
     const combinedItems = useMemo(() => {
@@ -100,7 +106,7 @@ export const useChartsEngine = ({
         return getTopSellers(combinedItems, selectedItemId, 5);
     }, [selectedItemId, combinedItems]);
 
-    // 4. Intelligence Layer (Market Story)
+    // 4. Intelligence Layer (Market Story) & Persistence
     const marketStory = useMemo(() => {
         if (!selectedItemId || !volatilityMetrics || historyData.length === 0) return null;
 
@@ -108,8 +114,35 @@ export const useChartsEngine = ({
         const distinctDays = new Set(historyData.map(h => h.date)).size;
         const sellerCount = sellerInsights.length;
 
-        return MarketStoryEngine.analyze(historyData, volatilityMetrics, sellerCount, distinctDays);
+        const story = MarketStoryEngine.analyze(historyData, volatilityMetrics, sellerCount, distinctDays);
+
+        // PERSISTENCE: Save snapshot if we have a valid analysis
+        if (story && story.phase.id !== 'DORMANT') {
+            const lastPrice = historyData[historyData.length - 1].avgPrice;
+            // We can find item name from distinct items locally
+            const itemName = combinedItems.find(i => i.id === selectedItemId)?.name || selectedItemId; // Fallback
+
+            MarketMemoryService.saveSnapshot(
+                { id: selectedItemId, name: itemName },
+                story,
+                lastPrice,
+                historyData[historyData.length - 1].volume
+            );
+        }
+
+        return story;
     }, [selectedItemId, historyData, volatilityMetrics, sellerInsights]);
+
+    // 5. Memory Retrieval
+    useEffect(() => {
+        if (selectedItemId) {
+            const memory = MarketMemoryService.getTimeline(selectedItemId);
+            setNarrativeTimeline(memory);
+        } else {
+            setNarrativeTimeline([]);
+        }
+    }, [selectedItemId, marketStory]); // Refresh when story updates (saves new snapshot)
+
 
     // A. Smart Suggestion (Market Movers)
     const suggestedItem = useMemo(() => {
@@ -133,6 +166,7 @@ export const useChartsEngine = ({
         totalTrades: combinedItems.length,
         liveTradeCount: liveTrades.length,
         suggestedItem,
-        marketStory
+        marketStory,
+        narrativeTimeline
     };
 };

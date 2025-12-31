@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ComposedChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area } from 'recharts';
 import { ChartDataPoint, MarketItem } from '../types';
 import { formatWurmPrice } from '../services/priceUtils';
-import { BarChart2, TrendingUp, LineChart, CandlestickChart as CandlestickIcon, Calendar, Globe, HelpCircle } from 'lucide-react';
+import { BarChart2, TrendingUp, LineChart, CandlestickChart as CandlestickIcon, Calendar, Globe, HelpCircle, History } from 'lucide-react';
 import { VolatilityBadge } from './market/VolatilityBadge';
 import { SmartSearch } from './market/SmartSearch';
 import { CandlestickChart } from './market/CandlestickChart';
@@ -47,7 +47,8 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
         sellerInsights,
         liveTradeCount,
         suggestedItem,
-        marketStory // New Interface
+        marketStory,
+        narrativeTimeline // New V3
     } = useChartsEngine({
         rawItems,
         liveTrades,
@@ -145,9 +146,9 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                                     </h3>
                                     {volatilityMetrics && <VolatilityBadge metrics={volatilityMetrics} itemName={selectedItem?.name || ''} />}
 
-                                    {/* Market Phase Badge (New) */}
+                                    {/* Market Phase Badge */}
                                     {marketStory && (
-                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-${marketStory.phase.color}-500/10 border-${marketStory.phase.color}-500/50 text-${marketStory.phase.color}-400`}>
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-${marketStory.phase.color}-500/10 border-${marketStory.phase.color}-500/50 text-${marketStory.phase.color}-400 animate-fade-in`}>
                                             <span className="font-bold text-xs uppercase tracking-wider">{marketStory.phase.label}</span>
                                         </div>
                                     )}
@@ -215,6 +216,38 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                         {chartType === 'candlestick' && <CandlestickChart data={candlestickData} itemName={selectedItem?.name || ''} />}
                         {chartType === 'heatmap' && <SupplyHeatmap data={heatmapData} itemName={selectedItem?.name || ''} />}
                     </div>
+
+                    {/* Timeline Persistence Visualization */}
+                    {narrativeTimeline.length > 1 && (
+                        <div className="mt-6 border-t border-slate-700 pt-4 animate-fade-in">
+                            <div className="flex items-center gap-2 mb-3 text-sm text-slate-400">
+                                <History className="w-4 h-4" />
+                                <span>Narrative Timeline (Memory)</span>
+                            </div>
+                            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700">
+                                {narrativeTimeline.map((snap, idx) => (
+                                    <div key={idx} className="flex-shrink-0 flex items-center gap-2">
+                                        <div className="flex flex-col items-center bg-slate-900 border border-slate-700 p-2 rounded-lg">
+                                            <span className="text-[10px] text-slate-500 mb-1">{snap.date}</span>
+                                            <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase
+                                                ${snap.phase === 'GROWING' ? 'bg-blue-500/20 text-blue-400' :
+                                                    snap.phase === 'INFLATED' ? 'bg-amber-500/20 text-amber-400' :
+                                                        snap.phase === 'COLLAPSING' ? 'bg-red-500/20 text-red-400' :
+                                                            snap.phase === 'CHAOTIC' ? 'bg-purple-500/20 text-purple-400' :
+                                                                'bg-slate-700/50 text-slate-400'}
+                                            `}>
+                                                {snap.phase}
+                                            </div>
+                                            <span className="text-[9px] text-slate-500 mt-1">{formatWurmPrice(snap.avgPrice)}</span>
+                                        </div>
+                                        {idx < narrativeTimeline.length - 1 && (
+                                            <div className="w-4 h-0.5 bg-slate-700"></div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Sidebar */}
