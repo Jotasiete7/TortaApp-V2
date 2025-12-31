@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Calculator, ArrowRight, Coins } from 'lucide-react';
 import { formatWurmPrice } from '../../services/priceUtils';
+import { InfoTooltip } from './InfoTooltip';
 
 interface ProfitCalculatorProps {
     fairPrice: number;
@@ -31,37 +32,46 @@ export const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({ fairPrice, b
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                    <label className="text-xs text-slate-400 uppercase font-bold">Buy Price (Unit)</label>
-                    <div className="relative">
+                    <label className="text-xs text-slate-400 uppercase font-bold flex items-center gap-1">
+                        Buy Price (Copper)
+                        <InfoTooltip text="The price you pay per unit. Defaults to 20% below Fair Price (simulating a buy order)." />
+                    </label>
+                    <div className="space-y-1">
                         <input
                             type="number"
-                            value={buyAt}
+                            value={Math.round(buyAt)}
                             onChange={(e) => setBuyAt(Number(e.target.value))}
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono focus:ring-2 focus:ring-emerald-500/50 outline-none"
                         />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">
-                            {formatWurmPrice(buyAt)}
+                        <div className="text-xs text-emerald-400/70 text-right font-mono">
+                            {formatWurmPrice(buyAt)} per unit
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs text-slate-400 uppercase font-bold">Sell Price (Unit)</label>
-                    <div className="relative">
+                    <label className="text-xs text-slate-400 uppercase font-bold flex items-center gap-1">
+                        Sell Price (Copper)
+                        <InfoTooltip text="The price you sell per unit. Defaults to Fair Market Value." />
+                    </label>
+                    <div className="space-y-1">
                         <input
                             type="number"
-                            value={sellAt}
+                            value={Math.round(sellAt)}
                             onChange={(e) => setSellAt(Number(e.target.value))}
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono focus:ring-2 focus:ring-purple-500/50 outline-none"
                         />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">
-                            {formatWurmPrice(sellAt)}
+                        <div className="text-xs text-purple-400/70 text-right font-mono">
+                            {formatWurmPrice(sellAt)} per unit
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs text-slate-400 uppercase font-bold">Quantity</label>
+                    <label className="text-xs text-slate-400 uppercase font-bold flex items-center gap-1">
+                        Quantity
+                        <InfoTooltip text="Simulation volume. Higher volume increases total profit but requires more capital." />
+                    </label>
                     <input
                         type="number"
                         value={quantity}

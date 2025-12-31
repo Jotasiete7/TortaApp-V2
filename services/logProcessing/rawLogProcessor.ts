@@ -60,25 +60,24 @@ export function processLogLine(
     // 2. Normalize nick
     const game_nick = raw.nick_raw.toLowerCase().trim();
 
-    // 3. Identify trade type
+    // 3. Identify trade type (V2.2 Robust Regex)
     let trade_type: CleanedLog['trade_type'] = null;
     let message_trimmed = raw.message_raw.trim();
 
-    const trade_match = message_trimmed.match(/^(WTS|WTB|WTT|PC)\s+/i);
-    if (trade_match) {
-        trade_type = trade_match[1].toUpperCase() as CleanedLog['trade_type'];
-        message_trimmed = message_trimmed.substring(trade_match[0].length).trim();
-    } else if (message_trimmed.startsWith('@TORTA-')) {
-        // Verification Token detected!
-        // Assign 'PC' type to pass filters, but the trigger will catch the token content.
-        trade_type = 'PC';
-    } else if (message_trimmed.startsWith('@')) {
-        // Reply messages (e.g., @nick thanks) - ignore
-        return null;
-    } else {
-        // No valid trade type - ignore
-        return null;
-    }
+    // Check first 40 chars for trade type using Word Boundaries (Safety against 'WTS' inside words)
+    const prefix = message_trimmed.substring(0, 40).toLowerCase();
+
+    if (/\bwtb\b/i.test(prefix)) trade_type = 'WTB';
+    else if (/\bwts\b/i.test(prefix)) trade_type = 'WTS';
+    else if (/\bwtt\b/i.test(prefix)) trade_type = 'WTT';
+    else if (/\bpc\b/i.test(prefix)) trade_type = 'PC';
+    else if (message_trimmed.startsWith('@TORTA-')) trade_type = 'PC';
+    else if (message_trimmed.startsWith('@')) return null;
+
+    if (!trade_type) return null;
+
+    // Clean Type marker from message
+    message_trimmed = message_trimmed.replace(/\b(wts|wtb|wtt|pc)\b/gi, '').trim();
 
     // 4. Clean message
     // Remove OLD @tortaapp verification codes if any, but KEEP the new @TORTA- token
