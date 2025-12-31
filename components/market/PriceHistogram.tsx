@@ -1,5 +1,6 @@
-﻿import React, { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { formatWurmPrice } from '../../services/priceUtils';
+import { useTranslation } from 'react-i18next';
 
 interface PriceHistogramProps {
     prices: number[];
@@ -9,6 +10,8 @@ interface PriceHistogramProps {
 }
 
 export const PriceHistogram: React.FC<PriceHistogramProps> = ({ prices, fairPrice, p25, p75 }) => {
+    const { t } = useTranslation('common');
+
     const { bins, maxCount } = useMemo(() => {
         if (prices.length === 0) return { bins: [], maxCount: 0 };
 
@@ -86,7 +89,7 @@ export const PriceHistogram: React.FC<PriceHistogramProps> = ({ prices, fairPric
                             {/* Hover Tooltip (Now Absolute to the Chart Container or Smart Positioned) */}
                             <div className={`absolute bottom-full mb-2 ${alignClass} hidden group-hover/bin:block pointer-events-none whitespace-nowrap z-50`}>
                                 <div className="bg-slate-900 text-[10px] text-white p-2 rounded-lg border border-slate-600 shadow-xl flex flex-col items-center gap-1 min-w-[100px] backdrop-blur-md bg-opacity-95">
-                                    <div className="font-bold text-base text-purple-400">{bin.count} deals</div>
+                                    <div className="font-bold text-base text-purple-400">{t('ml_predictor.deals_count', { count: bin.count })}</div>
                                     <div className="h-px w-full bg-slate-700"></div>
                                     <div className="font-mono text-slate-300 flex justify-between w-full gap-2">
                                         <span>{formatWurmPrice(bin.start)}</span>
@@ -106,9 +109,9 @@ export const PriceHistogram: React.FC<PriceHistogramProps> = ({ prices, fairPric
             <div className="flex justify-between text-[10px] text-slate-500 font-mono px-1">
                 <span>{formatWurmPrice(bins[0].start)}</span>
                 <div className="flex gap-4">
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-emerald-500/60 rounded-sm"></div> Buy Zone</span>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-purple-500 rounded-sm"></div> Fair Price</span>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-rose-500/60 rounded-sm"></div> Sell Zone</span>
+                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-emerald-500/60 rounded-sm"></div> {t('ml_predictor.legend_buy_zone')}</span>
+                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-purple-500 rounded-sm"></div> {t('ml_predictor.legend_fair_price')}</span>
+                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-rose-500/60 rounded-sm"></div> {t('ml_predictor.legend_sell_zone')}</span>
                 </div>
                 <span>{formatWurmPrice(bins[bins.length - 1].end)}</span>
             </div>

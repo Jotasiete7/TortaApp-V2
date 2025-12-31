@@ -7,6 +7,7 @@ import { extractNameAndQty } from '../../services/fileParser';
 import { PriceHistogram } from './PriceHistogram';
 import { ProfitCalculator } from './ProfitCalculator';
 import { InfoTooltip } from './InfoTooltip';
+import { useTranslation } from 'react-i18next';
 
 interface MLPredictorProps {
     data: MarketItem[];
@@ -53,7 +54,7 @@ const BulkSelector: React.FC<{
     selected: number;
     onSelect: (bulk: number) => void;
 }> = ({ analysis, selected, onSelect }) => {
-    const { t } = useTranslation('common'); // Added hook within subcomponent
+    const { t } = useTranslation('common');
     return (
         <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700 mt-4 animate-fade-in">
             <div className="flex items-center justify-between">
@@ -108,11 +109,8 @@ const BulkSelector: React.FC<{
     );
 };
 
-
-import { useTranslation } from 'react-i18next'; // Added
-
 export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
-    const { t } = useTranslation('common'); // Added
+    const { t } = useTranslation('common');
     const [quality, setQuality] = useState(50);
     const [material, setMaterial] = useState('Any');
     const [itemName, setItemName] = useState('');
@@ -121,7 +119,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
     const [result, setResult] = useState<PredictionResult | null>(null);
     const [marketStats, setMarketStats] = useState<MarketStats | null>(null);
     const [relevantTrades, setRelevantTrades] = useState<MarketItem[]>([]);
-    const [zeroPriceCount, setZeroPriceCount] = useState(0); // FEEDBACK FIX
+    const [zeroPriceCount, setZeroPriceCount] = useState(0);
 
     const [bulkAnalysis, setBulkAnalysis] = useState<BulkAnalysis | null>(null);
     const [selectedBulk, setSelectedBulk] = useState<number>(1);
@@ -486,11 +484,11 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                 <table className="w-full text-left text-xs">
                                     <thead className="bg-slate-900 text-slate-500 uppercase tracking-wider">
                                         <tr>
-                                            <th className="p-3">Item</th>
-                                            <th className="p-3 text-center">Qty</th>
-                                            <th className="p-3">Unit Price</th>
-                                            <th className="p-3">Bulk (1k)</th>
-                                            <th className="p-3">Seller</th>
+                                            <th className="p-3">{t('ml_predictor.table_item')}</th>
+                                            <th className="p-3 text-center">{t('ml_predictor.table_qty')}</th>
+                                            <th className="p-3">{t('ml_predictor.table_unit_price')}</th>
+                                            <th className="p-3">{t('ml_predictor.table_bulk')}</th>
+                                            <th className="p-3">{t('ml_predictor.table_seller')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-700/50">
