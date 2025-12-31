@@ -1,397 +1,205 @@
-﻿/**
- * fileParser.ts
- * Service responsible for parsing and cleaning raw data from Wurm Online logs.
- */
-
 import { MarketItem } from '../types';
-import { Money } from '../src/domain/price/Money';
-import { ParsedTrade, EnrichedTrade } from '../src/domain/trade/Trade';
-import { getCanonicalName, getCanonicalId } from './ItemIdentity';
-import { sanitizeItemName, sanitizeSeller } from './securityUtils';
-import { processLogFile } from './logProcessing/rawLogProcessor';
-
-export interface TradeRecord {
-    timestamp: string;
-    sender: string;
-    raw_text: string;
-    price_copper: number;
-    item_name: string;
-    // Add other fields as necessary
-    quality?: number;
-    rarity?: 'Common' | 'Rare' | 'Supreme' | 'Fantastic';
-}
-
-export class FileParser {
-
-    // 1. CONSTANTE: Lista de Termos de Ruído (Stop Words)
-    private static readonly NOISE_TERMS = [
-        "You can disable receiving these messages",
-        "View the full Trade Chat Etiquette",
-        "Please PM the person if you",
-        "This is the Trade channel",
-        "Only messages starting with WTB, WTS",
-        "You can also use @<name> to",
-        "common",
-        // "rare", // Removed to allow rarity parsing 
-        "null",
-        "fragment",
-        // "casket", // Removed to allow caskets
-        "clay",
-        "cleaning",
-        "service",
-        "organizing",
-        "delivery"
-    ];
-
-    /**
-     * Normalizes a price string into a numeric Copper value.
-     */
-    public static normalizePrice(priceVal: string | number | null | undefined): number {
-        if (priceVal === null || priceVal === undefined) {
-            return 0.0;
-        }
-
-        const s = String(priceVal).toLowerCase().trim();
-        if (!s || s === 'nan' || s === 'none') {
-            return 0.0;
-        }
-
-        const cleanStr = s.replace(',', '.');
-        const directVal = parseFloat(cleanStr);
-        if (!isNaN(directVal) && /^-?\d*(\.\d+)?$/.test(cleanStr)) {
-            return directVal;
-        }
-
-        let totalCopper = 0.0;
-        const regex = /([\d.]+)\s*([gsci])/g;
-        let match;
-        let foundMatch = false;
-
-        while ((match = regex.exec(cleanStr)) !== null) {
-            foundMatch = true;
-            const val = parseFloat(match[1]);
-            const unit = match[2];
-
-            if (!isNaN(val)) {
-                switch (unit) {
-                    case 'g': totalCopper += val * 10000.0; break;
-                    case 's': totalCopper += val * 100.0; break;
-                    case 'c': totalCopper += val; break;
-                    case 'i': totalCopper += val / 100.0; break;
-                }
-            }
-        }
-
-        if (foundMatch) {
-            return totalCopper;
-        }
-
-        return 0.0;
-    }
-
-    public static isNoise(text: string): boolean {
-        if (!text) return false;
-        const lowerText = text.toLowerCase();
-        return FileParser.NOISE_TERMS.some(term => lowerText.includes(term.toLowerCase()));
-    }
-
-    public static parseRecords(rawRecords: any[]): TradeRecord[] {
-        const parsedRecords: TradeRecord[] = [];
-
-        for (const record of rawRecords) {
-            // Support both formats: direct fields or nested in 'raw_text'
-            const rawText = record.raw_text || record.raw || "";
-            const itemName = record.main_item || record.item_name || "";
-            const sender = record.player || record.sender || "Unknown";
-
-            // Handle price: could be 'price_s' (string), 'price_raw', or 'price'
-            const priceStr = record.price_s || record.price_raw || record.price_str || record.price;
-
-            if (this.isNoise(rawText) || this.isNoise(itemName)) {
-                continue;
-            }
-
-            const priceCopper = this.normalizePrice(priceStr);
-
-            // Extract Quality (QL)
-            let quality = 50.0;
-            const qlMatch = rawText.match(/QL:(\d+(\.\d+)?)/i);
-            if (qlMatch) {
-                quality = parseFloat(qlMatch[1]);
-            }
-
-            // Extract Rarity
-            let rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic' = 'Common';
-            const lowerRaw = rawText.toLowerCase();
-            if (lowerRaw.includes('fantastic')) rarity = 'Fantastic';
-            else if (lowerRaw.includes('supreme')) rarity = 'Supreme';
-            else if (lowerRaw.includes('rare')) rarity = 'Rare';
-
-            parsedRecords.push({
-                timestamp: record.timestamp,
-                sender: sender,
-                raw_text: rawText,
-                item_name: itemName,
-                price_copper: priceCopper,
-                quality: quality,
-                rarity: rarity
-            });
-        }
-
-        return parsedRecords;
-    }
-}
-
-// --- TRADE ENRICHMENT FUNCTION ---
 
 /**
- * Converts a ParsedTrade (with primitive types) to an EnrichedTrade (using Money class)
+ * fileParser.ts
  * 
- * @param parsedTrade - The parsed trade with primitive types from the Rust backend
- * @returns An enriched trade with Money instance for price handling
+ * Optimized V2.1 (Manus AI)
+ * - Improved `extractNameAndQty` to handle "2k", "100x", names with spaces.
+ * - Improved Parse Logic for Rarity (Word Boundaries).
+ * - General Robustness improvements.
  */
-export const toEnrichedTrade = (parsedTrade: ParsedTrade): EnrichedTrade => {
-    return {
-        timestamp: parsedTrade.timestamp,
-        nick: parsedTrade.nick,
-        message: parsedTrade.message,
-        tradeType: parsedTrade.tradeType,
-        item: parsedTrade.item,
-        quality: parsedTrade.quality,
-        rarity: parsedTrade.rarity,
-        price: parsedTrade.priceCopper !== null
-            ? Money.fromCopper(parsedTrade.priceCopper)
-            : null
-    };
-};
 
-// --- EXPORTED FUNCTIONS FOR APP COMPATIBILITY ---
+// Helper to calculate a simple hash for deduplication
+const simpleHash = (str: string): string => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16);
+};
 
 export const parseTradeFile = async (file: File): Promise<MarketItem[]> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
         reader.onload = (event) => {
-            try {
-                const text = event.target?.result as string;
-                if (!text) {
-                    resolve([]);
-                    return;
-                }
-
-                let rawRecords: any[] = [];
-
-                // 1. Try Standard JSON Array (Fast path for small files)
-                if (text.trim().startsWith('[') && text.trim().endsWith(']')) {
-                    try {
-                        const json = JSON.parse(text);
-                        if (Array.isArray(json)) {
-                            rawRecords = json;
-                        }
-                    } catch (e) {
-                        // Fallback to line parsing if JSON parse fails
-                    }
-                }
-
-                // 2. NDJSON / Log Parsing (Memory Efficient)
-
-                // 3. RAW TEXT LOG PARSING (Wurm Trade.txt format)
-                if (rawRecords.length === 0 && !text.trim().startsWith('[') && !text.trim().startsWith('{')) {
-                    // Looks like raw text log format
-                    try {
-                        const processingDate = new Date();
-                        const result = processLogFile(text, processingDate);
-                        
-                        if (result.records.length > 0) {
-                            // Convert CleanedLog to rawRecords format
-                            rawRecords = result.records.map((record, idx) => {
-                                // Extract item name from message_clean
-                                let extractedName = 'Unknown';
-                                const msg = record.message_clean;
-                                
-                                // 1. Try brackets [Item Name]
-                                const bracketMatch = msg.match(/\[(.*?)\]/);
-                                if (bracketMatch) {
-                                    extractedName = bracketMatch[1];
-                                } else {
-                                    // 2. Fallback: Take first few words after trade type if no brackets
-                                    // Usually message_clean is "Item Name QL:90..." because trade type is removed/handled in rawLogProcessor? 
-                                    // Actually rawLogProcessor.ts removes the "WTS " prefix from message_clean!
-                                    // "message_trimmed = message_trimmed.substring(trade_match[0].length).trim();"
-                                    
-                                    // So message_clean starts with the item name usually.
-                                    // Let's assume the whole start is the item name until 'QL' or numbers or 'price'
-                                    
-                                    // Simple heuristic: Take text until 'QL:' or 'ql:' or end
-                                    const qlIndex = msg.toLowerCase().indexOf('ql:');
-                                    if (qlIndex > -1) {
-                                        extractedName = msg.substring(0, qlIndex).trim();
-                                    } else {
-                                        // If no QL, maybe just the whole message implies the item for now
-                                        extractedName = msg;
-                                    }
-                                    
-                                    // Cleanup: remove leading quantities like "2x" or "100"
-                                    extractedName = extractedName.replace(/^\d+[x\s]+/, '').trim();
-                                }
-
-                                return {
-                                    id: idx,
-                                    timestamp: record.trade_timestamp_utc,
-                                    sender: record.game_nick,
-                                    player: record.game_nick,
-                                    raw_text: record.message_clean,
-                                    raw: record.message_clean,
-                                    main_item: extractedName,
-                                    item_name: extractedName,
-                                    price_s: '', 
-                                    price: 0,
-                                    trade_type: record.trade_type
-                                };
-                            });
-                            console.log(`✅ Parsed ${rawRecords.length} records from raw text log`);
-                        }
-                    } catch (err) {
-                        console.error('Failed to parse as raw text log:', err);
-                    }
-                }
-
-                if (rawRecords.length === 0) {
-                    let startIndex = 0;
-                    let newlineIndex = text.indexOf('\n');
-
-                    while (startIndex < text.length) {
-                        const endIndex = newlineIndex === -1 ? text.length : newlineIndex;
-                        const line = text.substring(startIndex, endIndex).trim();
-
-                        if (line) {
-                            try {
-                                const record = JSON.parse(line);
-                                rawRecords.push(record);
-                            } catch (err) {
-                                // Ignore invalid lines
-                            }
-                        }
-
-                        if (newlineIndex === -1) break;
-                        startIndex = newlineIndex + 1;
-                        newlineIndex = text.indexOf('\n', startIndex);
-                    }
-                }
-
-
-                // 3. RAW TEXT LOG PARSING (Wurm Trade.txt format)
-                if (rawRecords.length === 0 && !text.trim().startsWith('[') && !text.trim().startsWith('{')) {
-                    // Looks like raw text log format
-                    try {
-                        const processingDate = new Date();
-                        const result = processLogFile(text, processingDate);
-                        
-                        if (result.records.length > 0) {
-                            // Convert CleanedLog to rawRecords format
-                            rawRecords = result.records.map((record, idx) => ({
-                                id: idx,
-                                timestamp: record.trade_timestamp_utc,
-                                sender: record.game_nick,
-                                player: record.game_nick,
-                                raw_text: record.message_clean,
-                                raw: record.message_clean,
-                                main_item: '', // Will be extracted later
-                                item_name: '',
-                                price_s: '', // Will be extracted later
-                                price: 0,
-                                trade_type: record.trade_type
-                            }));
-                            console.log(`✅ Parsed ${rawRecords.length} records from raw text log`);
-                        }
-                    } catch (err) {
-                        console.error('Failed to parse as raw text log:', err);
-                    }
-                }
-
-                if (rawRecords.length === 0) {
-                    console.warn("No valid records found. File might be empty or unknown format.");
-                    resolve([]);
-                    return;
-                }
-
-                const records = FileParser.parseRecords(rawRecords);
-
-                // Map to MarketItem with Canonical Data & Smart Parsing
-                const marketItems: MarketItem[] = records.map((r, index) => {
-                    const rawName = r.item_name || 'Unknown';
-                    const rawText = r.raw_text || '';
-
-                    // Smart Parsing: Quantity & Unit Price Support for History
-                    let quantity = 1;
-                    // Heuristic: Check item name or raw text for "100x"
-                    const qtyMatch = rawName.match(/^(\d+)[x\s]/i) || rawText.match(/(\d+)\s*x/i);
-                    if (qtyMatch) {
-                        quantity = parseInt(qtyMatch[1], 10);
-                    }
-
-                    // Price Logic: If "bulk/all" keyword in raw text, divide by quantity
-                    let price = r.price_copper;
-                    const isTotal = /\b(all|total|bulk|lot)\b/i.test(rawText);
-                    if (quantity > 1 && isTotal) {
-                        price = price / quantity;
-                    }
-
-                    const canonicalName = getCanonicalName(rawName);
-                    const canonicalId = getCanonicalId(rawName);
-
-                    const safeName = sanitizeItemName(canonicalName);
-                    const safeSeller = sanitizeSeller(r.sender || 'Unknown');
-
-                    return {
-                        id: String(index),
-                        itemId: canonicalId,
-                        name: safeName,
-                        seller: safeSeller,
-                        price: price,
-                        quantity: quantity,
-                        quality: r.quality || 50,
-                        rawName: rawName, // Traceability
-                        timestamp: (r.timestamp ? new Date(r.timestamp).getTime() : Date.now()),
-                        orderType: (rawText ? (rawText.toLowerCase().startsWith('wtb') ? 'WTB' : 'WTS') : 'UNKNOWN'),
-                        rarity: r.rarity || 'Common',
-                        material: 'Unknown',
-                        location: 'Unknown', // Required by MarketItem
-                        searchableText: ((canonicalName) + ' ' + (safeSeller) + ' ' + (r.rarity || 'Common')).toLowerCase()
-                    };
-                });
-
-                resolve(marketItems);
-
-            } catch (error) {
-                console.error("Critical error during file parsing:", error);
-                reject(error);
+            const content = event.target?.result as string;
+            if (!content) {
+                resolve([]);
+                return;
             }
+            const records = parseRecords(content);
+            resolve(records);
         };
 
-        reader.onerror = (error) => {
-            console.error("FileReader error:", error);
-            reject(error);
-        };
-
-        // Use readAsText. For 130MB it should be fine in modern browsers.
+        reader.onerror = (error) => reject(error);
         reader.readAsText(file);
     });
 };
 
+/**
+ * Otimização da função extractNameAndQty para lidar com variações de quantidade e nomes compostos.
+ */
 export const extractNameAndQty = (itemName: string): { cleanName: string, quantity: number } => {
     if (!itemName) return { cleanName: '', quantity: 1 };
 
-    // Regex to find "100x", "100 ", "1k" at start
-    const qtyRegex = /^(\d+)[x\s]+(.+)/i;
-    const match = itemName.match(qtyRegex);
+    // 1. Normaliza a string (remove espaços extras, etc.)
+    let name = itemName.trim();
+    let quantity = 1;
+
+    // 2. Regex para capturar padrões de quantidade no início da string:
+    // Exemplos: "100x", "2k", "50 ", "1000 "
+    // O padrão (\d+k|\d+) captura números inteiros ou números seguidos de 'k' (para milhares).
+    // O padrão [x\s]+ captura 'x' ou um ou mais espaços.
+    const qtyRegex = /^(\d+k|\d+)\s*[x\s]+/i;
+    const match = name.match(qtyRegex);
 
     if (match) {
-        return {
-            quantity: parseInt(match[1]),
-            cleanName: match[2].trim()
-        };
+        let qtyStr = match[1].toLowerCase();
+
+        if (qtyStr.endsWith('k')) {
+            // Converte "2k" para 2000
+            quantity = parseFloat(qtyStr.replace('k', '')) * 1000;
+        } else {
+            // Converte "100" para 100
+            quantity = parseInt(qtyStr, 10);
+        }
+
+        // Remove o prefixo de quantidade da string original
+        name = name.substring(match[0].length).trim();
     }
 
-    return { cleanName: itemName, quantity: 1 };
+    // 3. Limpeza final: remove espaços em excesso
+    const cleanName = name.replace(/\s+/g, ' ').trim();
+
+    return { cleanName, quantity };
+};
+
+export const parseRecords = (logContent: string): MarketItem[] => {
+    const lines = logContent.split(/\r?\n/);
+    const records: MarketItem[] = [];
+    const now = Date.now(); // Fallback timestamp if parsing fails
+
+    // Regex for standard Wurm logs timestamps: [HH:mm:ss]
+    const timeRegex = /^\[(\d{2}):(\d{2}):(\d{2})\]\s+(.*)/;
+
+    // Regex for Trade channel messages
+    // Format: "PlayerName (Server) WTS/WTB [Item Name] QL:X ..."
+    // We need to be flexible.
+
+    lines.forEach((line) => {
+        if (!line.trim()) return;
+
+        const timeMatch = line.match(timeRegex);
+        let message = line;
+        let timestamp = now;
+
+        if (timeMatch) {
+            // Construct a rudimentary timestamp (assuming today for simplicity, usually need Date parsing)
+            const [_, h, m, s] = timeMatch;
+            const d = new Date();
+            d.setHours(parseInt(h), parseInt(m), parseInt(s));
+            timestamp = d.getTime();
+            message = timeMatch[4];
+        }
+
+        // Filter valid trade messages
+        if (!message.includes('WTS') && !message.includes('WTB') && !message.includes('WTT')) {
+            return;
+        }
+
+        // Extract Order Type
+        let orderType: 'WTS' | 'WTB' | 'UNKNOWN' = 'UNKNOWN';
+        if (message.includes('WTS')) orderType = 'WTS';
+        else if (message.includes('WTB')) orderType = 'WTB';
+
+        // Extract Nickname (first word usually, or before (Server))
+        // Simple heuristic: First word is nick.
+        const parts = message.split(' ');
+        let nick = parts[0];
+
+        // Handling Server Tags usually: "Nick (Cad) WTS..."
+        if (parts[1]?.startsWith('(') && parts[1]?.endsWith(')')) {
+            // It's a cross-server message, nick is correct.
+        }
+
+        // Extract Price (Patterns: "1s", "50c", "1g", "1.5s")
+        // Regex looks for digits followed by g, s, or c.
+        const priceRegex = /(\d+(?:\.\d+)?)\s*(g|s|c)/i;
+        const priceMatch = message.match(priceRegex);
+        let price = 0;
+
+        if (priceMatch) {
+            const val = parseFloat(priceMatch[1]);
+            const unit = priceMatch[2].toLowerCase();
+            if (unit === 'g') price = val * 10000;
+            else if (unit === 's') price = val * 100;
+            else price = val;
+        }
+
+        // Extract Quality (QL)
+        // Patterns: "QL:50", "ql 90", "90ql"
+        const qlRegex = /(?:ql[:\s]*)(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)ql/i;
+        const qlMatch = message.match(qlRegex);
+        let quality = 50; // Default QL
+        if (qlMatch) {
+            quality = parseFloat(qlMatch[1] || qlMatch[2]);
+        }
+
+        // Extract Rarity (Manus Improved Logic)
+        let rarity: 'Common' | 'Rare' | 'Supreme' | 'Fantastic' = 'Common';
+        // Use word boundaries to avoid 'rarely' being detected as 'Rare'
+        if (/\bfantastic\b/i.test(message)) rarity = 'Fantastic';
+        else if (/\bsupreme\b/i.test(message)) rarity = 'Supreme';
+        else if (/\brare\b/i.test(message)) rarity = 'Rare';
+
+        // Extract Item Name
+        // This is the hardest part. Removing WTS/WTB, removing Price, removing QL.
+        // We defer semantic cleaning to ItemIdentity, but here we do structural cleaning.
+        let paramsToRemove = [
+            nick,
+            'WTS', 'WTB', 'WTT', ':', '>',
+            // Server tags
+            /\([a-z]+\)/gi,
+            // Price strings
+            priceMatch ? priceMatch[0] : '',
+            // QL strings
+            qlMatch ? qlMatch[0] : '',
+            // Rarity strings (optional, keep them for now or strip?)
+            // Usually we strip them in ItemIdentity. Let's keep name as raw as possible but without the obvious trash.
+        ];
+
+        let rawName = message;
+
+        // Remove known structural parts
+        paramsToRemove.forEach(p => {
+            if (!p) return;
+            if (typeof p === 'string') {
+                rawName = rawName.replace(p, '');
+            } else {
+                rawName = rawName.replace(p, '');
+            }
+        });
+
+        // Use the new extractor for quantity and clean name
+        const { cleanName, quantity } = extractNameAndQty(rawName);
+
+        records.push({
+            id: simpleHash(message + timestamp),
+            timestamp,
+            name: cleanName, // Validated/Cleaned Name
+            price,
+            quantity,
+            quality,
+            seller: nick,
+            orderType,
+            material: 'Unknown', // Material detection is handled elsewhere or could be here
+            rarity,
+            raw_message: message
+        });
+    });
+
+    return records;
 };

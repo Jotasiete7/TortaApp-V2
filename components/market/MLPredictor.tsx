@@ -186,10 +186,40 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
 
             // 3. Análise Estatística Avançada
             const unitPrices = pricedItems.map(i => i.price);
-            const stats = analyzePriceSet(unitPrices);
+            // V2.1 UPDATE: Pass full items and name for Normalization context
+            const stats = analyzePriceSet(unitPrices, pricedItems, itemName);
             setMarketStats(stats);
 
-            const basePredictedPrice = stats.fairPrice;
+            // Re-denormalize for display? 
+            // The engine returns "Base QL50 Iron" price. 
+            // We should probably project it back to the User's requested QL/Material?
+            // "Preço_Projetado = Preço_Base_50QL * (QL_Alvo / 50) ^ Expoente * MultiplicadorMaterial"
+
+            // NOTE: The engine returns a fairPrice that is NORMALIZED.
+            // We must adjust it to the user's selected parameters (Quality/Material)
+
+            // Use same maps (imported ideally, but hardcoding for patch robustness or we need to import maps here too)
+            // Ideally MLEngine should helper function for projection.
+            // Let's assume the user wants the price for THEIR specific filters.
+
+            // Projection Logic (Inline for now to avoid massive refactor):
+            const basePrice = stats.fairPrice;
+            const targetQL = quality;
+            const targetMat = material === 'Any' ? 'iron' : material.toLowerCase();
+
+            // Re-import maps logic (Simplified replicate)
+            const matMult = (targetMat === 'glimmersteel') ? 5.0 :
+                (targetMat === 'seryll') ? 6.0 :
+                    (targetMat === 'adamantine') ? 7.0 :
+                        (targetMat === 'moonmetal') ? 8.5 :
+                            (targetMat === 'gold') ? 3.0 :
+                                (targetMat === 'silver') ? 2.5 :
+                                    (targetMat === 'steel') ? 1.5 :
+                                        (targetMat === 'copper') ? 1.2 : 1.0;
+
+            const qlExp = 1.8; // Default
+
+            const projectedPrice = basePrice * Math.pow(Math.max(0.1, targetQL) / 50, qlExp) * matMult;
 
             let confidence = 0.95;
             if (stats.volatility > stats.mean * 0.5) confidence -= 0.2;
@@ -197,7 +227,7 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
             if (stats.outliersRemoved > stats.sampleSize * 0.2) confidence -= 0.1;
 
             setResult({
-                predictedPrice: basePredictedPrice,
+                predictedPrice: projectedPrice, // Display the Projected Price, NOT the normalized base
                 confidence: Math.max(0.1, confidence),
                 zScore: 0,
                 trend: 'stable'

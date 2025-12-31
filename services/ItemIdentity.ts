@@ -35,6 +35,39 @@ const ALIAS_MAP: Record<string, string> = {
     'farming': 'farm'
 };
 
+// --- CONFIGURATION MAPS (Manus AI v2.1) ---
+
+// Mapeamento de Multiplicadores de Material (Material Multiplier Map)
+export const MATERIAL_MULTIPLIERS: { [key: string]: number } = {
+    'iron': 1.0,
+    'steel': 1.5,
+    'copper': 1.2,
+    'silver': 2.5,
+    'gold': 3.0,
+    'glimmersteel': 5.0,
+    'seryll': 6.0,
+    'adamantine': 7.0,
+    'moonmetal': 8.5,
+    'wood': 1.0,
+    'stone': 1.0,
+    'leather': 1.0,
+    'cotton': 1.0,
+    'clay': 1.0,
+    'pottery': 1.0,
+    // Defaults
+    'default': 1.0
+};
+
+// Mapeamento de Expoentes de QL (QL Exponent Map)
+export const QL_EXPONENTS: { [key: string]: number } = {
+    'default': 1.8,
+    'tools': 1.6,
+    'weapons': 2.0,
+    'armor': 2.2,
+    'enchantments': 2.5,
+    'bulk_materials': 1.2,
+};
+
 // Words to ignore during normalization (Noise)
 // ADDED: wtb, wts, wtt
 const IGNORED_TERMS = new Set([
