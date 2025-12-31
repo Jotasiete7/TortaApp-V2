@@ -203,3 +203,16 @@ export const parseRecords = (logContent: string): MarketItem[] => {
 
     return records;
 };
+
+// --- COMPATIBILITY LAYER (Fix for LiveTradeMonitor build error) ---
+export const FileParser = {
+    isNoise: (message: string): boolean => {
+        const lower = message.toLowerCase();
+        // Common crafting/spam variations to ignore in Trade Monitor
+        const noiseTriggers = [
+            'you create', 'you improve', 'you continue', 'finished',
+            'starts to', 'fizzles', 'fails', 'you carefully'
+        ];
+        return noiseTriggers.some(t => lower.includes(t));
+    }
+};
