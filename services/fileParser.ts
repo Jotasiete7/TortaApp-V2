@@ -110,10 +110,14 @@ export const parseRecords = (logContent: string): MarketItem[] => {
             return;
         }
 
-        // Extract Order Type
+        // Extract Order Type (Robust Regex Fix)
+        const prefix = message.substring(0, 50).toLowerCase(); // Check start of message
+        const isWTB = /\bwtb\b/i.test(prefix);
+        const isWTS = /\bwts\b/i.test(prefix);
+
         let orderType: 'WTS' | 'WTB' | 'UNKNOWN' = 'UNKNOWN';
-        if (message.includes('WTS')) orderType = 'WTS';
-        else if (message.includes('WTB')) orderType = 'WTB';
+        if (isWTB) orderType = 'WTB';
+        else if (isWTS) orderType = 'WTS';
 
         // Extract Nickname (first word usually, or before (Server))
         // Simple heuristic: First word is nick.

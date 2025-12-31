@@ -357,18 +357,18 @@ export const MLPredictor: React.FC<MLPredictorProps> = ({ data }) => {
                                     </p>
 
                                     {/* ZERO PRICE FEEDBACK */}
-                                    {/* ZERO PRICE FEEDBACK (High Demand Insight) */}
+                                    {/* ZERO PRICE FEEDBACK (High Demand / Unpriced) */}
                                     {zeroPriceCount > 0 && relevantTrades.length === 0 && (
                                         <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-300 text-sm max-w-sm mx-auto animate-in slide-in-from-bottom-2 fade-in">
                                             <div className="flex items-center justify-center gap-2 font-bold mb-1 text-white">
                                                 <TrendingUp className="w-5 h-5 text-blue-400" />
-                                                High Demand Detected!
+                                                Market Activity Detected
                                             </div>
                                             <p className="opacity-90 mb-2">
-                                                Found {zeroPriceCount} WTB offers, but no explicit sellers.
+                                                Found {zeroPriceCount} listings with no explicit price.
                                             </p>
                                             <p className="text-xs bg-slate-900/50 p-2 rounded text-slate-400">
-                                                💡 <b>Tip:</b> This suggests high liquidity. You will likely need to negotiate the price directly.
+                                                💡 <b>Insight:</b> This indicates active interest (WTB) or unpriced sellers. Check the trade chat for details.
                                             </p>
                                         </div>
                                     )}
