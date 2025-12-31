@@ -111,25 +111,32 @@ export class LiveTradeMonitor {
     // --- Parsing Logic ---
 
     private parseTradeType(message: string): 'WTB' | 'WTS' | 'WTT' | null {
-        const upper = message.toUpperCase();
-        if (upper.includes('WTB')) return 'WTB';
-        if (upper.includes('WTS')) return 'WTS';
-        if (upper.includes('WTT')) return 'WTT';
+        // V2.2 Robust Regex (Parity with FileParser)
+        const prefix = message.substring(0, 30).toLowerCase();
+        if (/\bwtb\b/i.test(prefix)) return 'WTB';
+        if (/\bwts\b/i.test(prefix)) return 'WTS';
+        if (/\bwtt\b/i.test(prefix)) return 'WTT';
         return null;
     }
 
     private parseItemAndPrice(message: string): { item: string, price: string } {
-        const priceRegex = /(\d+s\d+c|\d+s|\d+c)/i;
-        const priceMatch = message.match(priceRegex);
-        const price = priceMatch ? priceMatch[0] : '0c';
+        // V2.2 Robust Price Extraction
+        const priceCopper = FileParser.normalizePrice(message);
+        const priceString = priceCopper + 'c'; // Convert to copper string for Money class compatibility
 
-        let item = message
+        // V2.2 Robust Name Cleaning matches FileParser logic
+        const cleanName = message
             .replace(/wts|wtb|wtt/gi, '')
-            .replace(priceRegex, '')
+            .replace(/([\d.]+)\s*(gold|silver|copper|iron|g|s|c|i)\b/gi, '') // Remove Price
+            .replace(/QL[:\s]*(\d+(\.\d+)?)|(\d+(\.\d+)?)ql/gi, '') // Remove QL
             .replace(/\bfor\b/gi, '')
-            .trim();
+            .replace(/\([a-z]+\)/gi, '') // Server tags
+            .replace(/\[|\]/g, '')
+            .replace(/[:>]/g, '')
+            .trim()
+            .replace(/\s+/g, ' '); // Single spaces
 
-        return { item, price };
+        return { item: cleanName, price: priceString };
     }
 
     // --- Public Methods ---
@@ -186,7 +193,7 @@ export class LiveTradeMonitor {
             return;
         }
 
-       
+
 
 
 
@@ -196,64 +203,64 @@ export class LiveTradeMonitor {
         const unlisten = await listen<{ trades: Array<{ timestamp: string, nick: string, message: string }> }>('trade-batch-event', async (event) => {
             console.log("📨 FRONTEND RECEIVED EVENT:", event);
             const batch = event.payload;
-            if(!batch.trades) return;
-            for(const raw of batch.trades) {
+            if (!batch.trades) return;
+            for (const raw of batch.trades) {
 
-            // NEW: Filter Noise before processing
-            if (FileParser.isNoise(raw.message)) {
-                console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
-                return;
-            }
+                // NEW: Filter Noise before processing
+                if (FileParser.isNoise(raw.message)) {
+                    console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
+                    return;
+                }
 
-            const type = this.parseTradeType(raw.message);
+                const type = this.parseTradeType(raw.message);
 
-            if (!type) return;
+                if (!type) return;
 
-            const { item, price } = this.parseItemAndPrice(raw.message);
+                const { item, price } = this.parseItemAndPrice(raw.message);
 
-            const trade: Trade = {
-                timestamp: raw.timestamp,
-                nick: raw.nick,
-                message: raw.message,
-                type,
-                item,
-                price,
-                server: this.currentServer,
-                raw: JSON.stringify(raw)
-            };
-
-
-            // Check Alerts
-            try {
-                // Refresh alerts occasionally or assume synced? For now assume synced via localforage sharing the same store name?
-                // Actually LiveTradeMonitor sets store name 'TortaApp_OfflineQueue', AlertsManager uses default or distinct.
-                // AlertsManager uses default 'localforage'.
-                // We should fix this: AlertsManager should use specific store or LiveMonitor should access default.
-                // Let's assume for now we use 'trade_alerts' key on default instance.
-                // Re-instantiate a default store for reading alerts to be safe?
-                // Or just use localforage (global) since AlertsManager imported it globally.
-
-                const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
-
-                // Prepare object for alert check (needs Money price)
-                const checkObj = {
-                    timestamp: trade.timestamp,
-                    nick: trade.nick,
-                    message: trade.message,
-                    type: trade.type,
-                    price: Money.fromString(trade.price)
+                const trade: Trade = {
+                    timestamp: raw.timestamp,
+                    nick: raw.nick,
+                    message: raw.message,
+                    type,
+                    item,
+                    price,
+                    server: this.currentServer,
+                    raw: JSON.stringify(raw)
                 };
 
-                const matched = AlertService.checkAlerts(checkObj, alerts);
-                if (matched) {
-                    console.log('🔔 Alert Triggered:', matched.term);
-                    AlertService.fireAlert(matched, checkObj);
-                }
-            } catch (err) {
-                console.error('Error checking alerts:', err);
-            }
 
-            await this.submitTrade(trade);
+                // Check Alerts
+                try {
+                    // Refresh alerts occasionally or assume synced? For now assume synced via localforage sharing the same store name?
+                    // Actually LiveTradeMonitor sets store name 'TortaApp_OfflineQueue', AlertsManager uses default or distinct.
+                    // AlertsManager uses default 'localforage'.
+                    // We should fix this: AlertsManager should use specific store or LiveMonitor should access default.
+                    // Let's assume for now we use 'trade_alerts' key on default instance.
+                    // Re-instantiate a default store for reading alerts to be safe?
+                    // Or just use localforage (global) since AlertsManager imported it globally.
+
+                    const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
+
+                    // Prepare object for alert check (needs Money price)
+                    const checkObj = {
+                        timestamp: trade.timestamp,
+                        nick: trade.nick,
+                        message: trade.message,
+                        type: trade.type,
+                        price: Money.fromString(trade.price)
+                    };
+
+                    const matched = AlertService.checkAlerts(checkObj, alerts);
+                    if (matched) {
+                        console.log('🔔 Alert Triggered:', matched.term);
+                        AlertService.fireAlert(matched, checkObj);
+                    }
+                } catch (err) {
+                    console.error('Error checking alerts:', err);
+                }
+
+                await this.submitTrade(trade);
             }
         });
 
@@ -300,7 +307,7 @@ export class LiveTradeMonitor {
 
     public async submitTrade(trade: Trade) {
         console.log('?? LiveTrade: Attempting to submit trade...', trade.nick);
-        
+
         if (!this.currentUserId) {
             console.log('?? LiveTrade: UserId not set, fetching...');
             const { data } = await supabase.auth.getUser();
@@ -412,30 +419,30 @@ export const liveTradeMonitor = new LiveTradeMonitor();
 // DEBUG: Expose to window
 (window as any).liveTrade = liveTradeMonitor;
 
-        // DEBUG TOOL: Check latest logs for a nickname from Console
-        (window as any).debugLogs = async (nick: string) => {
-            console.log(`?? Checking DB for logs of: ${nick}`);
-            const { data, error } = await supabase
-                .from('trade_logs')
-                .select('*')
-                .ilike('nick', nick)
-                .order('trade_timestamp_utc', { ascending: false })
-                .limit(10);
-                
-            if (error) {
-                console.error('? Query Error:', error);
-            } else {
-                console.log('?? Result:', data);
-                if (data && data.length > 0) {
-                     console.log('?? Latest Log Time:', data[0].trade_timestamp_utc);
-                     console.log('?? Latest Message:', data[0].message);
-                } else {
-                     console.log('?? No logs found for this nick.');
-                }
-            }
-        };
+// DEBUG TOOL: Check latest logs for a nickname from Console
+(window as any).debugLogs = async (nick: string) => {
+    console.log(`?? Checking DB for logs of: ${nick}`);
+    const { data, error } = await supabase
+        .from('trade_logs')
+        .select('*')
+        .ilike('nick', nick)
+        .order('trade_timestamp_utc', { ascending: false })
+        .limit(10);
 
-        (window as any).testTrade = () => {
+    if (error) {
+        console.error('? Query Error:', error);
+    } else {
+        console.log('?? Result:', data);
+        if (data && data.length > 0) {
+            console.log('?? Latest Log Time:', data[0].trade_timestamp_utc);
+            console.log('?? Latest Message:', data[0].message);
+        } else {
+            console.log('?? No logs found for this nick.');
+        }
+    }
+};
+
+(window as any).testTrade = () => {
     console.log('?? Sending TEST trade...');
     liveTradeMonitor.submitTrade({
         timestamp: new Date().toISOString(),
