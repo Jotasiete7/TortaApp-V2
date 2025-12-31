@@ -205,6 +205,7 @@ export const parseRecords = (logContent: string): MarketItem[] => {
 };
 
 // --- COMPATIBILITY LAYER (Fix for LiveTradeMonitor build error) ---
+// --- COMPATIBILITY LAYER (Fix for LiveTradeMonitor build error) ---
 export const FileParser = {
     isNoise: (message: string): boolean => {
         const lower = message.toLowerCase();
@@ -214,5 +215,17 @@ export const FileParser = {
             'starts to', 'fizzles', 'fails', 'you carefully'
         ];
         return noiseTriggers.some(t => lower.includes(t));
+    },
+    normalizePrice: (message: string): number => {
+        const priceRegex = /(\d+(?:\.\d+)?)\s*(g|s|c)/i;
+        const priceMatch = message.match(priceRegex);
+        if (priceMatch) {
+            const val = parseFloat(priceMatch[1]);
+            const unit = priceMatch[2].toLowerCase();
+            if (unit === 'g') return val * 10000;
+            if (unit === 's') return val * 100;
+            return val;
+        }
+        return 0;
     }
 };
