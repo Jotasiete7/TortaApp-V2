@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useEffect } from 'react';
 import { ComposedChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area } from 'recharts';
 import { ChartDataPoint, MarketItem } from '../types';
@@ -17,8 +17,8 @@ import { useTradeEvents } from '../contexts/TradeEventContext';
 import { useChartsEngine } from '../hooks/useChartsEngine';
 
 interface ChartsViewProps {
-    data: ChartDataPoint[]; // Legacy prop
-    rawItems?: MarketItem[]; // Historical Base
+    data: ChartDataPoint[];
+    rawItems?: MarketItem[];
 }
 
 type ChartType = 'line' | 'candlestick' | 'heatmap';
@@ -36,17 +36,18 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
     const { trades: liveTrades } = useTradeEvents();
 
     // --- CHARTS ENGINE ---
-    // Decoupled Logic: The engine takes selectedItemId.
     const {
         combinedItems,
-        distinctItems, // Now { id, name }[]
+        distinctItems,
         historyData,
         distributionData,
         candlestickData,
         heatmapData,
         volatilityMetrics,
         sellerInsights,
-        liveTradeCount
+        liveTradeCount,
+        suggestedItem,
+        marketStory // New Interface
     } = useChartsEngine({
         rawItems,
         liveTrades,
@@ -54,13 +55,11 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
     });
 
     // Smart Default Selection
-    // If no item is selected, try to pick one from the distinct list
     useEffect(() => {
-        if (!selectedItem && distinctItems.length > 0) {
-            const common = distinctItems.find(i => i.name.toLowerCase().includes('iron') || i.name.toLowerCase().includes('block'));
-            setSelectedItem(common || distinctItems[0]);
+        if (!selectedItem && suggestedItem) {
+            setSelectedItem(suggestedItem);
         }
-    }, [distinctItems, selectedItem]);
+    }, [suggestedItem, selectedItem]);
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
@@ -93,6 +92,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
 
     return (
         <div className="space-y-6 animate-fade-in">
+            {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700">
                 <div className="flex-1">
                     <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -108,90 +108,86 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-
                     <div className="flex items-center gap-2 mr-2">
-                        <button
-                            onClick={toggleLanguage}
-                            className="p-2 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors border border-slate-700 flex items-center gap-2"
-                            title="Switch Language"
-                        >
+                        <button onClick={toggleLanguage} className="p-2 bg-slate-800 text-slate-400 hover:text-white rounded-lg border border-slate-700">
                             <Globe className="w-4 h-4" />
-                            <span className="text-xs font-bold">{language === 'en' ? 'EN' : 'PT'}</span>
+                            <span className="text-xs font-bold ml-1">{language === 'en' ? 'EN' : 'PT'}</span>
                         </button>
-                        <button
-                            onClick={() => setShowGuide(true)}
-                            className="p-2 bg-slate-800 text-slate-400 hover:text-amber-500 rounded-lg transition-colors border border-slate-700"
-                            title={t('user_guide')}
-                        >
+                        <button onClick={() => setShowGuide(true)} className="p-2 bg-slate-800 text-slate-400 hover:text-amber-500 rounded-lg border border-slate-700">
                             <HelpCircle className="w-4 h-4" />
                         </button>
                     </div>
                     <div className="w-full sm:w-80">
-                        <SmartSearch
-                            items={distinctItems}
-                            rawData={combinedItems}
-                            selectedItemId={selectedItem?.id || ''}
-                            onSelect={setSelectedItem}
-                        />
+                        <SmartSearch items={distinctItems} rawData={combinedItems} selectedItemId={selectedItem?.id || ''} onSelect={setSelectedItem} />
                     </div>
-
                     {/* Chart Type Toggle */}
                     <div className="flex gap-1 bg-slate-900 p-1 rounded-lg border border-slate-600">
-                        <button
-                            onClick={() => setChartType('line')}
-                            className={`p-2 rounded transition-colors ${chartType === 'line' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'}`}
-                            title="Line Chart"
-                        >
-                            <LineChart className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setChartType('candlestick')}
-                            className={`p-2 rounded transition-colors ${chartType === 'candlestick' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'}`}
-                            title="Candlestick Chart"
-                        >
-                            <BarChart2 className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setChartType('heatmap')}
-                            className={`p-2 rounded transition-colors ${chartType === 'heatmap' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'}`}
-                            title="Supply Heatmap"
-                        >
-                            <Calendar className="w-4 h-4" />
-                        </button>
+                        <button onClick={() => setChartType('line')} className={`p-2 rounded ${chartType === 'line' ? 'bg-slate-700 text-white' : 'text-slate-500'}`}><LineChart className="w-4 h-4" /></button>
+                        <button onClick={() => setChartType('candlestick')} className={`p-2 rounded ${chartType === 'candlestick' ? 'bg-slate-700 text-white' : 'text-slate-500'}`}><BarChart2 className="w-4 h-4" /></button>
+                        <button onClick={() => setChartType('heatmap')} className={`p-2 rounded ${chartType === 'heatmap' ? 'bg-slate-700 text-white' : 'text-slate-500'}`}><Calendar className="w-4 h-4" /></button>
                     </div>
                 </div>
             </div>
 
-
-            {/* Market Health Dashboard */}
-            <MarketHealthDashboard rawData={combinedItems} />
+            <MarketHealthDashboard rawData={combinedItems} itemName={selectedItem?.name} />
 
             <ChartsGuide isOpen={showGuide} onClose={() => setShowGuide(false)} lang={language} />
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Chart Area */}
                 <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
-                    <div className="mb-6 flex justify-between items-end">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-white capitalize">
-                                    {selectedItem?.name || 'Select Item'} History
-                                </h3>
-                                {volatilityMetrics && <VolatilityBadge metrics={volatilityMetrics} itemName={selectedItem?.name || ''} />}
+                    {/* Dynamic Header */}
+                    <div className="mb-6">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h3 className="text-lg font-semibold text-white capitalize">
+                                        {selectedItem?.name || 'Select Item'} History
+                                    </h3>
+                                    {volatilityMetrics && <VolatilityBadge metrics={volatilityMetrics} itemName={selectedItem?.name || ''} />}
+
+                                    {/* Market Phase Badge (New) */}
+                                    {marketStory && (
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-${marketStory.phase.color}-500/10 border-${marketStory.phase.color}-500/50 text-${marketStory.phase.color}-400`}>
+                                            <span className="font-bold text-xs uppercase tracking-wider">{marketStory.phase.label}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Market Story / Insights */}
+                                {marketStory ? (
+                                    <div className="mt-2 space-y-1">
+                                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                                            <span>{marketStory.mood.emoji}</span>
+                                            <span className="font-medium text-white">{marketStory.mood.label} Mood:</span>
+                                            <span className="opacity-80">{marketStory.mood.description}</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {marketStory.insights.map((insight, idx) => (
+                                                <span key={idx} className="text-xs text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                                    {insight}
+                                                </span>
+                                            ))}
+                                            {marketStory.phase.explanation.map((exp, idx) => (
+                                                <span key={`exp-${idx}`} className="text-xs text-slate-400 bg-slate-700/30 px-2 py-0.5 rounded border border-slate-600">
+                                                    {exp}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-slate-400">Loading analysis...</p>
+                                )}
                             </div>
-                            <p className="text-sm text-slate-400">
-                                {chartType === 'line' && 'Unit Price evolution over time'}
-                                {chartType === 'candlestick' && 'Daily OHLC price ranges'}
-                                {chartType === 'heatmap' && 'Supply density calendar'}
-                            </p>
+
+                            {historyData.length > 0 && chartType === 'line' && (
+                                <div className="text-right">
+                                    <p className="text-xs text-slate-500">Latest Avg</p>
+                                    <p className="text-xl font-mono text-emerald-400">
+                                        {formatWurmPrice(historyData[historyData.length - 1].avgPrice)}
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                        {historyData.length > 0 && chartType === 'line' && (
-                            <div className="text-right">
-                                <p className="text-xs text-slate-500">Latest Avg</p>
-                                <p className="text-xl font-mono text-emerald-400">
-                                    {formatWurmPrice(historyData[historyData.length - 1].avgPrice)}
-                                </p>
-                            </div>
-                        )}
                     </div>
 
                     <div className="h-[350px] w-full">
@@ -210,41 +206,19 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                                     <Tooltip content={<CustomTooltip />} />
                                     <Legend />
 
-                                    <Area
-                                        type="monotone"
-                                        dataKey="avgPrice"
-                                        name="Avg Price"
-                                        stroke="#f59e0b"
-                                        fill="url(#colorAvg)"
-                                        strokeWidth={2}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="minPrice"
-                                        name="Min Price"
-                                        stroke="#10b981"
-                                        strokeWidth={1}
-                                        dot={false}
-                                        strokeDasharray="5 5"
-                                    />
+                                    <Area type="monotone" dataKey="avgPrice" name="Avg Price" stroke="#f59e0b" fill="url(#colorAvg)" strokeWidth={2} />
+                                    <Line type="monotone" dataKey="minPrice" name="Min Price" stroke="#10b981" strokeWidth={1} dot={false} strokeDasharray="5 5" />
                                     <Bar dataKey="volume" name="Daily Volume" barSize={20} fill="#3b82f6" opacity={0.3} yAxisId={0} />
                                 </ComposedChart>
                             </ResponsiveContainer>
                         )}
-
-                        {chartType === 'candlestick' && (
-                            <CandlestickChart data={candlestickData} itemName={selectedItem?.name || ''} />
-                        )}
-
-                        {chartType === 'heatmap' && (
-                            <SupplyHeatmap data={heatmapData} itemName={selectedItem?.name || ''} />
-                        )}
+                        {chartType === 'candlestick' && <CandlestickChart data={candlestickData} itemName={selectedItem?.name || ''} />}
+                        {chartType === 'heatmap' && <SupplyHeatmap data={heatmapData} itemName={selectedItem?.name || ''} />}
                     </div>
                 </div>
 
                 {/* Right Sidebar */}
                 <div className="space-y-6">
-                    {/* Price Distribution */}
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
                         <div className="mb-6">
                             <h3 className="text-lg font-semibold text-white">Price Cluster</h3>
@@ -256,21 +230,15 @@ export const ChartsView: React.FC<ChartsViewProps> = ({ rawItems = [] }) => {
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={true} vertical={false} />
                                     <XAxis type="number" stroke="#94a3b8" tick={{ fontSize: 10 }} />
                                     <YAxis dataKey="range" type="category" stroke="#94a3b8" tick={{ fontSize: 10 }} width={70} />
-                                    <Tooltip
-                                        cursor={{ fill: '#334155', opacity: 0.2 }}
-                                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#475569', color: '#f8fafc' }}
-                                    />
+                                    <Tooltip cursor={{ fill: '#334155', opacity: 0.2 }} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#475569', color: '#f8fafc' }} />
                                     <Bar dataKey="count" fill="#8b5cf6" radius={[0, 4, 4, 0]} name="Trades" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
-
-                    {/* Seller Insights */}
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
                         <SellerInsights sellers={sellerInsights} itemName={selectedItem?.name || ''} />
                     </div>
-                    {/* Price Forecast */}
                     <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
                         <PriceForecastPanel items={combinedItems} itemName={selectedItem?.name || ''} />
                     </div>

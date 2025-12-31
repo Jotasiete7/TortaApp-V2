@@ -1,4 +1,5 @@
-﻿import { useMemo } from 'react';
+
+import { useMemo } from 'react';
 import { MarketItem, VolatilityMetrics, SellerInsights, ItemHistoryPoint, PriceDistributionPoint, CandlestickDataPoint, HeatmapDataPoint } from '../types';
 import {
     getDistinctMarketItems,
@@ -11,17 +12,18 @@ import {
 } from '../services/dataUtils';
 import { calculateVolatility } from '../services/volatilityCalculator';
 import { getTopSellers } from '../services/sellerAnalytics';
+import { MarketStoryEngine, MarketPhase, MarketMood } from '../services/MarketStoryEngine';
 
 interface UseChartsEngineProps {
     rawItems: MarketItem[];
     liveTrades: LiveTrade[];
-    selectedItemId: string; // ARCHITECTURAL CHANGE: ID not Name
+    selectedItemId: string;
 }
 
 interface UseChartsEngineResult {
     // Data Sources
     combinedItems: MarketItem[];
-    distinctItems: { id: string, name: string }[]; // Updated type
+    distinctItems: { id: string, name: string }[];
 
     // Item-Specific Analytics
     historyData: ItemHistoryPoint[];
@@ -34,13 +36,20 @@ interface UseChartsEngineResult {
     // Metadata
     totalTrades: number;
     liveTradeCount: number;
+
+    // Intelligence (v2.1)
+    suggestedItem: { id: string, name: string } | null;
+    marketStory: {
+        phase: MarketPhase;
+        mood: MarketMood;
+        insights: string[];
+    } | null;
 }
 
 /**
- * useChartsEngine (v2.0)
+ * useChartsEngine (v2.2)
  * 
- * The central logic brain for TortaApp Analytics.
- * Strict adherence to itemId for all filtering and grouping.
+ * Integrated with MarketStoryEngine for narrative analysis.
  */
 export const useChartsEngine = ({
     rawItems = [],
@@ -51,20 +60,14 @@ export const useChartsEngine = ({
     // 1. Data Merging (Static + Live)
     const combinedItems = useMemo(() => {
         if (!liveTrades || liveTrades.length === 0) return rawItems;
-
-        // Convert lightweight LiveTrades to full MarketItems
         const liveMarketItems = liveTrades.map(convertLiveTradeToMarketItem);
-
-        // Merge strategy: Append live items to historical items
         return [...rawItems, ...liveMarketItems];
     }, [rawItems, liveTrades]);
 
-    // 2. Global Aggregates (Returns Objects now)
+    // 2. Global Aggregates
     const distinctItems = useMemo(() => getDistinctMarketItems(combinedItems), [combinedItems]);
 
     // 3. Item-Specific Calculations
-    // These only run when 'selectedItemId' changes or new data arrives
-
     const historyData = useMemo(() => {
         if (!selectedItemId) return [];
         return getItemHistory(combinedItems, selectedItemId);
@@ -87,15 +90,36 @@ export const useChartsEngine = ({
 
     const volatilityMetrics = useMemo(() => {
         if (!selectedItemId) return null;
-        // @ts-ignore - Assuming update to service
+        // @ts-ignore
         return calculateVolatility(combinedItems, selectedItemId);
     }, [selectedItemId, combinedItems]);
 
     const sellerInsights = useMemo(() => {
         if (!selectedItemId) return [];
-        // @ts-ignore - Assuming update to service
+        // @ts-ignore
         return getTopSellers(combinedItems, selectedItemId, 5);
     }, [selectedItemId, combinedItems]);
+
+    // 4. Intelligence Layer (Market Story)
+    const marketStory = useMemo(() => {
+        if (!selectedItemId || !volatilityMetrics || historyData.length === 0) return null;
+
+        // Calculate distinct days for reliability
+        const distinctDays = new Set(historyData.map(h => h.date)).size;
+        const sellerCount = sellerInsights.length;
+
+        return MarketStoryEngine.analyze(historyData, volatilityMetrics, sellerCount, distinctDays);
+    }, [selectedItemId, historyData, volatilityMetrics, sellerInsights]);
+
+    // A. Smart Suggestion (Market Movers)
+    const suggestedItem = useMemo(() => {
+        if (distinctItems.length === 0) return null;
+        const iron = distinctItems.find(i => i.name.toLowerCase() === 'iron lump');
+        if (iron) return iron;
+        const wood = distinctItems.find(i => i.name.toLowerCase().includes('log') || i.name.toLowerCase().includes('plank'));
+        if (wood) return wood;
+        return distinctItems[0];
+    }, [distinctItems]);
 
     return {
         combinedItems,
@@ -107,6 +131,8 @@ export const useChartsEngine = ({
         volatilityMetrics,
         sellerInsights,
         totalTrades: combinedItems.length,
-        liveTradeCount: liveTrades.length
+        liveTradeCount: liveTrades.length,
+        suggestedItem,
+        marketStory
     };
 };

@@ -1,4 +1,5 @@
-﻿import React, { useMemo } from 'react';
+
+import React, { useMemo } from 'react';
 import { calculateMarketHealth } from '../../services/marketHealthCalculator';
 import { MarketItem } from '../../types';
 import { Activity, TrendingUp, TrendingDown, Target, Shield, AlertTriangle } from 'lucide-react';
@@ -33,7 +34,7 @@ export const MarketHealthDashboard: React.FC<MarketHealthDashboardProps> = ({ ra
         );
     }
 
-    const { msi, health, liquidityScore, volatilityScore, trend } = metrics;
+    const { msi, health, liquidityScore, stabilityScore, reliabilityScore, trend } = metrics;
 
     let color = 'text-emerald-500';
     let bgColor = 'bg-emerald-500/10';
@@ -82,11 +83,11 @@ export const MarketHealthDashboard: React.FC<MarketHealthDashboardProps> = ({ ra
                     </div>
                 </div>
 
-                {/* Metrics Grid */}
+                {/* Metrics Grid (Composite Index) */}
                 <div className="flex-1 w-full md:w-auto grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-slate-700/50 pt-4 md:pt-0 md:pl-6">
                     <MetricPill label="Liquidity" value={liquidityScore} icon={<Activity className="w-4 h-4" />} />
-                    <MetricPill label="Stability" value={volatilityScore} icon={<Shield className="w-4 h-4" />} />
-                    <MetricPill label="Price Reliability" value={metrics.priceScore} icon={<Target className="w-4 h-4" />} />
+                    <MetricPill label="Stability" value={stabilityScore} icon={<Shield className="w-4 h-4" />} />
+                    <MetricPill label="Reliability" value={reliabilityScore} icon={<Target className="w-4 h-4" />} />
                 </div>
             </div>
         </div>

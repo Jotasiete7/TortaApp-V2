@@ -1,4 +1,5 @@
-﻿import React from 'react';
+
+import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { VolatilityMetrics } from '../../types';
 import { getVolatilityLevel, getVolatilityColor } from '../../services/volatilityCalculator';
@@ -9,8 +10,22 @@ interface VolatilityBadgeProps {
 }
 
 export const VolatilityBadge: React.FC<VolatilityBadgeProps> = ({ metrics, itemName }) => {
-    const level = getVolatilityLevel(metrics.score);
-    const colorClass = getVolatilityColor(level);
+    // We are overriding the color logic here to match our new Semantics
+    // Score based logic:
+    // 0-20: Stable (Green/Blue/Shield)
+    // 21-50: Normal (Green/Check)
+    // 51-75: Unstable (Yellow/Alert)
+    // 76-100: Chaotic (Red/Fire)
+
+    const getSemanticProps = () => {
+        const score = metrics.score;
+        if (score <= 20) return { label: 'Stable', emoji: '🛡️', color: 'blue' };
+        if (score <= 50) return { label: 'Normal', emoji: '✅', color: 'emerald' };
+        if (score <= 75) return { label: 'Unstable', emoji: '⚠️', color: 'amber' };
+        return { label: 'Chaotic', emoji: '🔥', color: 'red' };
+    };
+
+    const { label, emoji, color: colorClass } = getSemanticProps();
 
     const getTrendIcon = () => {
         switch (metrics.trend) {
@@ -20,18 +35,10 @@ export const VolatilityBadge: React.FC<VolatilityBadgeProps> = ({ metrics, itemN
         }
     };
 
-    const getLevelEmoji = () => {
-        switch (level) {
-            case 'stable': return '🛡️';
-            case 'moderate': return '⚠️';
-            case 'volatile': return '🔥';
-        }
-    };
-
     return (
         <div className="group relative inline-block">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-${colorClass}-500/10 border-${colorClass}-500/50 text-${colorClass}-400 cursor-help transition-all hover:brightness-125`}>
-                <span className="text-base">{getLevelEmoji()}</span>
+                <span className="text-base">{emoji}</span>
                 <div className="flex flex-col">
                     <span className="text-[10px] uppercase font-bold tracking-wider">Volatility</span>
                     <div className="flex items-center gap-1">
@@ -49,12 +56,13 @@ export const VolatilityBadge: React.FC<VolatilityBadgeProps> = ({ metrics, itemN
 
                     <div className="relative">
                         <h4 className={`font-bold text-sm mb-2 text-${colorClass}-400 uppercase tracking-wide`}>
-                            {level} Market
+                            {label} Market
                         </h4>
                         <p className="text-xs text-slate-300 mb-3">
-                            {level === 'stable' && 'Prices are consistent with low variance. Safe for bulk purchases.'}
-                            {level === 'moderate' && 'Some price fluctuation. Monitor trends before large investments.'}
-                            {level === 'volatile' && 'High price swings. Risky for bulk trades, but opportunities exist.'}
+                            {label === 'Stable' && 'Prices are consistent with low variance. Safe for bulk purchases.'}
+                            {label === 'Normal' && 'Standard price fluctuation. Market is operating efficiently.'}
+                            {label === 'Unstable' && 'Some price fluctuation. Monitor trends before large investments.'}
+                            {label === 'Chaotic' && 'High price swings. Risky for bulk trades, but opportunities exist.'}
                         </p>
 
                         <div className="space-y-2 text-xs">
@@ -83,8 +91,8 @@ export const VolatilityBadge: React.FC<VolatilityBadgeProps> = ({ metrics, itemN
                             <div className="flex justify-between items-center pt-2 border-t border-slate-800">
                                 <span className="text-slate-400">Trend:</span>
                                 <span className={`font-bold capitalize ${metrics.trend === 'rising' ? 'text-emerald-400' :
-                                        metrics.trend === 'falling' ? 'text-red-400' :
-                                            'text-slate-400'
+                                    metrics.trend === 'falling' ? 'text-red-400' :
+                                        'text-slate-400'
                                     }`}>
                                     {metrics.trend}
                                 </span>
