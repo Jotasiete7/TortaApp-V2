@@ -65,5 +65,29 @@
     },
     "ticker": {
         "paid": "PAGO"
+    },
+    "live_monitor": {
+        "button_on": "MONITOR ON",
+        "button_config": "CONFIGURAR",
+        "status_active": "Monitoramento Ativo",
+        "status_off": "Monitor Desligado",
+        "trades_processed": "trades processados",
+        "waiting": "Aguardando trades...",
+        "configure_below": "Configure abaixo para iniciar",
+        "privacy_consent": "Consentimento LGPD (Leitura local de logs)",
+        "log_file_label": "Arquivo de Log do Jogo",
+        "where_to_find": "ONDE ENCONTRAR",
+        "where_to_find_tip": "Procure na pasta da Steam:",
+        "important_tip": "Selecione o arquivo do mês atual",
+        "open_folder": "Abrir Pasta",
+        "start_btn": "Iniciar Live Feed",
+        "restart_btn": "Reiniciar Monitoramento",
+        "tabs": {
+            "monitor": "Monitor",
+            "alerts": "Alertas",
+            "history": "Histórico",
+            "ads": "Ads",
+            "config": "Config"
+        }
     }
 }

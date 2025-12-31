@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Clock, TrendingUp, ChevronDown } from 'lucide-react';
 import { MarketItem } from '../../types';
 import {
@@ -11,6 +11,7 @@ import {
     SearchResult
 } from '../../services/searchUtils';
 import { formatWurmPrice } from '../../services/priceUtils';
+import { useDebounce } from '../../hooks/useDebounce';
 
 interface SmartSearchProps {
     items: { id: string, name: string }[]; // ARCHITECTURAL CHANGE: Objects
@@ -26,7 +27,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
     onSelect
 }) => {
     const [query, setQuery] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState('');
+    const debouncedQuery = useDebounce(query, 300); // Debounce search by 300ms
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [recentSearches, setRecentSearches] = useState<{ id: string, name: string }[]>([]);
@@ -41,9 +42,9 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
 
     // Search results with fuzzy matching
     const searchResults = useMemo(() => {
-        if (!query.trim()) return [];
-        return searchItems(query, items, rawData, 10);
-    }, [query, items, rawData]);
+        if (!debouncedQuery.trim()) return [];
+        return searchItems(debouncedQuery, items, rawData, 10);
+    }, [debouncedQuery, items, rawData]);
 
     // Popular items
     const popularItems = useMemo(() => {
@@ -71,7 +72,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
         });
 
         return recent;
-    }, [query, searchResults, recentSearches, rawData]);
+    }, [debouncedQuery, searchResults, recentSearches, rawData]);
 
     // Handle selection
     const handleSelect = (item: { id: string, name: string }) => {
