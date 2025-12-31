@@ -14,12 +14,22 @@ export const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [showResetInfo, setShowResetInfo] = useState(false);
 
-    // Local Language State for Login Screen
-    const [lang, setLang] = useState<Language>('pt');
+    // Local Language State for Login Screen (Synced with localStorage)
+    const [lang, setLang] = useState<Language>(() => {
+        try {
+            const saved = localStorage.getItem('torta_app_language');
+            return (saved === 'en' || saved === 'pt') ? saved : 'pt';
+        } catch {
+            return 'pt';
+        }
+    });
+
     const t = translations[lang];
 
     const toggleLanguage = () => {
-        setLang(prev => prev === 'en' ? 'pt' : 'en');
+        const newLang = lang === 'en' ? 'pt' : 'en';
+        setLang(newLang);
+        localStorage.setItem('torta_app_language', newLang);
     };
 
     const handleEmailAuth = async (e: React.FormEvent) => {

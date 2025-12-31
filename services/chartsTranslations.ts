@@ -113,12 +113,28 @@ export const chartsTranslations: Translations = {
     'go_price_manager': { en: 'Go to Price Manager to set a reference.', pt: 'Vá ao Gerenciador de Preços para definir.' }
 };
 
+
 export const useChartsTranslation = () => {
-    // Default to 'en' but try to detect from context or localStorage
-    const [language, setLanguage] = useState<Language>('pt'); // Defaulting to PT as requested
+    // Attempt to read from localStorage, default to 'pt'
+    const getInitialLang = (): Language => {
+        try {
+            const saved = localStorage.getItem('torta_app_language');
+            return (saved === 'en' || saved === 'pt') ? saved : 'pt';
+        } catch {
+            return 'pt';
+        }
+    };
+
+    const [language, setLanguage] = useState<Language>(getInitialLang);
+
+    // Sync state with localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('torta_app_language', language);
+    }, [language]);
 
     const t = (key: string): string => {
         const entry = chartsTranslations[key];
+        // If translation missing, return key
         if (!entry) return key;
         return entry[language] || entry['en'];
     };

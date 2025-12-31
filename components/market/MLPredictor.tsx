@@ -7,7 +7,6 @@ import { extractNameAndQty } from '../../services/fileParser';
 import { PriceHistogram } from './PriceHistogram';
 import { ProfitCalculator } from './ProfitCalculator';
 import { InfoTooltip } from './InfoTooltip';
-import { useTranslation } from 'react-i18next';
 
 interface MLPredictorProps {
     data: MarketItem[];
