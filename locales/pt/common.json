@@ -152,8 +152,9 @@
         "net_profit": "Lucro Líquido",
         "margin": "Margem"
     },
-    "service_directory": {
+        "service_directory": {
         "title": "Diretório de Serviços",
+        "title_tooltip": "Diretório baseado exclusivamente em anúncios recentes no chat de trade.",
         "subtitle": "Diretório ao vivo de prestadores baseado na atividade do chat de trade",
         "search_placeholder": "Buscar Prestador",
         "category_label": "Categoria de Serviço",
@@ -163,8 +164,8 @@
         "found_providers": "Encontrados",
         "providers_text": "prestadores de serviço",
         "clear_filters": "Limpar Filtros",
-        "empty_title": "Nenhum serviço detectado ainda",
-        "empty_description": "Este diretório é populado automaticamente pela atividade de trade ao vivo.",
+        "empty_title": "Aguardando atividade de trade ao vivo",
+        "empty_description": "Prestadores aparecem automaticamente quando anunciam serviços no chat de trade enquanto o monitor está ativo.",
         "status_active": "Ativo",
         "status_recent": "Recente",
         "status_historical": "Histórico",

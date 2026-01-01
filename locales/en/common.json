@@ -152,8 +152,9 @@
         "net_profit": "Net Profit",
         "margin": "Margin"
     },
-    "service_directory": {
+        "service_directory": {
         "title": "Service Directory",
+        "title_tooltip": "Directory based exclusively on recent trade chat advertisements.",
         "subtitle": "Live directory of service providers based on trade chat activity",
         "search_placeholder": "Search Provider",
         "category_label": "Service Category",
@@ -163,8 +164,8 @@
         "found_providers": "Found",
         "providers_text": "service providers",
         "clear_filters": "Clear Filters",
-        "empty_title": "No services detected yet",
-        "empty_description": "This directory populates automatically from live trade activity.",
+        "empty_title": "Awaiting Live Trade Activity",
+        "empty_description": "Providers appear automatically when they announce services in trade chat while the monitor is active.",
         "status_active": "Active",
         "status_recent": "Recent",
         "status_historical": "Historical",
