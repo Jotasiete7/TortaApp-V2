@@ -1,4 +1,4 @@
-{
+﻿{
     "settings": {
         "title": "App Configuration",
         "subtitle": "Customize your Trading experience.",
@@ -33,7 +33,7 @@
         "demand_desc": "Highest buy interest",
         "supply_desc": "New listings",
         "volatility_desc": "Largest swings",
-        "deep_dive": "Deep Dive Analysis →",
+        "deep_dive": "Deep Dive Analysis â†’",
         "empty_demand": "No demand spikes detected",
         "empty_supply": "No new supply detected",
         "empty_volatility": "Market is stable",
@@ -57,7 +57,7 @@
         "8": "Smart Alerts highlight underpriced items automatically!",
         "9": "Use Charts Engine to visualize price history and market trends!",
         "10": "Paid Shouts appear in the ticker - support the community!",
-        "11": "The pie emoji 🥧 shows when the ticker completes a full loop!",
+        "11": "The pie emoji ðŸ¥§ shows when the ticker completes a full loop!",
         "12": "Search debounce prevents lag - type freely without freezing!",
         "13": "Customize ticker speed in Settings for your preferred reading pace!",
         "14": "Advanced Tools section has manual log upload for historic data!",
@@ -108,7 +108,7 @@
         "market_activity_insight": "Insight: This indicates active interest (WTB) or unpriced sellers. Check the trade chat for details.",
         "no_trades": "No trades found for \"{{item}}\" with material \"{{material}}\".",
         "crunching": "Crunching numbers...",
-        "analyzing_desc": "Analyzing {{count}} records • Removing outliers • Calculating quartiles",
+        "analyzing_desc": "Analyzing {{count}} records â€¢ Removing outliers â€¢ Calculating quartiles",
         "fair_value_unit": "Fair Market Value (Unit)",
         "fair_value_bulk": "Fair Market Value ({{bulk}}x Batch)",
         "fair_value_tooltip": "The estimated 'true' value of the item, calculated as the median of filtered trades after removing extreme outliers.",

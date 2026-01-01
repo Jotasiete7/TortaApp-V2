@@ -18,6 +18,7 @@ i18n
         },
         lng: localStorage.getItem('app_language') || 'en', // default language
         fallbackLng: 'en',
+        defaultNS: 'common',
         interpolation: {
             escapeValue: false, // react already safes from xss
         },
@@ -27,3 +28,4 @@ i18n
     });
 
 export default i18n;
+
