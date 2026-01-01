@@ -1,4 +1,4 @@
-﻿// Data Models based on the implied Python structure
+// Data Models based on the implied Python structure
 export interface MarketItem {
     id: string;
     itemId: string; // Canonical ID (e.g. 'sleep_powder')
@@ -45,6 +45,7 @@ export enum ViewState {
     MARKET = 'MARKET',
     ANALYTICS = 'ANALYTICS',
     PREDICTOR = 'PREDICTOR',
+    SERVICES = 'SERVICES',
     PRICEMANAGER = 'PRICEMANAGER',
     ADMIN = 'ADMIN',
     SETTINGS = 'SETTINGS',

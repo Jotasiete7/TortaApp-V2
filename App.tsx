@@ -13,6 +13,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { NewsTicker } from './components/layout/NewsTicker';
 import { LiveTradeTicker } from './components/LiveTradeTicker';
 import { LiveTradeSetup } from './components/LiveTradeSetup';
+import { ServiceDirectoryView } from './components/ServiceDirectory/ServiceDirectoryView';
 import { AdCooldownWidget } from './components/AdCooldownWidget';
 import { ProtectedAdmin } from './components/auth/ProtectedAdmin';
 import { AuthCallback } from './components/auth/AuthCallback';
@@ -314,7 +315,9 @@ const App: React.FC = () => {
                         </div>
                         <MLPredictor data={marketData} />
                     </div>
-                );
+                );            case ViewState.SERVICES:
+                return <ServiceDirectoryView />;
+
             case ViewState.PRICEMANAGER:
                 return role === 'admin' || role === 'moderator' ? (
                     <PriceManager

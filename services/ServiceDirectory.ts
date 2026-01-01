@@ -1,4 +1,4 @@
-﻿import { ServiceCategory, ServiceProfile } from '../types';
+import { ServiceCategory, ServiceProfile } from '../types';
 import localforage from 'localforage';
 
 export class ServiceDirectory {

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { LayoutDashboard, ShoppingCart, BarChart3, Brain, Settings, Shield, DollarSign } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, BarChart3, Brain, Briefcase, Settings, Shield, DollarSign } from 'lucide-react';
 import { ViewState, Language } from '../../types';
 import { translations } from '../../services/i18n';
 import type { LucideIcon } from 'lucide-react';
@@ -18,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, langu
         { id: ViewState.MARKET, label: t.tradeMaster, icon: ShoppingCart },
         { id: ViewState.ANALYTICS, label: t.chartsEngine, icon: BarChart3 },
         { id: ViewState.PREDICTOR, label: t.mlPredictor, icon: Brain },
+        { id: ViewState.SERVICES, label: 'Services', icon: Briefcase },
     ], [t]);
 
     const adminItems = useMemo(() => [
