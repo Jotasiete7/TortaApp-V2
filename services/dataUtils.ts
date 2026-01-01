@@ -176,8 +176,8 @@ export const getSupplyHeatmapData = (items: MarketItem[], itemId: string): Heatm
 export const convertLiveTradeToMarketItem = (trade: LiveTrade): MarketItem => {
     return {
         id: `live-${trade.hash}`, // Virtual ID
-        itemId: trade.itemName.toLowerCase().replace(/ /g, '_'), // Normalize ID
-        name: trade.itemName,
+        itemId: (trade.itemName || 'unknown').toLowerCase().replace(/ /g, '_'), // Normalize ID
+        name: trade.itemName || 'Unknown Item',
         material: 'unknown',
         quality: 10, // Default for live items if not parsed
         rarity: 'Common',
