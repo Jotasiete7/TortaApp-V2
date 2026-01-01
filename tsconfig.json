@@ -20,15 +20,15 @@
       "jsx": "react-jsx",
       "paths": {
         "@/*": [
-          "./*"
+          "./src/*"
         ]
       },
       "allowImportingTsExtensions": true,
       "noEmit": true
     },
     "exclude": [
-      "node_modules", // <-- Garantindo que esta pasta seja ignorada
+      "node_modules",
       "public",
-      "dist"          // <-- Opcional: Para excluir a pasta de build, se existir
+      "dist"
     ]
   }

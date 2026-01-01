@@ -18,7 +18,6 @@ import { ProtectedAdmin } from './components/auth/ProtectedAdmin';
 import { AuthCallback } from './components/auth/AuthCallback';
 import { ViewState, MarketItem, ChartDataPoint, Language } from './types';
 import { parseTradeFile, FileParser } from './services/fileParser';
-import { generateChartDataFromHistory } from './services/dataUtils';
 import { parsePriceCSV, loadPricesFromStorage, savePricesToStorage } from './services/priceUtils';
 import { DEFAULT_PRICES_CSV } from './services/defaultPrices';
 import { translations } from './services/i18n';
@@ -257,7 +256,6 @@ const App: React.FC = () => {
             setDataSource('FILE');
 
             // Generate chart data from the parsed items
-            const newChartData = generateChartDataFromHistory(items);
             setChartData(newChartData);
         } catch (error) {
             console.error("File upload failed", error);
