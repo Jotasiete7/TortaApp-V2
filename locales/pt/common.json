@@ -1,4 +1,4 @@
-{
+﻿{
     "settings": {
         "title": "Configuração do App",
         "subtitle": "Personalize sua experiência de Trading.",
@@ -151,6 +151,30 @@
         "total_revenue": "Receita Total",
         "net_profit": "Lucro Líquido",
         "margin": "Margem"
+    },,
+    "service_directory": {
+        "title": "Diretório de Serviços",
+        "subtitle": "Diretório ao vivo de prestadores baseado na atividade do chat de trade",
+        "search_placeholder": "Buscar Prestador",
+        "category_label": "Categoria de Serviço",
+        "server_label": "Servidor",
+        "all_categories": "Todas as Categorias",
+        "all_servers": "Todos os Servidores",
+        "found_providers": "Encontrados",
+        "providers_text": "prestadores de serviço",
+        "clear_filters": "Limpar Filtros",
+        "empty_title": "Nenhum serviço detectado ainda",
+        "empty_description": "Este diretório é populado automaticamente pela atividade de trade ao vivo.",
+        "status_active": "Ativo",
+        "status_recent": "Recente",
+        "status_historical": "Histórico",
+        "primary_service": "Serviço Principal",
+        "last_seen": "Visto pela última vez",
+        "time_just_now": "Agora mesmo",
+        "time_hours_ago": "{{hours}}h atrás",
+        "time_yesterday": "Ontem",
+        "time_days_ago": "{{days}}d atrás",
+        "more_services": "+{{count}} mais"
     },
     "price_forecast": {
         "not_enough_data": "Dados insuficientes para gerar previsão. Carregue mais trades históricos.",

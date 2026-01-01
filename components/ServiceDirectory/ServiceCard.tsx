@@ -1,15 +1,18 @@
 import React from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
 import { User, Clock, Award } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceCardProps {
     profile: ServiceProfile;
 }
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({ profile }) => {
-    const primaryService = profile.services.reduce((best, current) => 
+    const { t } = useTranslation();
+
+    const primaryService = profile.services.reduce((best, current) =>
         current.score > best.score ? current : best
-    , profile.services[0]);
+        , profile.services[0]);
 
     const getStatusColor = (score: number) => {
         if (score > 0.7) return 'bg-emerald-500 shadow-emerald-500/50';
@@ -18,18 +21,18 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ profile }) => {
     };
 
     const getStatusLabel = (score: number) => {
-        if (score > 0.7) return 'Active';
-        if (score > 0.4) return 'Recent';
-        return 'Historical';
+        if (score > 0.7) return t('service_directory.status_active');
+        if (score > 0.4) return t('service_directory.status_recent');
+        return t('service_directory.status_historical');
     };
 
     const getTimeAgo = (timestamp: number) => {
         const hours = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60));
-        if (hours < 1) return 'Just now';
-        if (hours < 24) return `${hours}h ago`;
+        if (hours < 1) return t('service_directory.time_just_now');
+        if (hours < 24) return t('service_directory.time_hours_ago', { hours });
         const days = Math.floor(hours / 24);
-        if (days === 1) return 'Yesterday';
-        return `${days}d ago`;
+        if (days === 1) return t('service_directory.time_yesterday');
+        return t('service_directory.time_days_ago', { days });
     };
 
     return (
@@ -57,13 +60,13 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ profile }) => {
                 <div className="flex items-center gap-2 mb-1">
                     <Award size={14} className="text-amber-500" />
                     <span className="text-xs text-slate-500 uppercase tracking-wider font-bold">
-                        Primary Service
+                        {t('service_directory.primary_service')}
                     </span>
                 </div>
                 <p className="text-white font-medium">{primaryService.category}</p>
                 <div className="mt-2 flex items-center gap-2">
                     <div className="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div 
+                        <div
                             className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all"
                             style={{ width: `${primaryService.score * 100}%` }}
                         />
@@ -79,7 +82,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ profile }) => {
                         .filter(s => s.category !== primaryService.category)
                         .slice(0, 3)
                         .map((service, idx) => (
-                            <span 
+                            <span
                                 key={idx}
                                 className="text-xs px-2 py-1 bg-slate-800/50 text-slate-400 rounded-md border border-slate-700/50"
                             >
@@ -88,14 +91,14 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ profile }) => {
                         ))}
                     {profile.services.length > 4 && (
                         <span className="text-xs px-2 py-1 text-slate-500">
-                            +{profile.services.length - 4} more
+                            {t('service_directory.more_services', { count: profile.services.length - 4 })}
                         </span>
                     )}
                 </div>
             )}
             <div className="flex items-center gap-2 text-xs text-slate-500 pt-2 border-t border-slate-800/50">
                 <Clock size={12} />
-                <span>Last seen {getTimeAgo(profile.lastSeenAny)}</span>
+                <span>{t('service_directory.last_seen')} {getTimeAgo(profile.lastSeenAny)}</span>
             </div>
         </div>
     );
