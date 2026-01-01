@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
 import { serviceDirectory } from '../../services/ServiceDirectory';
 import { ServiceCard } from './ServiceCard';
+import { InfoTooltip } from '../market/InfoTooltip';
 import { Filter, Server, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -37,7 +38,10 @@ export const ServiceDirectoryView: React.FC = () => {
     return (
         <div className="p-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">{t('service_directory.title')}</h1>
+                <div className="flex items-center gap-2 mb-2">
+                    <h1 className="text-3xl font-bold text-white">{t('service_directory.title')}</h1>
+                    <InfoTooltip text={t('service_directory.title_tooltip')} />
+                </div>
                 <p className="text-slate-400">{t('service_directory.subtitle')}</p>
             </div>
 
@@ -131,3 +135,5 @@ export const ServiceDirectoryView: React.FC = () => {
         </div>
     );
 };
+
+
