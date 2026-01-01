@@ -1,4 +1,4 @@
-# Protocolo de Release e Backup
+﻿# Protocolo de Release e Backup
 
 Este documento define os procedimentos obrigatórios para cada nova versão ou atualização significativa do TortaApp.
 
@@ -32,6 +32,41 @@ Antes de iniciar qualquer build de release, verifique:
 
 ## Checklist de Pré-Release
 1.  [ ] Verificar status do Git (`git status` limpo).
-2.  [ ] Executar build de verificação (`npm run build`).
-3.  [ ] **Executar Double Backup**.
-4.  [ ] Publicar Release (Ver [AUTO_UPDATE_GUIDE.md](docs/technical/AUTO_UPDATE_GUIDE.md)).
+2.  [ ] **Testar build local ANTES de criar tag** (`npm run build`).
+3.  [ ] Verificar que não há imports de funções inexistentes.
+4.  [ ] **Executar Double Backup**.
+5.  [ ] Publicar Release (Ver [AUTO_UPDATE_GUIDE.md](docs/technical/AUTO_UPDATE_GUIDE.md)).
+
+## Troubleshooting: Build Failures
+
+### Se o GitHub Actions falhar:
+
+1. **NÃO crie múltiplas tags de teste** - isso polui o histórico
+2. **Teste o build localmente primeiro**:
+   ```powershell
+   npm run build
+   npm run tauri build
+   ```
+
+3. **Verifique os logs completos** do GitHub Actions para identificar o erro específico
+
+4. **Erros comuns**:
+   - **Função não exportada**: Verifique se todos os imports existem nos arquivos de origem
+   - **Path alias não resolvido**: Confirme que `vite.config.ts` e `tsconfig.json` têm paths corretos
+   - **Exit code 128 (git)**: Geralmente secundário, foque no erro de build primeiro
+
+### Limpeza após testes falhados:
+
+```powershell
+# Deletar tags locais
+git tag -d v2.1.1 v2.1.2-test
+
+# Deletar tags remotas
+git push origin --delete v2.1.1 v2.1.2-test
+```
+
+## Histórico de Releases
+
+- **v2.1.3** (2026-01-01) - "Champion Unicorn" - Critical build fix
+- **v2.1.0** (2025-12-XX) - Major feature release
+- **v2.0.0** (2025-12-XX) - Initial stable release
