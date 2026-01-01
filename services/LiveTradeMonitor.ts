@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+﻿import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import localforage from 'localforage';
 import { supabase } from './supabase';
@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Money } from '../src/domain/price/Money';
 import { FileParser } from './fileParser';
 import { AlertService, ExtendedTradeAlert } from './AlertService';
+import { serviceDirectory } from './ServiceDirectory';
 
 export interface Trade {
     timestamp: string;
@@ -64,7 +65,7 @@ export class LiveTradeMonitor {
     private currentUserId: string | null = null;
     private alerts: ExtendedTradeAlert[] = [];
 
-    // Prote��o contra m�ltiplas inst�ncias
+    // Proteï¿½ï¿½o contra mï¿½ltiplas instï¿½ncias
     private isCurrentlyWatching = false;
     private currentUnlisten: (() => void) | null = null;
     private currentFilePath: string | null = null;
@@ -142,19 +143,19 @@ export class LiveTradeMonitor {
     // --- Public Methods ---
 
     public async startWatching(filePath: string) {
-        // Proteção: Se já está assistindo o mesmo arquivo, não fazer nada
+        // ProteÃ§Ã£o: Se jÃ¡ estÃ¡ assistindo o mesmo arquivo, nÃ£o fazer nada
         if (this.isCurrentlyWatching && this.currentFilePath === filePath) {
-            console.log('⚠️ LiveTradeMonitor: Already watching this file, skipping...');
+            console.log('âš ï¸ LiveTradeMonitor: Already watching this file, skipping...');
             return;
         }
 
-        // Se está assistindo outro arquivo, parar primeiro
+        // Se estÃ¡ assistindo outro arquivo, parar primeiro
         if (this.isCurrentlyWatching && this.currentFilePath !== filePath) {
-            console.log('🔄 LiveTradeMonitor: Switching to new file, stopping current watcher...');
+            console.log('ðŸ”„ LiveTradeMonitor: Switching to new file, stopping current watcher...');
             await this.stopWatching();
         }
 
-        console.log("🚀 LiveTradeMonitor: BYPASSING PERMISSION CHECK");
+        console.log("ðŸš€ LiveTradeMonitor: BYPASSING PERMISSION CHECK");
         /*
         // 1. Check Permissions (DISABLED)
         */
@@ -164,7 +165,7 @@ export class LiveTradeMonitor {
         try {
             // const allowed = await invoke<boolean>('check_file_access', { path: filePath });
             // if (!allowed) {
-            //    toast.error('Sem permiss�o de leitura no arquivo.');
+            //    toast.error('Sem permissï¿½o de leitura no arquivo.');
             //    return;
             // }
         } catch (err) {
@@ -172,7 +173,7 @@ export class LiveTradeMonitor {
             return;
         }
         */
-        console.log("🚀 LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
+        console.log("ðŸš€ LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
 
         // Marcar como ativo ANTES de chamar o backend
         this.isCurrentlyWatching = true;
@@ -180,12 +181,12 @@ export class LiveTradeMonitor {
 
         // 2. Start Watcher (Backend)
         try {
-            console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
+            console.log("ðŸš€ LiveTradeMonitor: Requesting backend to watch:", filePath);
             const res = await invoke('start_trade_watcher', { path: filePath });
-            console.log('✅ Backend responded:', res);
+            console.log('âœ… Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
-            console.error("❌ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
+            console.error("âŒ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
             toast.error('Falha ao iniciar watcher: ');
             // Limpar flags em caso de erro
             this.isCurrentlyWatching = false;
@@ -201,14 +202,14 @@ export class LiveTradeMonitor {
 
 
         const unlisten = await listen<{ trades: Array<{ timestamp: string, nick: string, message: string }> }>('trade-batch-event', async (event) => {
-            console.log("📨 FRONTEND RECEIVED EVENT:", event);
+            console.log("ðŸ“¨ FRONTEND RECEIVED EVENT:", event);
             const batch = event.payload;
             if (!batch.trades) return;
             for (const raw of batch.trades) {
 
                 // NEW: Filter Noise before processing
                 if (FileParser.isNoise(raw.message)) {
-                    console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
+                    console.warn("ðŸš« Valid Filter: Ignored noise message:", raw.message);
                     return;
                 }
 
@@ -253,13 +254,14 @@ export class LiveTradeMonitor {
 
                     const matched = AlertService.checkAlerts(checkObj, alerts);
                     if (matched) {
-                        console.log('🔔 Alert Triggered:', matched.term);
+                        console.log('ðŸ”” Alert Triggered:', matched.term);
                         AlertService.fireAlert(matched, checkObj);
                     }
                 } catch (err) {
                     console.error('Error checking alerts:', err);
                 }
 
+                serviceDirectory.processMessage(trade.message, trade.nick, trade.server);
                 await this.submitTrade(trade);
             }
         });
@@ -270,11 +272,11 @@ export class LiveTradeMonitor {
 
     public async stopWatching() {
         if (!this.isCurrentlyWatching) {
-            console.log('ℹ️ LiveTradeMonitor: Not currently watching, nothing to stop.');
+            console.log('â„¹ï¸ LiveTradeMonitor: Not currently watching, nothing to stop.');
             return;
         }
 
-        console.log('🛑 LiveTradeMonitor: Stopping watcher...');
+        console.log('ðŸ›‘ LiveTradeMonitor: Stopping watcher...');
 
         // Remover listener
         if (this.currentUnlisten) {
@@ -286,15 +288,15 @@ export class LiveTradeMonitor {
         if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
             try {
                 await invoke('stop_trade_watcher');
-                console.log('✅ Backend watcher stopped');
+                console.log('âœ… Backend watcher stopped');
             } catch (e) {
-                console.error('❌ Failed to stop backend watcher:', e);
+                console.error('âŒ Failed to stop backend watcher:', e);
             }
         }
 
         this.isCurrentlyWatching = false;
         this.currentFilePath = null;
-        console.log('✅ LiveTradeMonitor: Stopped successfully');
+        console.log('âœ… LiveTradeMonitor: Stopped successfully');
     }
 
     public isWatching(): boolean {
@@ -314,7 +316,7 @@ export class LiveTradeMonitor {
             this.currentUserId = data.user?.id || null;
             if (!this.currentUserId) {
                 console.error('? LiveTrade: No authenticated user found. Trade skipped.');
-                toast.error('Erro: Usu�rio n�o autenticado. Trade ignorado.');
+                toast.error('Erro: Usuï¿½rio nï¿½o autenticado. Trade ignorado.');
                 return;
             }
         }
@@ -369,12 +371,12 @@ export class LiveTradeMonitor {
 
         this.offlineQueue.push(queuedTrade);
         this.saveOfflineQueue();
-        console.log('📤 Trade queued:', queuedTrade.retryCount);
+        console.log('ðŸ“¤ Trade queued:', queuedTrade.retryCount);
     }
 
     private async handleOnline() {
         this.isOnline = true;
-        console.log('🌐 Online: Processing queue...');
+        console.log('ðŸŒ Online: Processing queue...');
 
         const failedTrades: QueuedTrade[] = [];
         const tempQueue = [...this.offlineQueue];
@@ -393,9 +395,9 @@ export class LiveTradeMonitor {
 
             try {
                 await this.submitTradeInternal(trade);
-                console.log('✅ Trade submitted after retry');
+                console.log('âœ… Trade submitted after retry');
             } catch (err) {
-                console.error('❌ Retry failed:', err);
+                console.error('âŒ Retry failed:', err);
                 this.offlineQueue.push(trade);
             }
         }
@@ -403,13 +405,13 @@ export class LiveTradeMonitor {
         this.saveOfflineQueue();
 
         if (failedTrades.length > 0) {
-            toast.warning(`${failedTrades.length} trades falharam ap�s v�rias tentativas.`);
+            toast.warning(`${failedTrades.length} trades falharam apï¿½s vï¿½rias tentativas.`);
         }
     }
 
     private handleOffline() {
         this.isOnline = false;
-        toast.info('Modo Offline: Trades ser�o salvas.');
+        toast.info('Modo Offline: Trades serï¿½o salvas.');
     }
 }
 
@@ -455,3 +457,4 @@ export const liveTradeMonitor = new LiveTradeMonitor();
         raw: '{}'
     });
 };
+

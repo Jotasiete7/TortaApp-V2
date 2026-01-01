@@ -167,3 +167,36 @@ export interface FiredAlert {
     };
     firedAt: number;
 }
+
+// --- SERVICE DIRECTORY TYPES ---
+
+export enum ServiceCategory {
+    IMPING = 'Imping',
+    SMITHING = 'Smithing',
+    LEATHERWORK = 'Leatherworking',
+    TAILORING = 'Tailoring',
+    MASONRY = 'Masonry',
+    ENCHANTING = 'Enchanting',
+    LOGISTICS = 'Logistics',
+    OTHER = 'Other'
+}
+
+export interface ServiceEvidence {
+    timestamp: number;
+    rawMessage: string;
+    category: ServiceCategory;
+    confidence: number;
+}
+
+export interface ServiceProfile {
+    nick: string;
+    server: string;
+    services: {
+        category: ServiceCategory;
+        score: number;
+        lastSeen: number;
+        evidenceCount: number;
+    }[];
+    lastSeenAny: number;
+    activityScore: number;
+}
