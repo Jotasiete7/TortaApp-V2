@@ -3,7 +3,7 @@ import { ServiceProfile, ServiceCategory } from '../../types';
 import { serviceDirectory } from '../../services/ServiceDirectory';
 import { ServiceRow } from './ServiceRow';
 import { InfoTooltip } from '../market/InfoTooltip';
-import { Search, Filter, X, Zap, Hammer, Truck, Scissors, Home, Sparkles, Wrench, Package } from 'lucide-react';
+import { Search, Filter, X, Zap, Hammer, Truck, Scissors, Home, Sparkles, Wrench, Package, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // Stats Header Component
@@ -55,17 +55,19 @@ const FilterPill = ({
     active,
     label,
     icon: Icon,
-    onClick
+    onClick,
+    onClear
 }: {
     active: boolean;
     label: string;
     icon?: any;
     onClick: () => void;
+    onClear?: (e: React.MouseEvent) => void;
 }) => (
     <button
         onClick={onClick}
         className={`
-            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all group/pill
             ${active
                 ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 ring-1 ring-indigo-400'
                 : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'}
@@ -73,6 +75,15 @@ const FilterPill = ({
     >
         {Icon && <Icon size={12} className={active ? 'text-indigo-100' : 'text-slate-500'} />}
         {label}
+        {active && onClear && (
+            <span
+                onClick={(e) => { e.stopPropagation(); onClear(e); }}
+                className="ml-1 hover:text-red-200 rounded-full p-0.5 hover:bg-white/20 transition-colors"
+                title="Clear filter"
+            >
+                <X size={10} />
+            </span>
+        )}
     </button>
 );
 
@@ -80,6 +91,7 @@ export const ServiceDirectoryView: React.FC = () => {
     const { t } = useTranslation();
     const [profiles, setProfiles] = useState<ServiceProfile[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | undefined>();
+    const [selectedServer, setSelectedServer] = useState<string | undefined>();
     const [searchTerm, setSearchTerm] = useState('');
     const [mounted, setMounted] = useState(false);
 
@@ -88,11 +100,12 @@ export const ServiceDirectoryView: React.FC = () => {
         loadProfiles();
         const interval = setInterval(loadProfiles, 30000);
         return () => clearInterval(interval);
-    }, [selectedCategory]);
+    }, [selectedCategory, selectedServer]);
 
     const loadProfiles = () => {
         const filter = {
             category: selectedCategory,
+            server: selectedServer
         };
         const data = serviceDirectory.getProfiles(filter);
         setProfiles(data);
@@ -153,11 +166,27 @@ export const ServiceDirectoryView: React.FC = () => {
                 {/* Quick Filter Pills - Scrollable container */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mask-linear-fade">
                     <FilterPill
-                        active={!selectedCategory}
+                        active={!selectedCategory && !selectedServer}
                         label={t('service_directory.all_categories')}
-                        onClick={() => setSelectedCategory(undefined)}
+                        onClick={() => { setSelectedCategory(undefined); setSelectedServer(undefined); }}
                     />
+
                     <div className="w-px h-4 bg-slate-800 mx-1 flex-shrink-0" /> {/* Divider */}
+
+                    {/* Server Filter Pill (Only appears if selected) */}
+                    {selectedServer && (
+                        <>
+                            <FilterPill
+                                active={true}
+                                label={`Server: ${selectedServer}`}
+                                icon={Globe}
+                                onClick={() => { }} // No-op, use clear X
+                                onClear={() => setSelectedServer(undefined)}
+                            />
+                            <div className="w-px h-4 bg-slate-800 mx-1 flex-shrink-0" />
+                        </>
+                    )}
+
                     {Object.values(ServiceCategory).map(cat => (
                         <FilterPill
                             key={cat}
@@ -179,17 +208,23 @@ export const ServiceDirectoryView: React.FC = () => {
                     <Filter size={48} className="text-slate-700 mb-4" />
                     <p className="text-slate-500 font-medium">{t('service_directory.empty_title')}</p>
                     <p className="text-slate-600 text-sm mt-1">{t('service_directory.empty_description')}</p>
+                    <button
+                        onClick={() => { setSelectedCategory(undefined); setSelectedServer(undefined); setSearchTerm(''); }}
+                        className="mt-4 text-indigo-400 hover:text-indigo-300 text-sm underline"
+                    >
+                        Clear all filters
+                    </button>
                 </div>
             ) : (
                 <div className="flex-1 overflow-y-auto min-h-0 pr-2 custom-scrollbar">
                     <div className="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden backdrop-blur-sm">
-                        {/* Header Row (Optional, for column labels if needed, omitting for minimalism as requested) */}
 
                         <div className="divide-y divide-indigo-500/5">
                             {filteredProfiles.map((profile, index) => (
                                 <ServiceRow
                                     key={profile.nick}
                                     profile={profile}
+                                    onServerClick={(srv) => setSelectedServer(srv)}
                                     style={{
                                         animation: `fadeIn 0.3s ease-out forwards`,
                                         animationDelay: `${Math.min(index * 0.03, 0.5)}s`, // Cap delay at 0.5s
