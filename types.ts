@@ -193,12 +193,14 @@ export interface ServiceProfile {
     nick: string;
     server: string;
     hasLink?: boolean; // True if forum/discord link detected
+    externalLink?: string; // First extracted URL found in messages
+    searchIndex?: string; // Unified search string (nick + server + keywords)
     services: {
         category: ServiceCategory;
         score: number;
         lastSeen: number;
         evidenceCount: number;
-        lastEvidence?: string; // The specific message that triggered this score
+        lastEvidence?: string; // The specific message that triggered this score (Primary Evidence)
     }[];
     lastSeenAny: number;
     activityScore: number;

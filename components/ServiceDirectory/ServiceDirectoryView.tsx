@@ -30,18 +30,18 @@ const StatsHeader = ({ profiles }: { profiles: ServiceProfile[] }) => {
         <div className="flex items-center gap-4 text-xs font-mono text-slate-500 mb-6 select-none">
             <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-emerald-500/50" />
-                <span className="text-slate-400">{stats.active} Active</span>
+                <span className="text-slate-400">{stats.active} {t('service_directory.stats_active')}</span>
             </div>
             <span className="text-slate-700">•</span>
             <div>
-                <span className="text-slate-400">{stats.newProviders} New</span>
+                <span className="text-slate-400">{stats.newProviders} {t('service_directory.stats_new')}</span>
                 <span className="text-slate-600 ml-1">(&lt;1h)</span>
             </div>
             {stats.topCat && (
                 <>
                     <span className="text-slate-700">•</span>
                     <div>
-                        <span className="text-slate-600">Top:</span>
+                        <span className="text-slate-600">{t('service_directory.stats_top')}:</span>
                         <span className="text-indigo-400 ml-1">{stats.topCat[0]} ({stats.topCat[1]})</span>
                     </div>
                 </>
@@ -100,20 +100,22 @@ export const ServiceDirectoryView: React.FC = () => {
         loadProfiles();
         const interval = setInterval(loadProfiles, 30000);
         return () => clearInterval(interval);
-    }, [selectedCategory, selectedServer]);
+    }, [selectedCategory, selectedServer, searchTerm]); // Reload when filters change
 
     const loadProfiles = () => {
         const filter = {
             category: selectedCategory,
-            server: selectedServer
+            server: selectedServer,
+            query: searchTerm // Sending query to backend logic for unified search
         };
         const data = serviceDirectory.getProfiles(filter);
         setProfiles(data);
     };
 
-    const filteredProfiles = profiles.filter(p =>
-        p.nick.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Note: searchTerm is now handled by getProfiles, so we don't need client-side filtering here unless we want delay
+    // But since getProfiles is synchronous (in-memory Map), it's fine.
+
+    const filteredProfiles = profiles; // Already filtered by serviceDirectory.getProfiles
 
     // Icon Mapping for Pills
     const getCategoryIcon = (cat: ServiceCategory) => {
@@ -178,7 +180,7 @@ export const ServiceDirectoryView: React.FC = () => {
                         <>
                             <FilterPill
                                 active={true}
-                                label={`Server: ${selectedServer}`}
+                                label={`${t('service_directory.server_label')}: ${selectedServer}`}
                                 icon={Globe}
                                 onClick={() => { }} // No-op, use clear X
                                 onClear={() => setSelectedServer(undefined)}
@@ -212,7 +214,7 @@ export const ServiceDirectoryView: React.FC = () => {
                         onClick={() => { setSelectedCategory(undefined); setSelectedServer(undefined); setSearchTerm(''); }}
                         className="mt-4 text-indigo-400 hover:text-indigo-300 text-sm underline"
                     >
-                        Clear all filters
+                        {t('service_directory.clear_filters')}
                     </button>
                 </div>
             ) : (

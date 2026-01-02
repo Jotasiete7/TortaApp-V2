@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
-import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench, Link as LinkIcon } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { open } from '@tauri-apps/plugin-shell';
 
 interface ServiceRowProps {
     profile: ServiceProfile;
@@ -102,114 +103,114 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
         return server.substring(0, 3).toUpperCase();
     };
 
+    const handleExternalLink = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (profile.externalLink) {
+            open(profile.externalLink);
+        }
+    };
+
     const hasMultipleServices = profile.services.length > 1;
     const avatarColor = useMemo(() => getAvatarColor(profile.nick), [profile.nick]);
 
     return (
         <div className="group" style={style}>
             <div
-                className="flex items-center gap-3 px-3 py-2.5 
+                className="flex flex-col gap-1 px-3 py-2.5 
                            border-b border-indigo-500/8
                            hover:bg-indigo-500/5 hover:border-l-2 hover:border-l-indigo-500/50
                            transition-all cursor-pointer relative"
                 onClick={() => hasMultipleServices && setIsExpanded(!isExpanded)}
-                title={`${profile.nick} - ${getTimeAgo(profile.lastSeenAny)}`}
             >
-                {/* Avatar - Deterministic Color */}
-                <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm transition-shadow"
-                    style={{ backgroundColor: avatarColor }}
-                >
-                    <span className="text-white font-bold text-xs opacity-90">
-                        {profile.nick.substring(0, 2).toUpperCase()}
-                    </span>
-                </div>
+                {/* Top Row: Avatar | Name | Badges | Primary Service | Stats */}
+                <div className="flex items-center gap-3">
 
-                {/* Name + Badges */}
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                    <span className="text-white font-semibold text-sm truncate group-hover:text-indigo-300 transition-colors">
-                        {profile.nick}
-                    </span>
-
-                    {/* Verified Link Badge */}
-                    {profile.hasLink && (
-                        <div className="bg-indigo-500/20 text-indigo-300 p-0.5 rounded-sm" title="Verified Link (Forum/Discord)">
-                            <LinkIcon size={12} />
-                        </div>
-                    )}
-
-                    {/* Server badge (Interactive) */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onServerClick?.(profile.server);
-                        }}
-                        className={`text-[10px] px-1.5 py-0.5 rounded border ${getServerBadgeStyle(profile.server)} 
-                                    font-mono uppercase tracking-wider flex-shrink-0 appearance-none`}
+                    {/* Avatar - Deterministic Color */}
+                    <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm transition-shadow"
+                        style={{ backgroundColor: avatarColor }}
                     >
-                        {getServerChip(profile.server)}
-                    </button>
+                        <span className="text-white font-bold text-xs opacity-90">
+                            {profile.nick.substring(0, 2).toUpperCase()}
+                        </span>
+                    </div>
 
-                </div>
+                    {/* Name + Badges */}
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <span className="text-white font-semibold text-sm truncate group-hover:text-indigo-300 transition-colors">
+                            {profile.nick}
+                        </span>
 
-                {/* Primary Service with Evidence Tooltip */}
-                <div
-                    className="flex items-center gap-1.5 w-32 flex-shrink-0 group/service relative"
-                    title={primaryService.lastEvidence || "No evidence recorded"}
-                >
-                    <span className="text-slate-400">
-                        {getCategoryIcon(primaryService.category)}
-                    </span>
-                    <span className="text-sm text-slate-300 truncate">
-                        {primaryService.category}
-                    </span>
-
-                    {/* Evidence Hover Card (Premium Tooltip) */}
-                    {primaryService.lastEvidence && (
-                        <div className="absolute bottom-full left-0 mb-2 w-64 bg-slate-900 border border-slate-700 
-                                      rounded-lg p-3 shadow-xl opacity-0 group-hover/service:opacity-100 
-                                      transition-opacity pointer-events-none z-20 hidden group-hover/service:block">
-                            <div className="text-[10px] text-slate-500 mb-1 uppercase tracking-wider font-semibold">Latest Evidence</div>
-                            <div className="text-xs text-slate-300 italic">"{primaryService.lastEvidence}"</div>
-                            <div className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
-                                <Zap size={10} />
-                                Verified by System
+                        {/* Verified Link Badge (Now Functional!) */}
+                        {profile.externalLink && (
+                            <button
+                                onClick={handleExternalLink}
+                                className="bg-indigo-500/20 text-indigo-300 hover:text-white hover:bg-indigo-500/40 
+                                         p-0.5 rounded-sm transition-colors cursor-pointer"
+                                title={t('service_directory.open_link_tooltip')}
+                            >
+                                <ExternalLink size={12} />
+                            </button>
+                        )}
+                        {!profile.externalLink && profile.hasLink && (
+                            <div className="bg-slate-700/20 text-slate-500 p-0.5 rounded-sm" title={t('service_directory.verified_link')}>
+                                <LinkIcon size={12} />
                             </div>
+                        )}
+
+                        {/* Server badge (Interactive) */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onServerClick?.(profile.server);
+                            }}
+                            className={`text-[10px] px-1.5 py-0.5 rounded border ${getServerBadgeStyle(profile.server)} 
+                                        font-mono uppercase tracking-wider flex-shrink-0 appearance-none`}
+                        >
+                            {getServerChip(profile.server)}
+                        </button>
+
+                    </div>
+
+                    {/* Primary Service Icon + Name */}
+                    <div className="flex items-center gap-1.5 w-32 flex-shrink-0 group/service" >
+                        <span className="text-slate-400">
+                            {getCategoryIcon(primaryService.category)}
+                        </span>
+                        <span className="text-sm text-slate-300 truncate">
+                            {primaryService.category}
+                        </span>
+                    </div>
+
+                    {/* Activity Bar */}
+                    <div className="relative group/bar flex-shrink-0">
+                        <div className="w-20 h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full bg-gradient-to-r ${getActivityBarColor(primaryService.lastSeen)} transition-all`}
+                                style={{ width: `${primaryService.score * 100}%` }}
+                            />
+                        </div>
+                        {/* Status Dot */}
+                        <div className={`absolute -right-3 top-0 w-1.5 h-1.5 rounded-full ${getStatusDotColor(profile.lastSeenAny)}`} />
+                    </div>
+
+                    {/* Time */}
+                    <div className={`text-[11px] w-16 text-right flex-shrink-0 font-medium ${getTimeColor(profile.lastSeenAny)}`}>
+                        {getTimeAgo(profile.lastSeenAny)}
+                    </div>
+
+                    {/* Expand Icon */}
+                    {hasMultipleServices && (
+                        <div className="text-slate-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </div>
                     )}
                 </div>
 
-                {/* Activity Bar with Percentage Tooltip */}
-                <div className="relative group/bar flex-shrink-0">
-                    <div className="w-20 h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
-                        <div
-                            className={`h-full bg-gradient-to-r ${getActivityBarColor(primaryService.lastSeen)} transition-all`}
-                            style={{ width: `${primaryService.score * 100}%` }}
-                        />
-                    </div>
-                    {/* Tooltip */}
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 
-                                    bg-slate-900 border border-slate-700 rounded px-2 py-1
-                                    text-xs text-white font-mono whitespace-nowrap
-                                    opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none
-                                    shadow-lg z-10">
-                        {Math.round(primaryService.score * 100)}%
-                    </div>
-                </div>
-
-                {/* Time */}
-                <div className={`text-[11px] w-16 text-right flex-shrink-0 font-medium ${getTimeColor(profile.lastSeenAny)}`}>
-                    {getTimeAgo(profile.lastSeenAny)}
-                </div>
-
-                {/* Status Dot */}
-                <div className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(profile.lastSeenAny)} flex-shrink-0`}
-                    title={getTimeAgo(profile.lastSeenAny)} />
-
-                {/* Expand Icon */}
-                {hasMultipleServices && (
-                    <div className="text-slate-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                {/* Secondary Row: Primary Evidence (The "Why") */}
+                {primaryService.lastEvidence && (
+                    <div className="ml-11 text-[11px] text-slate-500 truncate max-w-[80%] italic opacity-80 group-hover:opacity-100 transition-opacity">
+                        "{primaryService.lastEvidence}"
                     </div>
                 )}
             </div>
@@ -225,8 +226,8 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                                     key={idx}
                                     className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-800/40 
                                                rounded-md border border-slate-700/30 hover:border-indigo-500/30 transition-colors
-                                               relative group/sub"
-                                    title={service.lastEvidence}
+                                               relative group/sub cursor-pointer"
+                                    title={service.lastEvidence || "No evidence recorded"}
                                 >
                                     <span className="text-slate-400">
                                         {getCategoryIcon(service.category)}

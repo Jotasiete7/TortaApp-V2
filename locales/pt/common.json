@@ -1,4 +1,4 @@
-﻿{
+{
     "settings": {
         "title": "Configuração do App",
         "subtitle": "Personalize sua experiência de Trading.",
@@ -33,7 +33,7 @@
         "demand_desc": "Maior interesse de compra",
         "supply_desc": "Novas listagens",
         "volatility_desc": "Maiores oscilações",
-        "deep_dive": "Ver Análise Detalhada ?",
+        "deep_dive": "Ver Análise Detalhada →",
         "empty_demand": "Sem picos de demanda",
         "empty_supply": "Sem novas ofertas",
         "empty_volatility": "Mercado estável",
@@ -57,7 +57,7 @@
         "8": "Alertas Inteligentes destacam itens com preços baixos automaticamente!",
         "9": "Use o Motor de Gráficos para visualizar histórico de preços e tendências de mercado!",
         "10": "Shouts Pagos aparecem no ticker - apoie a comunidade!",
-        "11": "O emoji de torta ?? aparece quando o ticker completa um loop completo!",
+        "11": "O emoji de torta 🥧 aparece quando o ticker completa um loop completo!",
         "12": "O debounce de busca previne travamentos - digite livremente sem congelar!",
         "13": "Personalize a velocidade do ticker nas Configurações para seu ritmo de leitura!",
         "14": "A seção Ferramentas Avançadas tem upload manual de logs para dados históricos!",
@@ -152,7 +152,7 @@
         "net_profit": "Lucro Líquido",
         "margin": "Margem"
     },
-        "service_directory": {
+    "service_directory": {
         "title": "Diretório de Serviços",
         "title_tooltip": "Diretório baseado exclusivamente em anúncios recentes no chat de trade.",
         "subtitle": "Diretório ao vivo de prestadores baseado na atividade do chat de trade",
@@ -175,7 +175,12 @@
         "time_hours_ago": "{{hours}}h atrás",
         "time_yesterday": "Ontem",
         "time_days_ago": "{{days}}d atrás",
-        "more_services": "+{{count}} mais"
+        "more_services": "+{{count}} mais",
+        "open_link_tooltip": "Abrir link externo (Forum/Discord)",
+        "verified_link": "Link Verificado Detectado",
+        "stats_active": "Ativos",
+        "stats_new": "Novos",
+        "stats_top": "Top"
     },
     "price_forecast": {
         "not_enough_data": "Dados insuficientes para gerar previsão. Carregue mais trades históricos.",

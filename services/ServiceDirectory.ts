@@ -6,7 +6,11 @@ export class ServiceDirectory {
     private profiles: Map<string, ServiceProfile> = new Map();
     private readonly MAX_EVIDENCE_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
     private store: LocalForage;
-    private readonly MIN_CONFIDENCE = 0.4;
+
+    // THRESHOLDS (Separation of Storage vs UI)
+    private readonly THRESHOLD_PERSIST = 0.1; // Learn almost everything
+    private readonly THRESHOLD_DISPLAY = 0.6; // Show only trusted providers
+
     private persistTimer: NodeJS.Timeout | null = null;
     private readonly PERSIST_DEBOUNCE_MS = 3000;
     private readonly EVIDENCE_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes spam prevention
@@ -49,107 +53,118 @@ export class ServiceDirectory {
     }
 
     /**
-     * Detects service intents from a trade message.
-     * Returns array to support multi-service providers (e.g., "imping and smithing").
+     * Detects service intents using a Weighted Signal System.
+     * Classifies into: SERVICE_OFFER (Positive), ITEM_TRADE (Ignored), SERVICE_REQUEST (Ignored)
      */
     public detectServiceIntents(message: string): { category: ServiceCategory; confidence: number }[] {
         const lower = message.toLowerCase();
 
-        // 1. HARD EXCLUSIONS (False Positives)
-        if (/\b(wtb|pc|wtt)\b/.test(lower)) return [];
-        // Removed strict exclusion of @/? to allow location mentions (@ Arcadia) and rhetorical questions (Need stuff?)
-        if (/\b(anyone|any1|where|who)\b/.test(lower)) return []; // Exclude inquiries
+        // --- PHASE 1: Kill Switches (Request / Item specific) ---
+        // Explicit requests or strict item trades at start
+        if (/^\s*(wtb|wtt|pc)\b/.test(lower)) return [];
 
-        // 2. SANITIZATION: Remove [Item Name] brackets to prevent false positives from enchantments
-        // We keep the rest of the message intact.
-        const cleanMessage = lower.replace(/\[.*?\]/g, '');
-        if (cleanMessage.trim().length < 4) return [];
+        // --- PHASE 2: Signal Accumulation ---
+        let score = 0;
+        const potentialCategories = new Set<ServiceCategory>();
 
-        // 3. ITEM LIST DETECTION: Exclude messages that are primarily item inventories
-        // High density of slashes, brackets, or quantities without service verbs = item list
-        const slashCount = (cleanMessage.match(/\//g) || []).length;
-        // Refined number count to avoid matching "4s" (speed) as currency unless followed by space/end
-        const numberCount = (cleanMessage.match(/\d+x|x\d+|\d+\s*c\b|\d+\s*s\b|qty:?\d+/g) || []).length;
+        // -> Positive Signals (Service Indicators)
+        // Explicit Service Terms (+0.3)
+        if (/\b(service|services|serve|skiller|doing|offering|making|crafting)\b/.test(lower)) score += 0.3;
 
-        // Expanded service verbs
-        const hasServiceVerb = /\b(imp|improve|cast|enchant|deliver|haul|repair|service|services|serve|doing|offering|hiring|rent|sell)\b/.test(cleanMessage);
+        // Recurring/Capacity Terms (+0.3)
+        if (/\b(daily|weekly|custom|order|unlimited|capacity|spots)\b/.test(lower)) score += 0.3;
 
-        // If message has many items/quantities but no service verbs, it's likely a sale list
-        if ((slashCount > 2 || numberCount > 3) && !hasServiceVerb) {
-            return []; // Exclude item lists
-        }
+        // Action Gerunds (+0.4) - Stronger than nouns
+        if (/\b(imping|casting|smithing|tailoring|hauling)\b/.test(lower)) score += 0.4;
 
-        const intents: { category: ServiceCategory; confidence: number }[] = [];
+        // High Quality (+0.2) - Often implies skilled service
+        if (/\b(9[0-9]ql|9[0-9]\s*ql|max\s*ql)\b/.test(lower)) score += 0.2;
 
-        // 4. BASE CONFIDENCE CALCULATION
-        let baseConf = 0.5;
+        // Trust/Branding (+0.2)
+        if (/forum\.wurmonline\.com|discord\.gg/.test(lower)) score += 0.2;
+        if (/\b(pm|message|mail)\s*me\b/.test(lower)) score += 0.1;
 
-        const serviceIndicators = [
-            'service', 'free', 'tips', 'donations', 'casting', 'imping',
-            'improving', 'making', 'crafting', 'hiring', 'rent', 'taxi', 'doing', 'offering',
-            'serve', 'services', 'skiller', 'tools', 'daily', 'weekly'
-        ];
+        // -> Negative Signals (Item Trade / Request Indicators)
+        // Inventory Terms (-0.3)
+        if (/\b(bulk|stock|qty|selling|sold)\b/.test(lower)) score -= 0.3;
 
-        if (serviceIndicators.some(i => cleanMessage.includes(i))) baseConf += 0.2;
-        if (/\bwts\b/.test(cleanMessage)) baseConf += 0.1;
-        // Location mentions (@) often imply service/shop
-        if (/@/.test(cleanMessage)) baseConf += 0.1;
+        // Questions (-0.2) - Less penalizing than before
+        if (/\?/.test(lower)) score -= 0.2;
 
-        // 5. CREDIBILITY BONUS: Forum/Discord links indicate structured services
-        if (/forum\.wurmonline\.com|discord\.gg/.test(cleanMessage)) {
-            baseConf += 0.2;
-        }
+        // Inquiries (-0.3)
+        if (/\b(anyone|who|where)\b/.test(lower)) score -= 0.3;
 
-        // 6. MULTI-CATEGORY DETECTION
+        // --- PHASE 3: Category Mapping (Context Aware) ---
+
         // Imping
-        if (/\b(imp|improve|improving|max\s*ql)\b/.test(cleanMessage)) {
-            intents.push({ category: ServiceCategory.IMPING, confidence: baseConf });
+        if (/\b(imp|imping|improve|improving)\b/.test(lower)) {
+            potentialCategories.add(ServiceCategory.IMPING);
+            score += 0.2;
         }
 
         // Smithing
-        if (/\b(bs|blacksmith|smithing|metal)\b/.test(cleanMessage)) {
-            intents.push({ category: ServiceCategory.SMITHING, confidence: baseConf });
+        if (/\b(smith|smithing|blacksmith|bs)\b/.test(lower)) {
+            potentialCategories.add(ServiceCategory.SMITHING);
+            score += 0.2;
         }
 
-        // Leatherwork (Enhanced to capture "leatherwork")
-        if (/\b(lw|leather|leatherworking|leatherwork)\b/.test(cleanMessage)) {
-            intents.push({ category: ServiceCategory.LEATHERWORK, confidence: baseConf });
+        // Leatherworking (Context Safe)
+        // "Leather" alone is dangerous (Item Trade). "Leatherworking" or "LW" + Service Verb is safe.
+        if (/\b(leatherworking|leatherwork)\b/.test(lower)) {
+            potentialCategories.add(ServiceCategory.LEATHERWORK);
+            score += 0.3;
+        } else if (/\b(lw|leather)\b/.test(lower) && score > 0.3) {
+            // Only infer leather service if we already have other service signals
+            potentialCategories.add(ServiceCategory.LEATHERWORK);
         }
 
         // Tailoring
-        if (/\b(cloth|tailor|tailoring)\b/.test(cleanMessage)) {
-            intents.push({ category: ServiceCategory.TAILORING, confidence: baseConf });
-        }
-
-        // Masonry - Only if service context, not just materials
-        // This prevents "WTS bricks" from being classified as Masonry service
-        if (/\b(masonry)\b/.test(cleanMessage) ||
-            (hasServiceVerb && /\b(stone|bricks)\b/.test(cleanMessage))) {
-            intents.push({ category: ServiceCategory.MASONRY, confidence: baseConf });
-        }
-
-        // Enchanting (Restrictive: requires action verb + spell keyword)
-        // This prevents "[WOA 104] pickaxe" from being classified as Enchanting service
-        // Added 'skilling tools' and relaxed verb requirement if clear enchanting stats are present with WTS
-        if ((/\b(cast|enchant|service|services|wts)\b/.test(cleanMessage) &&
-            /\b(coc|woa|fa|botd|aoe)\b/.test(cleanMessage)) ||
-            /\b(skiller|tools|tool)\b/.test(cleanMessage)) {
-
-            // Only add if we have high confidence or explicit enchant keywords
-            if (/\b(cast|enchant|skiller)\b/.test(cleanMessage) || /\b(coc|woa|fa|botd|aoe)\b/.test(cleanMessage)) {
-                intents.push({ category: ServiceCategory.ENCHANTING, confidence: baseConf + 0.1 });
+        if (/\b(tailor|tailoring|cloth)\b/.test(lower)) {
+            // Check context for "cloth" (could be material)
+            if (/\b(tailor|tailoring)\b/.test(lower) || score > 0.3) {
+                potentialCategories.add(ServiceCategory.TAILORING);
+                score += 0.2;
             }
         }
 
-        // Logistics (includes delivery, market services, supply)
-        // Expanded to capture market/delivery services like Arcadia
-        if (/\b(haul|hauling|cart|wagon|boat|ship|transport|taxi|delivery|deliver|market|self-serve|serve)\b/.test(cleanMessage)) {
-            intents.push({ category: ServiceCategory.LOGISTICS, confidence: baseConf });
+        // Enchanting
+        if (/\b(enchant|enchanting|cast|casting)\b/.test(lower)) {
+            potentialCategories.add(ServiceCategory.ENCHANTING);
+            score += 0.3;
+        }
+        // Spell acronyms only if some service context exists
+        if (/\b(coc|woa|fa|botd|aoe)\b/.test(lower) && score > 0.1) {
+            potentialCategories.add(ServiceCategory.ENCHANTING);
+            score += 0.2;
         }
 
-        // Fallback: Generic service mention
-        if (intents.length === 0 && (cleanMessage.includes('service') || cleanMessage.includes('services'))) {
-            intents.push({ category: ServiceCategory.OTHER, confidence: 0.4 });
+        // Logistics
+        if (/\b(haul|hauling|taxi|transport|courier|delivery|wagon)\b/.test(lower)) {
+            potentialCategories.add(ServiceCategory.LOGISTICS);
+            score += 0.3;
+        }
+
+        // Masonry
+        if (/\b(masonry|stone|bricks)\b/.test(lower)) {
+            if (/\b(masonry)\b/.test(lower) || score > 0.3) {
+                potentialCategories.add(ServiceCategory.MASONRY);
+            }
+        }
+
+        // --- PHASE 4: Final Validity Check ---
+
+        // Threshold check (Persistent Level)
+        if (score < this.THRESHOLD_PERSIST) return [];
+
+        const intents: { category: ServiceCategory; confidence: number }[] = [];
+
+        if (potentialCategories.size > 0) {
+            potentialCategories.forEach(cat => {
+                intents.push({ category: cat, confidence: Math.min(score, 1.0) });
+            });
+        } else if (score >= 0.4) {
+            // High confidence generic service
+            intents.push({ category: ServiceCategory.OTHER, confidence: Math.min(score, 1.0) });
         }
 
         return intents;
@@ -179,6 +194,22 @@ export class ServiceDirectory {
         return (decay * 0.8) + (frequency * 0.2);
     }
 
+    private extractExternalLink(message: string): string | undefined {
+        const urlMatch = message.match(/https?:\/\/[^\s]+|discord\.gg\/[^\s]+|forum\.wurmonline\.com\/[^\s]+/i);
+        return urlMatch ? urlMatch[0] : undefined;
+    }
+
+    private generateSearchIndex(p: ServiceProfile): string {
+        const terms = [
+            p.nick,
+            p.server,
+            ...p.services.map(s => s.category)
+        ];
+        // Add minimal keywords based on services
+        // (Could be expanded later with inference)
+        return terms.join(' ').toLowerCase();
+    }
+
     /**
      * Processes a trade message and updates service profiles.
      */
@@ -186,19 +217,20 @@ export class ServiceDirectory {
         const intents = this.detectServiceIntents(message);
         if (intents.length === 0) return;
 
-        // Filter by confidence
-        const validIntents = intents.filter(intent => intent.confidence >= this.MIN_CONFIDENCE);
+        // Uses PERSIST threshold (low bar) to save data
+        const validIntents = intents.filter(intent => intent.confidence >= this.THRESHOLD_PERSIST);
         if (validIntents.length === 0) return;
 
         // CHECK FOR LINK (Trust Indicator)
-        const hasLink = /forum\.wurmonline\.com|discord\.gg/i.test(message);
+        const hasExternalLink = this.extractExternalLink(message);
 
         let profile = this.profiles.get(nick);
         if (!profile) {
             profile = {
                 nick,
                 server,
-                hasLink: false,
+                hasLink: !!hasExternalLink,
+                externalLink: hasExternalLink,
                 services: [],
                 lastSeenAny: timestamp,
                 activityScore: 0 // Will be recalculated on read
@@ -207,11 +239,16 @@ export class ServiceDirectory {
         }
 
         profile.lastSeenAny = Math.max(profile.lastSeenAny, timestamp);
-        profile.server = server;
+        // Only update server if strictly known, otherwise keep existing
+        if (server !== 'UNKNOWN') {
+            profile.server = server;
+        }
 
         // Update Link Status if detected (once verified, stays verified)
-        if (hasLink) {
+        if (hasExternalLink) {
             profile.hasLink = true;
+            // Update link if new one found (or if previous was missing)
+            profile.externalLink = hasExternalLink;
         }
 
         // Process each detected intent
@@ -234,17 +271,25 @@ export class ServiceDirectory {
 
                 if (timeSinceLastEvidence >= this.EVIDENCE_COOLDOWN_MS) {
                     serviceEntry.evidenceCount++;
-                    serviceEntry.lastEvidence = message; // Update evidence with fresh message
+                    // Only update evidence text if new message is longer (likely more info) or recent
+                    // (User Logic: "Se for o primeiro -> salva; Se for mais recente e mais 'forte' -> substitui")
+                    // Length is a good proxy for "stronger" evidence in service ads (more details)
+                    if (message.length > (serviceEntry.lastEvidence?.length || 0)) {
+                        serviceEntry.lastEvidence = message;
+                    }
                 }
 
                 serviceEntry.lastSeen = Math.max(serviceEntry.lastSeen, timestamp);
             }
         });
 
+        // Regenerate search index on update
+        profile.searchIndex = this.generateSearchIndex(profile);
+
         this.persist(); // Debounced save
     }
 
-    public getProfiles(filter?: { category?: ServiceCategory, server?: string }): ServiceProfile[] {
+    public getProfiles(filter?: { category?: ServiceCategory, server?: string, query?: string }): ServiceProfile[] {
         let all = Array.from(this.profiles.values());
 
         // 1. Recalculate Scores Dynamically
@@ -258,13 +303,20 @@ export class ServiceDirectory {
                 p.activityScore = Math.max(p.activityScore, s.score);
             });
             return p;
-        }).filter(p => p.lastSeenAny > cutoff && p.activityScore > 0); // Hide 0 score profiles (older than 7 days)
+        }).filter(p => p.lastSeenAny > cutoff && p.activityScore > 0);
 
         if (filter?.server) {
             all = all.filter(p => p.server === filter.server);
         }
 
+        // UNIFIED SEARCH FILTER
+        if (filter?.query) {
+            const q = filter.query.toLowerCase();
+            all = all.filter(p => p.searchIndex?.includes(q));
+        }
+
         if (filter?.category) {
+            // Only return profiles that have the category AND relevant activity
             all = all.filter(p => p.services.some(s => s.category === filter.category && s.score > 0));
             all.sort((a, b) => {
                 const scoreA = a.services.find(s => s.category === filter.category)?.score || 0;
