@@ -51,13 +51,6 @@ export class ServiceDirectory {
     /**
      * Detects service intents from a trade message.
      * Returns array to support multi-service providers (e.g., "imping and smithing").
-     * 
-     * Key improvements:
-     * - Sanitizes [item] brackets to prevent enchantment false positives
-     * - Excludes item lists (high density of slashes/quantities without service verbs)
-     * - Adds credibility bonus for forum/discord links
-     * - More restrictive Enchanting detection (requires verb + spell)
-     * - Expanded Logistics to include market/delivery services
      */
     public detectServiceIntents(message: string): { category: ServiceCategory; confidence: number }[] {
         const lower = message.toLowerCase();
@@ -175,10 +168,6 @@ export class ServiceDirectory {
 
     /**
      * Processes a trade message and updates service profiles.
-     * 
-     * Key improvements:
-     * - Handles multiple intents per message (multi-service providers)
-     * - Implements 15-minute cooldown to prevent spam score inflation
      */
     public processMessage(message: string, nick: string, server: string, timestamp: number = Date.now()) {
         const intents = this.detectServiceIntents(message);
@@ -188,11 +177,15 @@ export class ServiceDirectory {
         const validIntents = intents.filter(intent => intent.confidence >= this.MIN_CONFIDENCE);
         if (validIntents.length === 0) return;
 
+        // CHECK FOR LINK (Trust Indicator)
+        const hasLink = /forum\.wurmonline\.com|discord\.gg/i.test(message);
+
         let profile = this.profiles.get(nick);
         if (!profile) {
             profile = {
                 nick,
                 server,
+                hasLink: false,
                 services: [],
                 lastSeenAny: timestamp,
                 activityScore: 0 // Will be recalculated on read
@@ -203,9 +196,14 @@ export class ServiceDirectory {
         profile.lastSeenAny = Math.max(profile.lastSeenAny, timestamp);
         profile.server = server;
 
+        // Update Link Status if detected (once verified, stays verified)
+        if (hasLink) {
+            profile.hasLink = true;
+        }
+
         // Process each detected intent
         validIntents.forEach(intent => {
-            let serviceEntry = profile.services.find(s => s.category === intent.category);
+            let serviceEntry = profile!.services.find(s => s.category === intent.category);
 
             if (!serviceEntry) {
                 // First time seeing this category for this user
@@ -213,15 +211,17 @@ export class ServiceDirectory {
                     category: intent.category,
                     score: 0, // Will be recalculated on read
                     lastSeen: timestamp,
-                    evidenceCount: 1
+                    evidenceCount: 1,
+                    lastEvidence: message // Capture initial evidence
                 };
-                profile.services.push(serviceEntry);
+                profile!.services.push(serviceEntry);
             } else {
                 // SPAM PREVENTION: Only increment evidenceCount if cooldown has passed
                 const timeSinceLastEvidence = timestamp - serviceEntry.lastSeen;
 
                 if (timeSinceLastEvidence >= this.EVIDENCE_COOLDOWN_MS) {
                     serviceEntry.evidenceCount++;
+                    serviceEntry.lastEvidence = message; // Update evidence with fresh message
                 }
 
                 serviceEntry.lastSeen = Math.max(serviceEntry.lastSeen, timestamp);

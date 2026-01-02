@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
-import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench, Link as LinkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ServiceRowProps {
     profile: ServiceProfile;
     style?: React.CSSProperties; // For staggered animation
+    onServerClick?: (server: string) => void;
 }
 
 // Category icon mapping for visual recognition
@@ -34,7 +35,7 @@ const getAvatarColor = (nick: string) => {
     return `hsl(${hue}, 60%, 50%)`; // Keep Saturation 60%, Lightness 50% for consistency
 };
 
-export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
+export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServerClick }) => {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -50,17 +51,31 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
         return 'from-blue-500 to-blue-400';
     };
 
+    // Enhanced Status Dot (Vibrant Pulse for < 30m)
     const getStatusDotColor = (lastSeen: number) => {
-        const hours = (Date.now() - lastSeen) / (1000 * 60 * 60);
-        if (hours <= 12) return 'bg-emerald-500 shadow-emerald-500/50';
-        if (hours <= 48) return 'bg-amber-500 shadow-amber-500/50';
-        return 'bg-blue-500 shadow-blue-500/30';
+        const minutes = (Date.now() - lastSeen) / (1000 * 60);
+
+        // Active Now (< 30 mins) - Strong Pulse
+        if (minutes < 30) return 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse';
+
+        // Recent (< 12h)
+        if (minutes < 12 * 60) return 'bg-emerald-600 shadow-emerald-500/30';
+
+        // Yesterday
+        if (minutes < 48 * 60) return 'bg-amber-600 shadow-amber-500/30';
+
+        // Older
+        return 'bg-blue-600 shadow-blue-500/20';
     };
 
     const getTimeAgo = (timestamp: number) => {
-        const hours = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60));
-        if (hours < 1) return t('service_directory.time_just_now');
+        const minutes = Math.floor((Date.now() - timestamp) / (1000 * 60));
+        if (minutes < 1) return t('service_directory.time_just_now');
+        if (minutes < 60) return `${minutes}m ago`; // More precise for recent
+
+        const hours = Math.floor(minutes / 60);
         if (hours < 24) return t('service_directory.time_hours_ago', { hours });
+
         const days = Math.floor(hours / 24);
         if (days === 1) return t('service_directory.time_yesterday');
         return t('service_directory.time_days_ago', { days });
@@ -73,13 +88,14 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
         return 'text-slate-500';
     };
 
-    // Server Badges
+    // Server Badges (Interactive)
     const getServerBadgeStyle = (server: string) => {
         const s = server.toLowerCase().substring(0, 3);
-        if (s === 'cad') return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-        if (s === 'har') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-        if (s === 'mel') return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-        return 'bg-slate-700/30 text-slate-400 border-slate-700/50';
+        const base = "cursor-pointer transition-all hover:scale-105 active:scale-95";
+        if (s === 'cad') return `${base} bg-cyan-500/10 text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/20 hover:border-cyan-500/40`;
+        if (s === 'har') return `${base} bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40`;
+        if (s === 'mel') return `${base} bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40`;
+        return `${base} bg-slate-700/30 text-slate-400 border-slate-700/50 hover:bg-slate-700/50`;
     };
 
     const getServerChip = (server: string) => {
@@ -109,26 +125,58 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
                     </span>
                 </div>
 
-                {/* Name + Server Chip */}
+                {/* Name + Badges */}
                 <div className="flex-1 min-w-0 flex items-center gap-2">
                     <span className="text-white font-semibold text-sm truncate group-hover:text-indigo-300 transition-colors">
                         {profile.nick}
                     </span>
-                    {/* Server badge */}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getServerBadgeStyle(profile.server)} 
-                                     font-mono uppercase tracking-wider flex-shrink-0`}>
+
+                    {/* Verified Link Badge */}
+                    {profile.hasLink && (
+                        <div className="bg-indigo-500/20 text-indigo-300 p-0.5 rounded-sm" title="Verified Link (Forum/Discord)">
+                            <LinkIcon size={12} />
+                        </div>
+                    )}
+
+                    {/* Server badge (Interactive) */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onServerClick?.(profile.server);
+                        }}
+                        className={`text-[10px] px-1.5 py-0.5 rounded border ${getServerBadgeStyle(profile.server)} 
+                                    font-mono uppercase tracking-wider flex-shrink-0 appearance-none`}
+                    >
                         {getServerChip(profile.server)}
-                    </span>
+                    </button>
+
                 </div>
 
-                {/* Primary Service with Icon */}
-                <div className="flex items-center gap-1.5 w-32 flex-shrink-0">
+                {/* Primary Service with Evidence Tooltip */}
+                <div
+                    className="flex items-center gap-1.5 w-32 flex-shrink-0 group/service relative"
+                    title={primaryService.lastEvidence || "No evidence recorded"}
+                >
                     <span className="text-slate-400">
                         {getCategoryIcon(primaryService.category)}
                     </span>
                     <span className="text-sm text-slate-300 truncate">
                         {primaryService.category}
                     </span>
+
+                    {/* Evidence Hover Card (Premium Tooltip) */}
+                    {primaryService.lastEvidence && (
+                        <div className="absolute bottom-full left-0 mb-2 w-64 bg-slate-900 border border-slate-700 
+                                      rounded-lg p-3 shadow-xl opacity-0 group-hover/service:opacity-100 
+                                      transition-opacity pointer-events-none z-20 hidden group-hover/service:block">
+                            <div className="text-[10px] text-slate-500 mb-1 uppercase tracking-wider font-semibold">Latest Evidence</div>
+                            <div className="text-xs text-slate-300 italic">"{primaryService.lastEvidence}"</div>
+                            <div className="mt-2 text-[10px] text-indigo-400 flex items-center gap-1">
+                                <Zap size={10} />
+                                Verified by System
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Activity Bar with Percentage Tooltip */}
@@ -155,8 +203,7 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
                 </div>
 
                 {/* Status Dot */}
-                <div className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(profile.lastSeenAny)} 
-                                 animate-pulse flex-shrink-0`}
+                <div className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(profile.lastSeenAny)} flex-shrink-0`}
                     title={getTimeAgo(profile.lastSeenAny)} />
 
                 {/* Expand Icon */}
@@ -177,7 +224,9 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
                                 <div
                                     key={idx}
                                     className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-800/40 
-                                               rounded-md border border-slate-700/30 hover:border-indigo-500/30 transition-colors"
+                                               rounded-md border border-slate-700/30 hover:border-indigo-500/30 transition-colors
+                                               relative group/sub"
+                                    title={service.lastEvidence}
                                 >
                                     <span className="text-slate-400">
                                         {getCategoryIcon(service.category)}
