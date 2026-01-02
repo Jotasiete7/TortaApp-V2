@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
 import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ServiceRowProps {
     profile: ServiceProfile;
+    style?: React.CSSProperties; // For staggered animation
 }
 
 // Category icon mapping for visual recognition
@@ -23,7 +24,17 @@ const getCategoryIcon = (category: ServiceCategory) => {
     }
 };
 
-export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
+// Deterministic Avatar Color (Hash -> Hue)
+const getAvatarColor = (nick: string) => {
+    let hash = 0;
+    for (let i = 0; i < nick.length; i++) {
+        hash = nick.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    return `hsl(${hue}, 60%, 50%)`; // Keep Saturation 60%, Lightness 50% for consistency
+};
+
+export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style }) => {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -31,12 +42,12 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
         current.score > best.score ? current : best
         , profile.services[0]);
 
-    // SEMANTIC COLOR: Time-based, not arbitrary
+    // SEMANTIC COLOR: Time-based
     const getActivityBarColor = (lastSeen: number) => {
         const hours = (Date.now() - lastSeen) / (1000 * 60 * 60);
-        if (hours <= 12) return 'from-emerald-500 to-emerald-400'; // Green = Fresh (0-12h)
-        if (hours <= 48) return 'from-amber-500 to-amber-400';     // Yellow = Recent (12-48h)
-        return 'from-blue-500 to-blue-400';                        // Blue = Historical (2-7d)
+        if (hours <= 12) return 'from-emerald-500 to-emerald-400';
+        if (hours <= 48) return 'from-amber-500 to-amber-400';
+        return 'from-blue-500 to-blue-400';
     };
 
     const getStatusDotColor = (lastSeen: number) => {
@@ -55,36 +66,47 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
         return t('service_directory.time_days_ago', { days });
     };
 
-    // Time color coding
     const getTimeColor = (timestamp: number) => {
         const hours = (Date.now() - timestamp) / (1000 * 60 * 60);
-        if (hours <= 12) return 'text-emerald-400'; // Green = Recent
-        if (hours <= 168) return 'text-amber-400';  // Yellow = 1-7 days
-        return 'text-slate-500';                    // Gray = 7+ days
+        if (hours <= 12) return 'text-emerald-400';
+        if (hours <= 168) return 'text-amber-400';
+        return 'text-slate-500';
     };
 
-    // Server abbreviation (Cadence → CAD, Harmony → HAR, etc.)
+    // Server Badges
+    const getServerBadgeStyle = (server: string) => {
+        const s = server.toLowerCase().substring(0, 3);
+        if (s === 'cad') return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+        if (s === 'har') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        if (s === 'mel') return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        return 'bg-slate-700/30 text-slate-400 border-slate-700/50';
+    };
+
     const getServerChip = (server: string) => {
         return server.substring(0, 3).toUpperCase();
     };
 
     const hasMultipleServices = profile.services.length > 1;
+    const avatarColor = useMemo(() => getAvatarColor(profile.nick), [profile.nick]);
 
     return (
-        <div className="group">
+        <div className="group" style={style}>
             <div
-                className="flex items-center gap-2.5 px-3 py-2.5 
+                className="flex items-center gap-3 px-3 py-2.5 
                            border-b border-indigo-500/8
                            hover:bg-indigo-500/5 hover:border-l-2 hover:border-l-indigo-500/50
                            transition-all cursor-pointer relative"
                 onClick={() => hasMultipleServices && setIsExpanded(!isExpanded)}
                 title={`${profile.nick} - ${getTimeAgo(profile.lastSeenAny)}`}
             >
-                {/* Avatar - Compact */}
-                <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 
-                                rounded-md flex items-center justify-center flex-shrink-0
-                                shadow-sm group-hover:shadow-indigo-500/30 transition-shadow">
-                    <User size={14} className="text-white" />
+                {/* Avatar - Deterministic Color */}
+                <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm transition-shadow"
+                    style={{ backgroundColor: avatarColor }}
+                >
+                    <span className="text-white font-bold text-xs opacity-90">
+                        {profile.nick.substring(0, 2).toUpperCase()}
+                    </span>
                 </div>
 
                 {/* Name + Server Chip */}
@@ -92,9 +114,9 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
                     <span className="text-white font-semibold text-sm truncate group-hover:text-indigo-300 transition-colors">
                         {profile.nick}
                     </span>
-                    {/* Server badge with improved opacity */}
-                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-700/30 rounded text-slate-400 
-                                     font-mono uppercase tracking-wider flex-shrink-0 opacity-60">
+                    {/* Server badge */}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getServerBadgeStyle(profile.server)} 
+                                     font-mono uppercase tracking-wider flex-shrink-0`}>
                         {getServerChip(profile.server)}
                     </span>
                 </div>
@@ -117,7 +139,7 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
                             style={{ width: `${primaryService.score * 100}%` }}
                         />
                     </div>
-                    {/* Percentage Tooltip on Hover */}
+                    {/* Tooltip */}
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 
                                     bg-slate-900 border border-slate-700 rounded px-2 py-1
                                     text-xs text-white font-mono whitespace-nowrap
@@ -127,7 +149,7 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
                     </div>
                 </div>
 
-                {/* Time with Color Coding */}
+                {/* Time */}
                 <div className={`text-[11px] w-16 text-right flex-shrink-0 font-medium ${getTimeColor(profile.lastSeenAny)}`}>
                     {getTimeAgo(profile.lastSeenAny)}
                 </div>
@@ -137,7 +159,7 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
                                  animate-pulse flex-shrink-0`}
                     title={getTimeAgo(profile.lastSeenAny)} />
 
-                {/* Expand Icon (if multiple services) */}
+                {/* Expand Icon */}
                 {hasMultipleServices && (
                     <div className="text-slate-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -145,10 +167,10 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
                 )}
             </div>
 
-            {/* Expanded View - Additional Services */}
+            {/* Expanded View */}
             {isExpanded && hasMultipleServices && (
-                <div className="bg-slate-900/20 px-3 py-2.5 border-b border-indigo-500/8">
-                    <div className="flex flex-wrap gap-2 ml-9">
+                <div className="bg-slate-900/20 px-3 py-2.5 border-b border-indigo-500/8 pl-14">
+                    <div className="flex flex-wrap gap-2">
                         {profile.services
                             .filter(s => s.category !== primaryService.category)
                             .map((service, idx) => (
@@ -156,7 +178,6 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
                                     key={idx}
                                     className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-800/40 
                                                rounded-md border border-slate-700/30 hover:border-indigo-500/30 transition-colors"
-                                    title={`${service.category}: ${Math.round(service.score * 100)}% activity`}
                                 >
                                     <span className="text-slate-400">
                                         {getCategoryIcon(service.category)}
