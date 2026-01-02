@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
 import { serviceDirectory } from '../../services/ServiceDirectory';
-import { ServiceCard } from './ServiceCard';
+import { ServiceRow } from './ServiceRow';
 import { InfoTooltip } from '../market/InfoTooltip';
 import { Filter, Server, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -126,14 +126,14 @@ export const ServiceDirectoryView: React.FC = () => {
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredProfiles.map(profile => (
-                        <ServiceCard key={profile.nick} profile={profile} />
-                    ))}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+                    <div className="divide-y divide-slate-800/50">
+                        {filteredProfiles.map(profile => (
+                            <ServiceRow key={profile.nick} profile={profile} />
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
     );
 };
-
-
