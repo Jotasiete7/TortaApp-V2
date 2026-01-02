@@ -57,22 +57,26 @@ export class ServiceDirectory {
 
         // 1. HARD EXCLUSIONS (False Positives)
         if (/\b(wtb|pc|wtt)\b/.test(lower)) return [];
-        if (/[@?]/.test(lower)) return []; // Exclude questions and mentions
+        // Removed strict exclusion of @/? to allow location mentions (@ Arcadia) and rhetorical questions (Need stuff?)
         if (/\b(anyone|any1|where|who)\b/.test(lower)) return []; // Exclude inquiries
 
         // 2. SANITIZATION: Remove [Item Name] brackets to prevent false positives from enchantments
+        // We keep the rest of the message intact.
         const cleanMessage = lower.replace(/\[.*?\]/g, '');
         if (cleanMessage.trim().length < 4) return [];
 
         // 3. ITEM LIST DETECTION: Exclude messages that are primarily item inventories
         // High density of slashes, brackets, or quantities without service verbs = item list
         const slashCount = (cleanMessage.match(/\//g) || []).length;
-        const numberCount = (cleanMessage.match(/\d+x|x\d+|\d+\s*c|\d+\s*s/g) || []).length;
-        const hasServiceVerb = /\b(imp|improve|cast|enchant|deliver|haul|repair|service|doing|offering)\b/.test(cleanMessage);
+        // Refined number count to avoid matching "4s" (speed) as currency unless followed by space/end
+        const numberCount = (cleanMessage.match(/\d+x|x\d+|\d+\s*c\b|\d+\s*s\b|qty:?\d+/g) || []).length;
+
+        // Expanded service verbs
+        const hasServiceVerb = /\b(imp|improve|cast|enchant|deliver|haul|repair|service|services|serve|doing|offering|hiring|rent|sell)\b/.test(cleanMessage);
 
         // If message has many items/quantities but no service verbs, it's likely a sale list
         if ((slashCount > 2 || numberCount > 3) && !hasServiceVerb) {
-            return []; // Exclude item lists (e.g., "WTS 43x Sleep Powder // 12x Bricks")
+            return []; // Exclude item lists
         }
 
         const intents: { category: ServiceCategory; confidence: number }[] = [];
@@ -82,11 +86,14 @@ export class ServiceDirectory {
 
         const serviceIndicators = [
             'service', 'free', 'tips', 'donations', 'casting', 'imping',
-            'improving', 'making', 'crafting', 'hiring', 'rent', 'taxi', 'doing', 'offering'
+            'improving', 'making', 'crafting', 'hiring', 'rent', 'taxi', 'doing', 'offering',
+            'serve', 'services', 'skiller', 'tools', 'daily', 'weekly'
         ];
 
         if (serviceIndicators.some(i => cleanMessage.includes(i))) baseConf += 0.2;
         if (/\bwts\b/.test(cleanMessage)) baseConf += 0.1;
+        // Location mentions (@) often imply service/shop
+        if (/@/.test(cleanMessage)) baseConf += 0.1;
 
         // 5. CREDIBILITY BONUS: Forum/Discord links indicate structured services
         if (/forum\.wurmonline\.com|discord\.gg/.test(cleanMessage)) {
@@ -123,19 +130,25 @@ export class ServiceDirectory {
 
         // Enchanting (Restrictive: requires action verb + spell keyword)
         // This prevents "[WOA 104] pickaxe" from being classified as Enchanting service
-        if (/\b(cast|enchant|service)\b/.test(cleanMessage) &&
-            /\b(coc|woa|fa|botd|aoe)\b/.test(cleanMessage)) {
-            intents.push({ category: ServiceCategory.ENCHANTING, confidence: baseConf + 0.1 });
+        // Added 'skilling tools' and relaxed verb requirement if clear enchanting stats are present with WTS
+        if ((/\b(cast|enchant|service|services|wts)\b/.test(cleanMessage) &&
+            /\b(coc|woa|fa|botd|aoe)\b/.test(cleanMessage)) ||
+            /\b(skiller|tools|tool)\b/.test(cleanMessage)) {
+
+            // Only add if we have high confidence or explicit enchant keywords
+            if (/\b(cast|enchant|skiller)\b/.test(cleanMessage) || /\b(coc|woa|fa|botd|aoe)\b/.test(cleanMessage)) {
+                intents.push({ category: ServiceCategory.ENCHANTING, confidence: baseConf + 0.1 });
+            }
         }
 
         // Logistics (includes delivery, market services, supply)
         // Expanded to capture market/delivery services like Arcadia
-        if (/\b(haul|hauling|cart|wagon|boat|ship|transport|taxi|delivery|deliver|market|self-serve)\b/.test(cleanMessage)) {
+        if (/\b(haul|hauling|cart|wagon|boat|ship|transport|taxi|delivery|deliver|market|self-serve|serve)\b/.test(cleanMessage)) {
             intents.push({ category: ServiceCategory.LOGISTICS, confidence: baseConf });
         }
 
         // Fallback: Generic service mention
-        if (intents.length === 0 && cleanMessage.includes('service')) {
+        if (intents.length === 0 && (cleanMessage.includes('service') || cleanMessage.includes('services'))) {
             intents.push({ category: ServiceCategory.OTHER, confidence: 0.4 });
         }
 

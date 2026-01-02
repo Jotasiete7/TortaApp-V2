@@ -1,4 +1,4 @@
-﻿import { invoke } from '@tauri-apps/api/core';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import localforage from 'localforage';
 import { supabase } from './supabase';
@@ -41,8 +41,6 @@ function normalizeItemName(item: string): string {
         .trim();
 }
 
-// Removed: convertToCopper function - now using Money class
-
 async function generateTradeHash(trade: Trade): Promise<string> {
     const timestampMs = new Date().getTime();
     const normalized = {
@@ -65,7 +63,7 @@ export class LiveTradeMonitor {
     private currentUserId: string | null = null;
     private alerts: ExtendedTradeAlert[] = [];
 
-    // Proteï¿½ï¿½o contra mï¿½ltiplas instï¿½ncias
+    // Proteção contra múltiplas instâncias
     private isCurrentlyWatching = false;
     private currentUnlisten: (() => void) | null = null;
     private currentFilePath: string | null = null;
@@ -143,37 +141,21 @@ export class LiveTradeMonitor {
     // --- Public Methods ---
 
     public async startWatching(filePath: string) {
-        // ProteÃ§Ã£o: Se jÃ¡ estÃ¡ assistindo o mesmo arquivo, nÃ£o fazer nada
+        // Proteção: Se já está assistindo o mesmo arquivo, não fazer nada
         if (this.isCurrentlyWatching && this.currentFilePath === filePath) {
-            console.log('âš ï¸ LiveTradeMonitor: Already watching this file, skipping...');
+            console.log('⚠️ LiveTradeMonitor: Already watching this file, skipping...');
             return;
         }
 
-        // Se estÃ¡ assistindo outro arquivo, parar primeiro
+        // Se está assistindo outro arquivo, parar primeiro
         if (this.isCurrentlyWatching && this.currentFilePath !== filePath) {
-            console.log('ðŸ”„ LiveTradeMonitor: Switching to new file, stopping current watcher...');
+            console.log('🔄 LiveTradeMonitor: Switching to new file, stopping current watcher...');
             await this.stopWatching();
         }
 
-        console.log("ðŸš€ LiveTradeMonitor: BYPASSING PERMISSION CHECK");
-        /*
-        // 1. Check Permissions (DISABLED)
-        */
+        console.log("🚀 LiveTradeMonitor: BYPASSING PERMISSION CHECK");
 
-        // BYPASS: Permissions check commented out to prevent freeze
-        /*
-        try {
-            // const allowed = await invoke<boolean>('check_file_access', { path: filePath });
-            // if (!allowed) {
-            //    toast.error('Sem permissï¿½o de leitura no arquivo.');
-            //    return;
-            // }
-        } catch (err) {
-            toast.error('Erro ao verificar arquivo: ');
-            return;
-        }
-        */
-        console.log("ðŸš€ LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
+        console.log("🚀 LiveTradeMonitor: BYPASSING CHECK, Direct Invoke:", filePath);
 
         // Marcar como ativo ANTES de chamar o backend
         this.isCurrentlyWatching = true;
@@ -181,35 +163,29 @@ export class LiveTradeMonitor {
 
         // 2. Start Watcher (Backend)
         try {
-            console.log("ðŸš€ LiveTradeMonitor: Requesting backend to watch:", filePath);
+            console.log("🚀 LiveTradeMonitor: Requesting backend to watch:", filePath);
             const res = await invoke('start_trade_watcher', { path: filePath });
-            console.log('âœ… Backend responded:', res);
+            console.log('✅ Backend responded:', res);
             toast.success('Monitoramento iniciado!');
         } catch (err) {
-            console.error("âŒ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
-            toast.error('Falha ao iniciar watcher: ');
+            console.error("❌ LiveTradeMonitor: Failed to invoke start_trade_watcher:", err);
+            toast.error('Falha ao iniciar watcher');
             // Limpar flags em caso de erro
             this.isCurrentlyWatching = false;
             this.currentFilePath = null;
             return;
         }
 
-
-
-
-
         // 3. Listen for Events
-
-
         const unlisten = await listen<{ trades: Array<{ timestamp: string, nick: string, message: string }> }>('trade-batch-event', async (event) => {
-            console.log("ðŸ“¨ FRONTEND RECEIVED EVENT:", event);
+            console.log("📨 FRONTEND RECEIVED EVENT:", event);
             const batch = event.payload;
             if (!batch.trades) return;
             for (const raw of batch.trades) {
 
                 // NEW: Filter Noise before processing
                 if (FileParser.isNoise(raw.message)) {
-                    console.warn("ðŸš« Valid Filter: Ignored noise message:", raw.message);
+                    console.warn("🚫 Valid Filter: Ignored noise message:", raw.message);
                     return;
                 }
 
@@ -219,6 +195,17 @@ export class LiveTradeMonitor {
 
                 const { item, price } = this.parseItemAndPrice(raw.message);
 
+                // FIX SERVER PARSING: Parse Server from Message or Nick (e.g. "(Har) WTS...")
+                let parsedServer = this.currentServer;
+                // Heuristic: Check for (Har), (Cad), (Mel) at start of message or end of nick (if nick included it)
+                const serverMatch = raw.message.match(/^\s*\((\w{3})\)/i) || raw.nick.match(/\((\w{3})\)$/i);
+                if (serverMatch) {
+                    const code = serverMatch[1].toLowerCase();
+                    if (code === 'har') parsedServer = 'Harmony';
+                    else if (code === 'cad') parsedServer = 'Cadence';
+                    else if (code === 'mel') parsedServer = 'Melody';
+                }
+
                 const trade: Trade = {
                     timestamp: raw.timestamp,
                     nick: raw.nick,
@@ -226,21 +213,12 @@ export class LiveTradeMonitor {
                     type,
                     item,
                     price,
-                    server: this.currentServer,
+                    server: parsedServer,
                     raw: JSON.stringify(raw)
                 };
 
-
                 // Check Alerts
                 try {
-                    // Refresh alerts occasionally or assume synced? For now assume synced via localforage sharing the same store name?
-                    // Actually LiveTradeMonitor sets store name 'TortaApp_OfflineQueue', AlertsManager uses default or distinct.
-                    // AlertsManager uses default 'localforage'.
-                    // We should fix this: AlertsManager should use specific store or LiveMonitor should access default.
-                    // Let's assume for now we use 'trade_alerts' key on default instance.
-                    // Re-instantiate a default store for reading alerts to be safe?
-                    // Or just use localforage (global) since AlertsManager imported it globally.
-
                     const alerts = await localforage.getItem<ExtendedTradeAlert[]>('trade_alerts') || [];
 
                     // Prepare object for alert check (needs Money price)
@@ -254,7 +232,7 @@ export class LiveTradeMonitor {
 
                     const matched = AlertService.checkAlerts(checkObj, alerts);
                     if (matched) {
-                        console.log('ðŸ”” Alert Triggered:', matched.term);
+                        console.log('🔔 Alert Triggered:', matched.term);
                         AlertService.fireAlert(matched, checkObj);
                     }
                 } catch (err) {
@@ -272,11 +250,11 @@ export class LiveTradeMonitor {
 
     public async stopWatching() {
         if (!this.isCurrentlyWatching) {
-            console.log('â„¹ï¸ LiveTradeMonitor: Not currently watching, nothing to stop.');
+            console.log('ℹ️ LiveTradeMonitor: Not currently watching, nothing to stop.');
             return;
         }
 
-        console.log('ðŸ›‘ LiveTradeMonitor: Stopping watcher...');
+        console.log('🛑 LiveTradeMonitor: Stopping watcher...');
 
         // Remover listener
         if (this.currentUnlisten) {
@@ -288,15 +266,15 @@ export class LiveTradeMonitor {
         if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
             try {
                 await invoke('stop_trade_watcher');
-                console.log('âœ… Backend watcher stopped');
+                console.log('✅ Backend watcher stopped');
             } catch (e) {
-                console.error('âŒ Failed to stop backend watcher:', e);
+                console.error('❌ Failed to stop backend watcher:', e);
             }
         }
 
         this.isCurrentlyWatching = false;
         this.currentFilePath = null;
-        console.log('âœ… LiveTradeMonitor: Stopped successfully');
+        console.log('✅ LiveTradeMonitor: Stopped successfully');
     }
 
     public isWatching(): boolean {
@@ -308,32 +286,32 @@ export class LiveTradeMonitor {
     }
 
     public async submitTrade(trade: Trade) {
-        console.log('?? LiveTrade: Attempting to submit trade...', trade.nick);
+        console.log('📡 LiveTrade: Attempting to submit trade...', trade.nick);
 
         if (!this.currentUserId) {
-            console.log('?? LiveTrade: UserId not set, fetching...');
+            console.log('📡 LiveTrade: UserId not set, fetching...');
             const { data } = await supabase.auth.getUser();
             this.currentUserId = data.user?.id || null;
             if (!this.currentUserId) {
-                console.error('? LiveTrade: No authenticated user found. Trade skipped.');
-                toast.error('Erro: Usuï¿½rio nï¿½o autenticado. Trade ignorado.');
+                console.error('❌ LiveTrade: No authenticated user found. Trade skipped.');
+                toast.error('Erro: Usuário não autenticado. Trade ignorado.');
                 return;
             }
         }
 
         if (!this.isOnline) {
-            console.warn('?? LiveTrade: Offline. Queueing trade.');
+            console.warn('📡 LiveTrade: Offline. Queueing trade.');
             this.queueTrade(trade);
             return;
         }
 
         try {
-            console.log('?? LiveTrade: Sending RPC...');
+            console.log('📡 LiveTrade: Sending RPC...');
             await this.submitTradeInternal(trade);
-            console.log('? LiveTrade: RPC Success');
+            console.log('🚀 LiveTrade: RPC Success');
             toast.success('Trade salvo!', { duration: 2000 });
         } catch (err) {
-            console.error('? LiveTrade: RPC FAILURE:', err);
+            console.error('❌ LiveTrade: RPC FAILURE:', err);
             toast.error('Falha no envio (RPC)');
             this.queueTrade(trade);
         }
@@ -371,12 +349,12 @@ export class LiveTradeMonitor {
 
         this.offlineQueue.push(queuedTrade);
         this.saveOfflineQueue();
-        console.log('ðŸ“¤ Trade queued:', queuedTrade.retryCount);
+        console.log('📪 Trade queued:', queuedTrade.retryCount);
     }
 
     private async handleOnline() {
         this.isOnline = true;
-        console.log('ðŸŒ Online: Processing queue...');
+        console.log('🌐 Online: Processing queue...');
 
         const failedTrades: QueuedTrade[] = [];
         const tempQueue = [...this.offlineQueue];
@@ -395,9 +373,9 @@ export class LiveTradeMonitor {
 
             try {
                 await this.submitTradeInternal(trade);
-                console.log('âœ… Trade submitted after retry');
+                console.log('✅ Trade submitted after retry');
             } catch (err) {
-                console.error('âŒ Retry failed:', err);
+                console.error('❌ Retry failed:', err);
                 this.offlineQueue.push(trade);
             }
         }
@@ -405,13 +383,13 @@ export class LiveTradeMonitor {
         this.saveOfflineQueue();
 
         if (failedTrades.length > 0) {
-            toast.warning(`${failedTrades.length} trades falharam apï¿½s vï¿½rias tentativas.`);
+            toast.warning(`${failedTrades.length} trades falharam após várias tentativas.`);
         }
     }
 
     private handleOffline() {
         this.isOnline = false;
-        toast.info('Modo Offline: Trades serï¿½o salvas.');
+        toast.info('Modo Offline: Trades serão salvas.');
     }
 }
 
@@ -423,7 +401,7 @@ export const liveTradeMonitor = new LiveTradeMonitor();
 
 // DEBUG TOOL: Check latest logs for a nickname from Console
 (window as any).debugLogs = async (nick: string) => {
-    console.log(`?? Checking DB for logs of: ${nick}`);
+    console.log(`🔍 Checking DB for logs of: ${nick}`);
     const { data, error } = await supabase
         .from('trade_logs')
         .select('*')
@@ -432,20 +410,20 @@ export const liveTradeMonitor = new LiveTradeMonitor();
         .limit(10);
 
     if (error) {
-        console.error('? Query Error:', error);
+        console.error('❌ Query Error:', error);
     } else {
-        console.log('?? Result:', data);
+        console.log('✅ Result:', data);
         if (data && data.length > 0) {
-            console.log('?? Latest Log Time:', data[0].trade_timestamp_utc);
-            console.log('?? Latest Message:', data[0].message);
+            console.log('🕒 Latest Log Time:', data[0].trade_timestamp_utc);
+            console.log('💬 Latest Message:', data[0].message);
         } else {
-            console.log('?? No logs found for this nick.');
+            console.log('⚠️ No logs found for this nick.');
         }
     }
 };
 
 (window as any).testTrade = () => {
-    console.log('?? Sending TEST trade...');
+    console.log('🧪 Sending TEST trade...');
     liveTradeMonitor.submitTrade({
         timestamp: new Date().toISOString(),
         nick: 'TEST_USER',
@@ -457,4 +435,3 @@ export const liveTradeMonitor = new LiveTradeMonitor();
         raw: '{}'
     });
 };
-
