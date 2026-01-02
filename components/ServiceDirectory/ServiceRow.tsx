@@ -1,11 +1,27 @@
 import React, { useState } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
-import { User, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ServiceRowProps {
     profile: ServiceProfile;
 }
+
+// Category icon mapping for visual recognition
+const getCategoryIcon = (category: ServiceCategory) => {
+    const iconProps = { size: 14, className: "flex-shrink-0" };
+    switch (category) {
+        case ServiceCategory.IMPING: return <Hammer {...iconProps} />;
+        case ServiceCategory.ENCHANTING: return <Zap {...iconProps} />;
+        case ServiceCategory.SMITHING: return <Wrench {...iconProps} />;
+        case ServiceCategory.LEATHERWORK: return <Scissors {...iconProps} />;
+        case ServiceCategory.TAILORING: return <Scissors {...iconProps} />;
+        case ServiceCategory.MASONRY: return <Home {...iconProps} />;
+        case ServiceCategory.LOGISTICS: return <Truck {...iconProps} />;
+        case ServiceCategory.OTHER: return <Sparkles {...iconProps} />;
+        default: return <Package {...iconProps} />;
+    }
+};
 
 export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
     const { t } = useTranslation();
@@ -39,7 +55,15 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
         return t('service_directory.time_days_ago', { days });
     };
 
-    // Server abbreviation (Cadence → Cad, Harmony → Har, etc.)
+    // Time color coding
+    const getTimeColor = (timestamp: number) => {
+        const hours = (Date.now() - timestamp) / (1000 * 60 * 60);
+        if (hours <= 12) return 'text-emerald-400'; // Green = Recent
+        if (hours <= 168) return 'text-amber-400';  // Yellow = 1-7 days
+        return 'text-slate-500';                    // Gray = 7+ days
+    };
+
+    // Server abbreviation (Cadence → CAD, Harmony → HAR, etc.)
     const getServerChip = (server: string) => {
         return server.substring(0, 3).toUpperCase();
     };
@@ -49,8 +73,10 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
     return (
         <div className="group">
             <div
-                className="flex items-center gap-2.5 px-3 py-2 border-b border-slate-800/50 
-                           hover:bg-slate-800/30 transition-all cursor-pointer"
+                className="flex items-center gap-2.5 px-3 py-2.5 
+                           border-b border-indigo-500/8
+                           hover:bg-indigo-500/5 hover:border-l-2 hover:border-l-indigo-500/50
+                           transition-all cursor-pointer relative"
                 onClick={() => hasMultipleServices && setIsExpanded(!isExpanded)}
                 title={`${profile.nick} - ${getTimeAgo(profile.lastSeenAny)}`}
             >
@@ -63,36 +89,50 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
 
                 {/* Name + Server Chip */}
                 <div className="flex-1 min-w-0 flex items-center gap-2">
-                    <span className="text-white font-medium text-sm truncate group-hover:text-indigo-400 transition-colors">
+                    <span className="text-white font-semibold text-sm truncate group-hover:text-indigo-300 transition-colors">
                         {profile.nick}
                     </span>
-                    {/* Server as minimal chip */}
-                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-700/40 rounded text-slate-500 
-                                     font-mono uppercase tracking-wider flex-shrink-0">
+                    {/* Server badge with improved opacity */}
+                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-700/30 rounded text-slate-400 
+                                     font-mono uppercase tracking-wider flex-shrink-0 opacity-60">
                         {getServerChip(profile.server)}
                     </span>
                 </div>
 
-                {/* Primary Service */}
-                <div className="text-sm text-slate-300 w-28 truncate flex-shrink-0">
-                    {primaryService.category}
+                {/* Primary Service with Icon */}
+                <div className="flex items-center gap-1.5 w-32 flex-shrink-0">
+                    <span className="text-slate-400">
+                        {getCategoryIcon(primaryService.category)}
+                    </span>
+                    <span className="text-sm text-slate-300 truncate">
+                        {primaryService.category}
+                    </span>
                 </div>
 
-                {/* Activity Bar - SEMANTIC (color = time, length = score) */}
-                <div className="w-20 h-1.5 bg-slate-800/50 rounded-full overflow-hidden flex-shrink-0"
-                    title={`Activity: ${Math.round(primaryService.score * 100)}%`}>
-                    <div
-                        className={`h-full bg-gradient-to-r ${getActivityBarColor(primaryService.lastSeen)} transition-all`}
-                        style={{ width: `${primaryService.score * 100}%` }}
-                    />
+                {/* Activity Bar with Percentage Tooltip */}
+                <div className="relative group/bar flex-shrink-0">
+                    <div className="w-20 h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full bg-gradient-to-r ${getActivityBarColor(primaryService.lastSeen)} transition-all`}
+                            style={{ width: `${primaryService.score * 100}%` }}
+                        />
+                    </div>
+                    {/* Percentage Tooltip on Hover */}
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 
+                                    bg-slate-900 border border-slate-700 rounded px-2 py-1
+                                    text-xs text-white font-mono whitespace-nowrap
+                                    opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none
+                                    shadow-lg z-10">
+                        {Math.round(primaryService.score * 100)}%
+                    </div>
                 </div>
 
-                {/* Time - Compact */}
-                <div className="text-[11px] text-slate-500 w-16 text-right flex-shrink-0 font-medium">
+                {/* Time with Color Coding */}
+                <div className={`text-[11px] w-16 text-right flex-shrink-0 font-medium ${getTimeColor(profile.lastSeenAny)}`}>
                     {getTimeAgo(profile.lastSeenAny)}
                 </div>
 
-                {/* Status Dot - NO TEXT, just signal */}
+                {/* Status Dot */}
                 <div className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(profile.lastSeenAny)} 
                                  animate-pulse flex-shrink-0`}
                     title={getTimeAgo(profile.lastSeenAny)} />
@@ -107,17 +147,20 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile }) => {
 
             {/* Expanded View - Additional Services */}
             {isExpanded && hasMultipleServices && (
-                <div className="bg-slate-900/20 px-3 py-2 border-b border-slate-800/50">
+                <div className="bg-slate-900/20 px-3 py-2.5 border-b border-indigo-500/8">
                     <div className="flex flex-wrap gap-2 ml-9">
                         {profile.services
                             .filter(s => s.category !== primaryService.category)
                             .map((service, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center gap-2 px-2.5 py-1 bg-slate-800/40 
-                                               rounded-md border border-slate-700/30"
+                                    className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-800/40 
+                                               rounded-md border border-slate-700/30 hover:border-indigo-500/30 transition-colors"
                                     title={`${service.category}: ${Math.round(service.score * 100)}% activity`}
                                 >
+                                    <span className="text-slate-400">
+                                        {getCategoryIcon(service.category)}
+                                    </span>
                                     <span className="text-xs text-slate-300">{service.category}</span>
                                     <div className="w-12 h-1 bg-slate-700/50 rounded-full overflow-hidden">
                                         <div
