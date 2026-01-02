@@ -192,11 +192,13 @@ export interface ServiceEvidence {
 export interface ServiceProfile {
     nick: string;
     server: string;
+    hasLink?: boolean; // True if forum/discord link detected
     services: {
         category: ServiceCategory;
         score: number;
         lastSeen: number;
         evidenceCount: number;
+        lastEvidence?: string; // The specific message that triggered this score
     }[];
     lastSeenAny: number;
     activityScore: number;

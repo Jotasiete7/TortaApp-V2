@@ -12,7 +12,7 @@ const StatsHeader = ({ profiles }: { profiles: ServiceProfile[] }) => {
 
     const stats = useMemo(() => {
         const now = Date.now();
-        const active = profiles.filter(p => (now - p.lastSeenAny) < 2 * 60 * 60 * 1000).length; // < 2h
+        const active = profiles.filter(p => (now - p.lastSeenAny) < 4 * 60 * 60 * 1000).length; // < 4h
         const newProviders = profiles.filter(p => (now - p.services[0].evidenceCount < 5)).length; // simplistic "new" proxy or use firstSeen
 
         // Calculate Top Category
