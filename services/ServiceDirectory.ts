@@ -53,108 +53,101 @@ export class ServiceDirectory {
     }
 
     /**
-     * Detects service intents using a Weighted Signal System.
-     * Classifies into: SERVICE_OFFER (Positive), ITEM_TRADE (Ignored), SERVICE_REQUEST (Ignored)
+     * Detects service intents using a Strict "Fail-Safe Pipeline".
+     * 1. Parse Server (handled upstream or stripped here)
+     * 2. Normalize
+     * 3. Kill Switches (Fail Fast)
+     * 4. Content Sanitization (Item Strip)
+     * 5. Explicit Intent Gate (Positive Confirmation only)
      */
     public detectServiceIntents(message: string): { category: ServiceCategory; confidence: number }[] {
-        const lower = message.toLowerCase();
+        // Step 1: Sanitize Server Tags (Strip them for analysis)
+        // We assume valid server is passed to processMessage, here we just want clean text
+        let clean = message.replace(/^\s*\(\w{3}\)\s*/i, '').trim(); 
+        const lower = clean.toLowerCase();
 
-        // --- PHASE 1: Kill Switches (Request / Item specific) ---
-        // Explicit requests or strict item trades at start
-        if (/^\s*(wtb|wtt|pc)\b/.test(lower)) return [];
+        // Step 2: Kill Switches (Fail Fast)
+        // If it looks like a Buy Request, Trade, or Price Check -> ABORT
+        if (/^(wtb|wtt|pc)\b/.test(lower)) return [];
 
-        // --- PHASE 2: Signal Accumulation ---
-        let score = 0;
+        // Step 3: Content Sanitization (Create contentForScanning)
+        // Remove [Item Links] to prevent false positives from item names (e.g. "Oil of Blacksmith")
+        // We replace with empty string to avoid accidental concatenation of words
+        const contentForScanning = lower.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
+
+        // Step 4: Explicit Intent Gate (Mandatory)
+        // The sanitized content MUST contain explicit service signals.
+        const hasExplicitIntent = 
+            /\b(service|services|serve|doing|offering|making|crafting)\b/.test(contentForScanning) ||
+            /\b(imp|imps|imping|improve|improving)\b/.test(contentForScanning) ||
+            /\b(smith|smithing|blacksmith|bs)\b/.test(contentForScanning) ||
+            /\b(tailor|tailoring)\b/.test(contentForScanning) || // "cloth" removed as too risky
+            /\b(leatherworking|leatherwork)\b/.test(contentForScanning) || // "leather" removed
+            /\b(enchant|enchanting|cast|casting)\b/.test(contentForScanning) ||
+            /\b(haul|hauling|taxi|transport|courier|delivery|wagon)\b/.test(contentForScanning) ||
+            /\b(masonry|bricks)\b/.test(contentForScanning) ||
+            // Capability / Availability
+            /\b(up to\s*\d+ql)\b/.test(contentForScanning) ||
+            /\b(available|capacity|spots|custom order)\b/.test(contentForScanning) ||
+            // CTA
+            /\b(pm me|message me|mail me)\b/.test(contentForScanning) ||
+            /forum\.wurmonline\.com|discord\.gg/.test(contentForScanning);
+
+        if (!hasExplicitIntent) return [];
+
+        // --- PHASE 5: Classification (Only if Gate Passed) ---
+        // Note: We use contentForScanning for keyword detection to ensure safety.
+
         const potentialCategories = new Set<ServiceCategory>();
-
-        // -> Positive Signals (Service Indicators)
-        // Explicit Service Terms (+0.3)
-        if (/\b(service|services|serve|skiller|doing|offering|making|crafting)\b/.test(lower)) score += 0.3;
-
-        // Recurring/Capacity Terms (+0.3)
-        if (/\b(daily|weekly|custom|order|unlimited|capacity|spots)\b/.test(lower)) score += 0.3;
-
-        // Action Gerunds (+0.4) - Stronger than nouns
-        if (/\b(imping|casting|smithing|tailoring|hauling)\b/.test(lower)) score += 0.4;
-
-        // High Quality (+0.2) - Often implies skilled service
-        if (/\b(9[0-9]ql|9[0-9]\s*ql|max\s*ql)\b/.test(lower)) score += 0.2;
-
-        // Trust/Branding (+0.2)
-        if (/forum\.wurmonline\.com|discord\.gg/.test(lower)) score += 0.2;
-        if (/\b(pm|message|mail)\s*me\b/.test(lower)) score += 0.1;
-
-        // -> Negative Signals (Item Trade / Request Indicators)
-        // Inventory Terms (-0.3)
-        if (/\b(bulk|stock|qty|selling|sold)\b/.test(lower)) score -= 0.3;
-
-        // Questions (-0.2) - Less penalizing than before
-        if (/\?/.test(lower)) score -= 0.2;
-
-        // Inquiries (-0.3)
-        if (/\b(anyone|who|where)\b/.test(lower)) score -= 0.3;
-
-        // --- PHASE 3: Category Mapping (Context Aware) ---
+        let score = 0.5; // Base score for passing the gate
 
         // Imping
-        if (/\b(imp|imping|improve|improving)\b/.test(lower)) {
+        if (/\b(imp|imping|improve|improving)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.IMPING);
             score += 0.2;
         }
 
         // Smithing
-        if (/\b(smith|smithing|blacksmith|bs)\b/.test(lower)) {
+        if (/\b(smith|smithing|blacksmith|bs)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.SMITHING);
             score += 0.2;
         }
 
-        // Leatherworking (Context Safe)
-        // "Leather" alone is dangerous (Item Trade). "Leatherworking" or "LW" + Service Verb is safe.
-        if (/\b(leatherworking|leatherwork)\b/.test(lower)) {
+        // Leatherworking
+        if (/\b(leatherworking|leatherwork)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.LEATHERWORK);
             score += 0.3;
-        } else if (/\b(lw|leather)\b/.test(lower) && score > 0.3) {
-            // Only infer leather service if we already have other service signals
-            potentialCategories.add(ServiceCategory.LEATHERWORK);
         }
 
         // Tailoring
-        if (/\b(tailor|tailoring|cloth)\b/.test(lower)) {
-            // Check context for "cloth" (could be material)
-            if (/\b(tailor|tailoring)\b/.test(lower) || score > 0.3) {
-                potentialCategories.add(ServiceCategory.TAILORING);
-                score += 0.2;
-            }
-        }
-
-        // Enchanting
-        if (/\b(enchant|enchanting|cast|casting)\b/.test(lower)) {
-            potentialCategories.add(ServiceCategory.ENCHANTING);
-            score += 0.3;
-        }
-        // Spell acronyms only if some service context exists
-        if (/\b(coc|woa|fa|botd|aoe)\b/.test(lower) && score > 0.1) {
-            potentialCategories.add(ServiceCategory.ENCHANTING);
+        if (/\b(tailor|tailoring)\b/.test(contentForScanning)) {
+            potentialCategories.add(ServiceCategory.TAILORING);
             score += 0.2;
         }
 
+        // Enchanting
+        if (/\b(enchant|enchanting|cast|casting)\b/.test(contentForScanning)) {
+            potentialCategories.add(ServiceCategory.ENCHANTING);
+            score += 0.3;
+        }
+        // Spell acronyms are safe-ish if gate passed, but still check scanning content
+        if (/\b(coc|woa|fa|botd|aoe)\b/.test(contentForScanning)) {
+            potentialCategories.add(ServiceCategory.ENCHANTING);
+            score += 0.1;
+        }
+
         // Logistics
-        if (/\b(haul|hauling|taxi|transport|courier|delivery|wagon)\b/.test(lower)) {
+        if (/\b(haul|hauling|taxi|transport|courier|delivery|wagon)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.LOGISTICS);
             score += 0.3;
         }
 
         // Masonry
-        if (/\b(masonry|stone|bricks)\b/.test(lower)) {
-            if (/\b(masonry)\b/.test(lower) || score > 0.3) {
-                potentialCategories.add(ServiceCategory.MASONRY);
+        if (/\b(masonry|stone|bricks)\b/.test(contentForScanning)) {
+            if (/\b(masonry)\b/.test(contentForScanning) || score > 0.3) {
+                 potentialCategories.add(ServiceCategory.MASONRY);
             }
         }
-
-        // --- PHASE 4: Final Validity Check ---
-
-        // Threshold check (Persistent Level)
-        if (score < this.THRESHOLD_PERSIST) return [];
 
         const intents: { category: ServiceCategory; confidence: number }[] = [];
 
@@ -162,9 +155,9 @@ export class ServiceDirectory {
             potentialCategories.forEach(cat => {
                 intents.push({ category: cat, confidence: Math.min(score, 1.0) });
             });
-        } else if (score >= 0.4) {
-            // High confidence generic service
-            intents.push({ category: ServiceCategory.OTHER, confidence: Math.min(score, 1.0) });
+        } else {
+            // If explicit gate passed but no specific category found, it's Generic
+            intents.push({ category: ServiceCategory.OTHER, confidence: 0.5 });
         }
 
         return intents;
