@@ -1,6 +1,17 @@
 import { ServiceCategory, ServiceProfile } from '../types';
 import localforage from 'localforage';
 
+/**
+ * ServiceDirectory - Fail-Safe Service Intent Detection
+ * 
+ * ARCHITECTURE NOTE:
+ * If this file grows beyond ~500 lines, consider splitting into:
+ * - ServiceIntentDetector (regex, scoring)
+ * - ServiceProfileRepository (persistence)
+ * - ServiceDirectory (orchestration)
+ * 
+ * Current size is manageable as a single cohesive unit.
+ */
 export class ServiceDirectory {
     private static instance: ServiceDirectory;
     private profiles: Map<string, ServiceProfile> = new Map();
@@ -15,18 +26,56 @@ export class ServiceDirectory {
     private readonly PERSIST_DEBOUNCE_MS = 3000;
     private readonly EVIDENCE_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes spam prevention
 
+    // PHASE 1 OPTIMIZATION: Pre-compiled Regex (compiled once, not per message)
+    private readonly REGEX_SERVER_TAG = /^\s*\(\w{3}\)\s*/i;
+    private readonly REGEX_KILL_SWITCH = /^(wtb|wtt|pc)\b/;
+    private readonly REGEX_NEGATIVE = /\b(not|stop|don't|won't|no longer)\b/;
+    private readonly REGEX_ITEM_STRIP = /\[.*?\]/g;
+    private readonly REGEX_WHITESPACE = /\s+/g;
+    private readonly REGEX_STRONG = /\b(service|services|serve|doing|offering|making|crafting|imp|imps|imping|improve|improving|casting|haul|hauling|transport|taxi|courier|delivery|wagon|logistics)\b/;
+    private readonly REGEX_WEAK = /\b(smith|smithing|blacksmith|bs|tailor|tailoring|leatherworking|leatherwork|masonry|shaping|enchant|enchanting)\b/;
+    private readonly REGEX_CONTEXT = /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\b([7-9]\d|100)\s*ql)/;
+    
+    // Category-specific regex
+    private readonly REGEX_IMPING = /\b(imp|imping|improve|improving)\b/;
+    private readonly REGEX_SMITHING = /\b(smith|smithing|blacksmith|bs)\b/;
+    private readonly REGEX_LEATHERWORK = /\b(leatherworking|leatherwork)\b/;
+    private readonly REGEX_TAILORING = /\b(tailor|tailoring)\b/;
+    private readonly REGEX_ENCHANTING = /\b(enchant|enchanting|cast|casting)\b/;
+    private readonly REGEX_SPELLS = /\b(coc|woa|fa|botd|aoe)\b/;
+    private readonly REGEX_LOGISTICS = /\b(haul|hauling|taxi|transport|courier|delivery|wagon|logistics)\b/;
+    private readonly REGEX_MASONRY = /\b(masonry|stone|bricks)\b/;
+    private readonly REGEX_URL = /https?:\/\/[^\s]+|discord\.gg\/[^\s]+|forum\.wurmonline\.com\/[^\s]+/i;
+
+    // PHASE 1 OPTIMIZATION: Duplicate detection
+    private recentMessageHashes = new Set<string>();
+    private readonly MESSAGE_HASH_TTL = 5 * 60 * 1000; // 5 minutes
+
     private constructor() {
         this.store = localforage.createInstance({
             name: "TortaApp_ServiceDirectory"
         });
         this.load();
         
-        // MANUS OPTIMIZATION 5: Life Cycle Hook for Emergency Persistence
+        // Emergency persistence on beforeunload
         if (typeof window !== 'undefined') {
             window.addEventListener('beforeunload', () => {
-                this.persistSync();
+                try {
+                    const data = JSON.stringify(Array.from(this.profiles.values()));
+                    localStorage.setItem('sd_profiles_emergency', data);
+                } catch (e) {
+                    console.error("Emergency save failed", e);
+                }
             });
         }
+
+        // Periodic cleanup (once per day)
+        setInterval(() => {
+            const deleted = this.cleanupOldProfiles();
+            if (deleted > 0) {
+                this.persistSync();
+            }
+        }, 24 * 60 * 60 * 1000);
     }
 
     public static getInstance(): ServiceDirectory {
@@ -41,25 +90,69 @@ export class ServiceDirectory {
             const savedProfiles = await this.store.getItem<ServiceProfile[]>('profiles');
             if (savedProfiles) {
                 savedProfiles.forEach(p => this.profiles.set(p.nick, p));
+            } else {
+                // Try backup sources
+                const backup = localStorage.getItem('sd_profiles_backup') || localStorage.getItem('sd_profiles_emergency');
+                if (backup) {
+                    const profiles = JSON.parse(backup) as ServiceProfile[];
+                    profiles.forEach(p => this.profiles.set(p.nick, p));
+                    console.log("?? ServiceDirectory: Restored from localStorage backup");
+                }
             }
+            // Clean up immediately after loading
+            this.cleanupOldProfiles();
         } catch (e) {
             console.error("Failed to load Service Directory profiles", e);
         }
+    }
+
+    // PHASE 1 OPTIMIZATION: Cleanup old profiles
+    private cleanupOldProfiles(): number {
+        const cutoff = Date.now() - this.MAX_EVIDENCE_AGE;
+        let deletedCount = 0;
+        
+        for (const [nick, profile] of this.profiles.entries()) {
+            if (profile.lastSeenAny < cutoff) {
+                this.profiles.delete(nick);
+                deletedCount++;
+            }
+        }
+        
+        if (deletedCount > 0) {
+            console.log(`?? ServiceDirectory: Cleaned up ${deletedCount} old profiles`);
+        }
+        
+        return deletedCount;
     }
 
     private persist() {
         if (this.persistTimer) clearTimeout(this.persistTimer);
 
         this.persistTimer = setTimeout(async () => {
-             this.persistSync();
+            // Clean before persisting (don't save garbage)
+            this.cleanupOldProfiles();
+            await this.persistSync();
         }, this.PERSIST_DEBOUNCE_MS);
     }
 
-    private async persistSync() {
+    // PHASE 1 OPTIMIZATION: Fallback persistence
+    private async persistSync(): Promise<boolean> {
         try {
             await this.store.setItem('profiles', Array.from(this.profiles.values()));
+            return true;
         } catch (e) {
-            console.error("Failed to save Service Directory profiles", e);
+            console.error("Failed to save to IndexedDB", e);
+            
+            // FALLBACK: localStorage
+            try {
+                const data = JSON.stringify(Array.from(this.profiles.values()));
+                localStorage.setItem('sd_profiles_backup', data);
+                console.warn("?? ServiceDirectory: Saved to localStorage backup");
+                return true;
+            } catch (fallbackError) {
+                console.error("? All persistence methods failed", fallbackError);
+                return false;
+            }
         }
     }
 
@@ -69,95 +162,77 @@ export class ServiceDirectory {
      */
     public detectServiceIntents(message: string): { category: ServiceCategory; confidence: number }[] {
         // Step 1: Sanitize Server Tags
-        let clean = message.replace(/^\s*\(\w{3}\)\s*/i, '').trim(); 
+        let clean = message.replace(this.REGEX_SERVER_TAG, '').trim(); 
         const lower = clean.toLowerCase();
 
         // Step 2: Kill Switches (Fail Fast)
-        if (/^(wtb|wtt|pc)\b/.test(lower)) return [];
+        if (this.REGEX_KILL_SWITCH.test(lower)) return [];
 
-        // MANUS OPTIMIZATION 1: Negative Indicators Gate
-        if (/\b(not|stop|don't|won't|no longer)\b/.test(lower)) {
-             // Heuristic: If they say "not doing X", it's a negative signal.
+        // Step 3: Negative Indicators Gate
+        if (this.REGEX_NEGATIVE.test(lower)) {
              return [];
         }
 
-        // Step 3: Content Sanitization (Item Strip)
-        const contentForScanning = lower.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
+        // Step 4: Content Sanitization (Item Strip)
+        const contentForScanning = lower.replace(this.REGEX_ITEM_STRIP, ' ').replace(this.REGEX_WHITESPACE, ' ').trim();
 
-        // Step 4: Strict Explicit Intent Gate
-        // Logic: (Strong Keyword) OR (Weak Keyword + Context)
-        
-        // A. Strong Keywords (Inherently imply service)
-        const strongRegex = /\b(service|services|serve|doing|offering|making|crafting|imp|imps|imping|improve|improving|casting|haul|hauling|transport|taxi|courier|delivery|wagon|logistics)\b/;
-        
-        // B. Weak Keywords (Skill names - need context to be a service)
-        const weakRegex = /\b(smith|smithing|blacksmith|bs|tailor|tailoring|leatherworking|leatherwork|masonry|shaping|enchant|enchanting)\b/;
-        
-        // C. Context/Proof Keywords (Combine with Weak)
-        // MANUS OPTIMIZATION 2: Stricter QL Regex (70-99 QL or 100 QL)
-        // Previous: /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\d+\s*ql)/
-        // New: Explicit set or High QL logic.
-        // We match: "available", "up to", etc. OR "70ql", "80ql", "90ql", "100ql" range.
-        const contextRegex = /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\b([7-9]\d|100)\s*ql)/;
-
-        const hasStrong = strongRegex.test(contentForScanning);
-        const hasWeak = weakRegex.test(contentForScanning);
-        const hasContext = contextRegex.test(contentForScanning);
+        // Step 5: Strict Explicit Intent Gate
+        const hasStrong = this.REGEX_STRONG.test(contentForScanning);
+        const hasWeak = this.REGEX_WEAK.test(contentForScanning);
+        const hasContext = this.REGEX_CONTEXT.test(contentForScanning);
 
         // GATE: Must have Strong OR (Weak AND Context)
         if (!hasStrong && !(hasWeak && hasContext)) {
             return [];
         }
 
-        // --- PHASE 5: Classification ---
+        // --- PHASE 6: Classification ---
 
         const potentialCategories = new Set<ServiceCategory>();
         let score = 0.5; 
 
         // Imping (Strong)
-        if (/\b(imp|imping|improve|improving)\b/.test(contentForScanning)) {
+        if (this.REGEX_IMPING.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.IMPING);
             score += 0.2;
         }
 
         // Smithing (Weak)
-        if (/\b(smith|smithing|blacksmith|bs)\b/.test(contentForScanning)) {
+        if (this.REGEX_SMITHING.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.SMITHING);
             score += 0.2;
         }
 
         // Leatherworking (Weak)
-        if (/\b(leatherworking|leatherwork)\b/.test(contentForScanning)) {
+        if (this.REGEX_LEATHERWORK.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.LEATHERWORK);
             score += 0.3;
         }
 
         // Tailoring (Weak)
-        if (/\b(tailor|tailoring)\b/.test(contentForScanning)) {
+        if (this.REGEX_TAILORING.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.TAILORING);
             score += 0.2;
         }
 
         // Enchanting (Weak/Mixed - Casting is Strong)
-        if (/\b(enchant|enchanting|cast|casting)\b/.test(contentForScanning)) {
+        if (this.REGEX_ENCHANTING.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.ENCHANTING);
             score += 0.3;
         }
-        if (/\b(coc|woa|fa|botd|aoe)\b/.test(contentForScanning)) {
-             // Spells are unique enough to likely be enchanting service if explicit gate passed
+        if (this.REGEX_SPELLS.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.ENCHANTING);
             score += 0.1;
         }
 
         // Logistics (Strong)
-        if (/\b(haul|hauling|taxi|transport|courier|delivery|wagon|logistics)\b/.test(contentForScanning)) {
+        if (this.REGEX_LOGISTICS.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.LOGISTICS);
             score += 0.3;
         }
 
         // Masonry (Weak)
-        // MANUS OPTIMIZATION 3: Removed redundant inner check score > 0.3
-        if (/\b(masonry|stone|bricks)\b/.test(contentForScanning)) {
+        if (this.REGEX_MASONRY.test(contentForScanning)) {
              potentialCategories.add(ServiceCategory.MASONRY);
         }
 
@@ -168,7 +243,6 @@ export class ServiceDirectory {
                 intents.push({ category: cat, confidence: Math.min(score, 1.0) });
             });
         } else {
-            // If explicit gate passed but no specific category found (likely "Services available" generic)
             intents.push({ category: ServiceCategory.OTHER, confidence: 0.5 });
         }
 
@@ -194,7 +268,7 @@ export class ServiceDirectory {
     }
 
     private extractExternalLink(message: string): string | undefined {
-        const urlMatch = message.match(/https?:\/\/[^\s]+|discord\.gg\/[^\s]+|forum\.wurmonline\.com\/[^\s]+/i);
+        const urlMatch = message.match(this.REGEX_URL);
         return urlMatch ? urlMatch[0] : undefined;
     }
 
@@ -207,7 +281,23 @@ export class ServiceDirectory {
         return terms.join(' ').toLowerCase();
     }
 
+    // PHASE 1 OPTIMIZATION: Simple hash for duplicate detection
+    private hashMessage(message: string, nick: string, timestamp: number): string {
+        const minuteBucket = Math.floor(timestamp / 60000);
+        return `${nick}:${message.length}:${minuteBucket}`;
+    }
+
     public processMessage(message: string, nick: string, server: string, timestamp: number = Date.now()) {
+        // PHASE 1 OPTIMIZATION: Duplicate detection
+        const hash = this.hashMessage(message, nick, timestamp);
+        if (this.recentMessageHashes.has(hash)) {
+            console.warn("?? ServiceDirectory: Duplicate message detected, skipping");
+            return;
+        }
+        
+        this.recentMessageHashes.add(hash);
+        setTimeout(() => this.recentMessageHashes.delete(hash), this.MESSAGE_HASH_TTL);
+
         const intents = this.detectServiceIntents(message);
         if (intents.length === 0) return;
 
@@ -239,8 +329,7 @@ export class ServiceDirectory {
             profile.externalLink = hasExternalLink;
         }
 
-        // MANUS OPTIMIZATION 4: Clean Evidence
-        const cleanEvidence = message.replace(/\s+/g, ' ').trim();
+        const cleanEvidence = message.replace(this.REGEX_WHITESPACE, ' ').trim();
 
         validIntents.forEach(intent => {
             let serviceEntry = profile!.services.find(s => s.category === intent.category);
@@ -259,7 +348,6 @@ export class ServiceDirectory {
 
                 if (timeSinceLastEvidence >= this.EVIDENCE_COOLDOWN_MS) {
                     serviceEntry.evidenceCount++;
-                    // Logic update: use nice clean evidence
                     if (cleanEvidence.length > (serviceEntry.lastEvidence?.length || 0)) {
                         serviceEntry.lastEvidence = cleanEvidence;
                     }
