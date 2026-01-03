@@ -20,6 +20,13 @@ export class ServiceDirectory {
             name: "TortaApp_ServiceDirectory"
         });
         this.load();
+        
+        // MANUS OPTIMIZATION 5: Life Cycle Hook for Emergency Persistence
+        if (typeof window !== 'undefined') {
+            window.addEventListener('beforeunload', () => {
+                this.persistSync();
+            });
+        }
     }
 
     public static getInstance(): ServiceDirectory {
@@ -44,12 +51,16 @@ export class ServiceDirectory {
         if (this.persistTimer) clearTimeout(this.persistTimer);
 
         this.persistTimer = setTimeout(async () => {
-            try {
-                await this.store.setItem('profiles', Array.from(this.profiles.values()));
-            } catch (e) {
-                console.error("Failed to save Service Directory profiles", e);
-            }
+             this.persistSync();
         }, this.PERSIST_DEBOUNCE_MS);
+    }
+
+    private async persistSync() {
+        try {
+            await this.store.setItem('profiles', Array.from(this.profiles.values()));
+        } catch (e) {
+            console.error("Failed to save Service Directory profiles", e);
+        }
     }
 
     /**
@@ -64,6 +75,12 @@ export class ServiceDirectory {
         // Step 2: Kill Switches (Fail Fast)
         if (/^(wtb|wtt|pc)\b/.test(lower)) return [];
 
+        // MANUS OPTIMIZATION 1: Negative Indicators Gate
+        if (/\b(not|stop|don't|won't|no longer)\b/.test(lower)) {
+             // Heuristic: If they say "not doing X", it's a negative signal.
+             return [];
+        }
+
         // Step 3: Content Sanitization (Item Strip)
         const contentForScanning = lower.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -77,8 +94,11 @@ export class ServiceDirectory {
         const weakRegex = /\b(smith|smithing|blacksmith|bs|tailor|tailoring|leatherworking|leatherwork|masonry|shaping|enchant|enchanting)\b/;
         
         // C. Context/Proof Keywords (Combine with Weak)
-        // Fixed: Allow "99ql" (digits followed immediately by ql) by separating it from the \b guarded block
-        const contextRegex = /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\d+\s*ql)/;
+        // MANUS OPTIMIZATION 2: Stricter QL Regex (70-99 QL or 100 QL)
+        // Previous: /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\d+\s*ql)/
+        // New: Explicit set or High QL logic.
+        // We match: "available", "up to", etc. OR "70ql", "80ql", "90ql", "100ql" range.
+        const contextRegex = /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\b([7-9]\d|100)\s*ql)/;
 
         const hasStrong = strongRegex.test(contentForScanning);
         const hasWeak = weakRegex.test(contentForScanning);
@@ -136,10 +156,9 @@ export class ServiceDirectory {
         }
 
         // Masonry (Weak)
+        // MANUS OPTIMIZATION 3: Removed redundant inner check score > 0.3
         if (/\b(masonry|stone|bricks)\b/.test(contentForScanning)) {
-            if (/\b(masonry)\b/.test(contentForScanning) || score > 0.3) {
-                 potentialCategories.add(ServiceCategory.MASONRY);
-            }
+             potentialCategories.add(ServiceCategory.MASONRY);
         }
 
         const intents: { category: ServiceCategory; confidence: number }[] = [];
@@ -220,6 +239,9 @@ export class ServiceDirectory {
             profile.externalLink = hasExternalLink;
         }
 
+        // MANUS OPTIMIZATION 4: Clean Evidence
+        const cleanEvidence = message.replace(/\s+/g, ' ').trim();
+
         validIntents.forEach(intent => {
             let serviceEntry = profile!.services.find(s => s.category === intent.category);
 
@@ -229,7 +251,7 @@ export class ServiceDirectory {
                     score: 0, 
                     lastSeen: timestamp,
                     evidenceCount: 1,
-                    lastEvidence: message 
+                    lastEvidence: cleanEvidence 
                 };
                 profile!.services.push(serviceEntry);
             } else {
@@ -237,8 +259,9 @@ export class ServiceDirectory {
 
                 if (timeSinceLastEvidence >= this.EVIDENCE_COOLDOWN_MS) {
                     serviceEntry.evidenceCount++;
-                    if (message.length > (serviceEntry.lastEvidence?.length || 0)) {
-                        serviceEntry.lastEvidence = message;
+                    // Logic update: use nice clean evidence
+                    if (cleanEvidence.length > (serviceEntry.lastEvidence?.length || 0)) {
+                        serviceEntry.lastEvidence = cleanEvidence;
                     }
                 }
                 serviceEntry.lastSeen = Math.max(serviceEntry.lastSeen, timestamp);
