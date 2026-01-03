@@ -54,95 +54,87 @@ export class ServiceDirectory {
 
     /**
      * Detects service intents using a Strict "Fail-Safe Pipeline".
-     * 1. Parse Server (handled upstream or stripped here)
-     * 2. Normalize
-     * 3. Kill Switches (Fail Fast)
-     * 4. Content Sanitization (Item Strip)
-     * 5. Explicit Intent Gate (Positive Confirmation only)
+     * Re-calibrated for Strict A+B Logic or Strong Trigger.
      */
     public detectServiceIntents(message: string): { category: ServiceCategory; confidence: number }[] {
-        // Step 1: Sanitize Server Tags (Strip them for analysis)
-        // We assume valid server is passed to processMessage, here we just want clean text
+        // Step 1: Sanitize Server Tags
         let clean = message.replace(/^\s*\(\w{3}\)\s*/i, '').trim(); 
         const lower = clean.toLowerCase();
 
         // Step 2: Kill Switches (Fail Fast)
-        // If it looks like a Buy Request, Trade, or Price Check -> ABORT
         if (/^(wtb|wtt|pc)\b/.test(lower)) return [];
 
-        // Step 3: Content Sanitization (Create contentForScanning)
-        // Remove [Item Links] to prevent false positives from item names (e.g. "Oil of Blacksmith")
-        // We replace with empty string to avoid accidental concatenation of words
+        // Step 3: Content Sanitization (Item Strip)
         const contentForScanning = lower.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
 
-        // Step 4: Explicit Intent Gate (Mandatory)
-        // The sanitized content MUST contain explicit service signals.
-        const hasExplicitIntent = 
-            /\b(service|services|serve|doing|offering|making|crafting)\b/.test(contentForScanning) ||
-            /\b(imp|imps|imping|improve|improving)\b/.test(contentForScanning) ||
-            /\b(smith|smithing|blacksmith|bs)\b/.test(contentForScanning) ||
-            /\b(tailor|tailoring)\b/.test(contentForScanning) || // "cloth" removed as too risky
-            /\b(leatherworking|leatherwork)\b/.test(contentForScanning) || // "leather" removed
-            /\b(enchant|enchanting|cast|casting)\b/.test(contentForScanning) ||
-            /\b(haul|hauling|taxi|transport|courier|delivery|wagon)\b/.test(contentForScanning) ||
-            /\b(masonry|bricks)\b/.test(contentForScanning) ||
-            // Capability / Availability
-            /\b(up to\s*\d+ql)\b/.test(contentForScanning) ||
-            /\b(available|capacity|spots|custom order)\b/.test(contentForScanning) ||
-            // CTA
-            /\b(pm me|message me|mail me)\b/.test(contentForScanning) ||
-            /forum\.wurmonline\.com|discord\.gg/.test(contentForScanning);
+        // Step 4: Strict Explicit Intent Gate
+        // Logic: (Strong Keyword) OR (Weak Keyword + Context)
+        
+        // A. Strong Keywords (Inherently imply service)
+        const strongRegex = /\b(service|services|serve|doing|offering|making|crafting|imp|imps|imping|improve|improving|casting|haul|hauling|transport|taxi|courier|delivery|wagon|logistics)\b/;
+        
+        // B. Weak Keywords (Skill names - need context to be a service)
+        const weakRegex = /\b(smith|smithing|blacksmith|bs|tailor|tailoring|leatherworking|leatherwork|masonry|shaping|enchant|enchanting)\b/;
+        
+        // C. Context/Proof Keywords (Combine with Weak)
+        const contextRegex = /\b(up to\s*\d+|ql|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b/;
 
-        if (!hasExplicitIntent) return [];
+        const hasStrong = strongRegex.test(contentForScanning);
+        const hasWeak = weakRegex.test(contentForScanning);
+        const hasContext = contextRegex.test(contentForScanning);
 
-        // --- PHASE 5: Classification (Only if Gate Passed) ---
-        // Note: We use contentForScanning for keyword detection to ensure safety.
+        // GATE: Must have Strong OR (Weak AND Context)
+        if (!hasStrong && !(hasWeak && hasContext)) {
+            return [];
+        }
+
+        // --- PHASE 5: Classification ---
 
         const potentialCategories = new Set<ServiceCategory>();
-        let score = 0.5; // Base score for passing the gate
+        let score = 0.5; 
 
-        // Imping
+        // Imping (Strong)
         if (/\b(imp|imping|improve|improving)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.IMPING);
             score += 0.2;
         }
 
-        // Smithing
+        // Smithing (Weak)
         if (/\b(smith|smithing|blacksmith|bs)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.SMITHING);
             score += 0.2;
         }
 
-        // Leatherworking
+        // Leatherworking (Weak)
         if (/\b(leatherworking|leatherwork)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.LEATHERWORK);
             score += 0.3;
         }
 
-        // Tailoring
+        // Tailoring (Weak)
         if (/\b(tailor|tailoring)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.TAILORING);
             score += 0.2;
         }
 
-        // Enchanting
+        // Enchanting (Weak/Mixed - Casting is Strong)
         if (/\b(enchant|enchanting|cast|casting)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.ENCHANTING);
             score += 0.3;
         }
-        // Spell acronyms are safe-ish if gate passed, but still check scanning content
         if (/\b(coc|woa|fa|botd|aoe)\b/.test(contentForScanning)) {
+             // Spells are unique enough to likely be enchanting service if explicit gate passed
             potentialCategories.add(ServiceCategory.ENCHANTING);
             score += 0.1;
         }
 
-        // Logistics
-        if (/\b(haul|hauling|taxi|transport|courier|delivery|wagon)\b/.test(contentForScanning)) {
+        // Logistics (Strong)
+        if (/\b(haul|hauling|taxi|transport|courier|delivery|wagon|logistics)\b/.test(contentForScanning)) {
             potentialCategories.add(ServiceCategory.LOGISTICS);
             score += 0.3;
         }
 
-        // Masonry
+        // Masonry (Weak)
         if (/\b(masonry|stone|bricks)\b/.test(contentForScanning)) {
             if (/\b(masonry)\b/.test(contentForScanning) || score > 0.3) {
                  potentialCategories.add(ServiceCategory.MASONRY);
@@ -156,34 +148,28 @@ export class ServiceDirectory {
                 intents.push({ category: cat, confidence: Math.min(score, 1.0) });
             });
         } else {
-            // If explicit gate passed but no specific category found, it's Generic
+            // If explicit gate passed but no specific category found (likely "Services available" generic)
             intents.push({ category: ServiceCategory.OTHER, confidence: 0.5 });
         }
 
         return intents;
     }
 
-    // NOTE: activityScore is NOT persisted.
-    // It is derived at read-time to allow natural decay over time.
     private calculateActivityScore(lastSeen: number, evidenceCount: number): number {
         const now = Date.now();
         const ageHours = (now - lastSeen) / (1000 * 60 * 60);
 
-        // Step Decay Model
         let decay = 0;
         if (ageHours <= 12) {
             decay = 1.0;
         } else if (ageHours <= 48) {
             decay = 0.5;
-        } else if (ageHours <= 168) { // 7 days
+        } else if (ageHours <= 168) { 
             decay = 0.1;
         } else {
             decay = 0.0;
         }
-
-        // Frequency Bonus (Caps at 10 messages = 1.0)
         const frequency = Math.min(evidenceCount, 10) / 10;
-
         return (decay * 0.8) + (frequency * 0.2);
     }
 
@@ -198,23 +184,16 @@ export class ServiceDirectory {
             p.server,
             ...p.services.map(s => s.category)
         ];
-        // Add minimal keywords based on services
-        // (Could be expanded later with inference)
         return terms.join(' ').toLowerCase();
     }
 
-    /**
-     * Processes a trade message and updates service profiles.
-     */
     public processMessage(message: string, nick: string, server: string, timestamp: number = Date.now()) {
         const intents = this.detectServiceIntents(message);
         if (intents.length === 0) return;
 
-        // Uses PERSIST threshold (low bar) to save data
         const validIntents = intents.filter(intent => intent.confidence >= this.THRESHOLD_PERSIST);
         if (validIntents.length === 0) return;
 
-        // CHECK FOR LINK (Trust Indicator)
         const hasExternalLink = this.extractExternalLink(message);
 
         let profile = this.profiles.get(nick);
@@ -226,70 +205,55 @@ export class ServiceDirectory {
                 externalLink: hasExternalLink,
                 services: [],
                 lastSeenAny: timestamp,
-                activityScore: 0 // Will be recalculated on read
+                activityScore: 0 
             };
             this.profiles.set(nick, profile);
         }
 
         profile.lastSeenAny = Math.max(profile.lastSeenAny, timestamp);
-        // Only update server if strictly known, otherwise keep existing
         if (server !== 'UNKNOWN') {
             profile.server = server;
         }
-
-        // Update Link Status if detected (once verified, stays verified)
         if (hasExternalLink) {
             profile.hasLink = true;
-            // Update link if new one found (or if previous was missing)
             profile.externalLink = hasExternalLink;
         }
 
-        // Process each detected intent
         validIntents.forEach(intent => {
             let serviceEntry = profile!.services.find(s => s.category === intent.category);
 
             if (!serviceEntry) {
-                // First time seeing this category for this user
                 serviceEntry = {
                     category: intent.category,
-                    score: 0, // Will be recalculated on read
+                    score: 0, 
                     lastSeen: timestamp,
                     evidenceCount: 1,
-                    lastEvidence: message // Capture initial evidence
+                    lastEvidence: message 
                 };
                 profile!.services.push(serviceEntry);
             } else {
-                // SPAM PREVENTION: Only increment evidenceCount if cooldown has passed
                 const timeSinceLastEvidence = timestamp - serviceEntry.lastSeen;
 
                 if (timeSinceLastEvidence >= this.EVIDENCE_COOLDOWN_MS) {
                     serviceEntry.evidenceCount++;
-                    // Only update evidence text if new message is longer (likely more info) or recent
-                    // (User Logic: "Se for o primeiro -> salva; Se for mais recente e mais 'forte' -> substitui")
-                    // Length is a good proxy for "stronger" evidence in service ads (more details)
                     if (message.length > (serviceEntry.lastEvidence?.length || 0)) {
                         serviceEntry.lastEvidence = message;
                     }
                 }
-
                 serviceEntry.lastSeen = Math.max(serviceEntry.lastSeen, timestamp);
             }
         });
 
-        // Regenerate search index on update
         profile.searchIndex = this.generateSearchIndex(profile);
-
-        this.persist(); // Debounced save
+        this.persist(); 
     }
 
     public getProfiles(filter?: { category?: ServiceCategory, server?: string, query?: string }): ServiceProfile[] {
         let all = Array.from(this.profiles.values());
 
-        // 1. Recalculate Scores Dynamically
         const cutoff = Date.now() - this.MAX_EVIDENCE_AGE;
 
         all = all.map(p => {
-            // Calculate max score among all services for the profile
             p.activityScore = 0;
             p.services.forEach(s => {
                 s.score = this.calculateActivityScore(s.lastSeen, s.evidenceCount);
@@ -302,14 +266,12 @@ export class ServiceDirectory {
             all = all.filter(p => p.server === filter.server);
         }
 
-        // UNIFIED SEARCH FILTER
         if (filter?.query) {
             const q = filter.query.toLowerCase();
             all = all.filter(p => p.searchIndex?.includes(q));
         }
 
         if (filter?.category) {
-            // Only return profiles that have the category AND relevant activity
             all = all.filter(p => p.services.some(s => s.category === filter.category && s.score > 0));
             all.sort((a, b) => {
                 const scoreA = a.services.find(s => s.category === filter.category)?.score || 0;
@@ -319,7 +281,6 @@ export class ServiceDirectory {
         } else {
             all.sort((a, b) => b.activityScore - a.activityScore);
         }
-
         return all;
     }
 }

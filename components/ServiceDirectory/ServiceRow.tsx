@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ServiceProfile, ServiceCategory } from '../../types';
-import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Hammer, Zap, Package, Scissors, Home, Sparkles, Truck, Wrench, Link as LinkIcon, ExternalLink, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { open } from '@tauri-apps/plugin-shell';
 
@@ -10,7 +10,7 @@ interface ServiceRowProps {
     onServerClick?: (server: string) => void;
 }
 
-// Category icon mapping for visual recognition
+// Category icon mapping
 const getCategoryIcon = (category: ServiceCategory) => {
     const iconProps = { size: 14, className: "flex-shrink-0" };
     switch (category) {
@@ -26,19 +26,42 @@ const getCategoryIcon = (category: ServiceCategory) => {
     }
 };
 
-// Deterministic Avatar Color (Hash -> Hue)
 const getAvatarColor = (nick: string) => {
     let hash = 0;
     for (let i = 0; i < nick.length; i++) {
         hash = nick.charCodeAt(i) + ((hash << 5) - hash);
     }
     const hue = Math.abs(hash % 360);
-    return `hsl(${hue}, 60%, 50%)`; // Keep Saturation 60%, Lightness 50% for consistency
+    return `hsl(${hue}, 60%, 50%)`;
+};
+
+// URL Detection Regex
+const URL_REGEX = /(https?:\/\/[^\s]+|discord\.gg\/[^\s]+|forum\.wurmonline\.com\/[^\s]+)/g;
+
+const renderMessageWithLinks = (text: string, onClickLink: (e: React.MouseEvent, url: string) => void) => {
+    const parts = text.split(URL_REGEX);
+    return parts.map((part, i) => {
+        if (part.match(URL_REGEX)) {
+            const url = part.startsWith('http') ? part : `https://${part}`;
+            return (
+                <span
+                    key={i}
+                    onClick={(e) => onClickLink(e, url)}
+                    className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer truncate max-w-[200px] inline-block align-bottom"
+                    title={url}
+                >
+                    {part}
+                </span>
+            );
+        }
+        return <span key={i}>{part}</span>;
+    });
 };
 
 export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServerClick }) => {
     const { t } = useTranslation();
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isServicesExpanded, setIsServicesExpanded] = useState(false);
+    const [isMessageExpanded, setIsMessageExpanded] = useState(false);
 
     const primaryService = profile.services.reduce((best, current) =>
         current.score > best.score ? current : best
@@ -52,31 +75,21 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
         return 'from-blue-500 to-blue-400';
     };
 
-    // Enhanced Status Dot (Vibrant Pulse for < 30m)
+    // Enhanced Status Dot
     const getStatusDotColor = (lastSeen: number) => {
         const minutes = (Date.now() - lastSeen) / (1000 * 60);
-
-        // Active Now (< 30 mins) - Strong Pulse
         if (minutes < 30) return 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse';
-
-        // Recent (< 12h)
         if (minutes < 12 * 60) return 'bg-emerald-600 shadow-emerald-500/30';
-
-        // Yesterday
         if (minutes < 48 * 60) return 'bg-amber-600 shadow-amber-500/30';
-
-        // Older
         return 'bg-blue-600 shadow-blue-500/20';
     };
 
     const getTimeAgo = (timestamp: number) => {
         const minutes = Math.floor((Date.now() - timestamp) / (1000 * 60));
         if (minutes < 1) return t('service_directory.time_just_now');
-        if (minutes < 60) return `${minutes}m ago`; // More precise for recent
-
+        if (minutes < 60) return `${minutes}m ago`;
         const hours = Math.floor(minutes / 60);
         if (hours < 24) return t('service_directory.time_hours_ago', { hours });
-
         const days = Math.floor(hours / 24);
         if (days === 1) return t('service_directory.time_yesterday');
         return t('service_directory.time_days_ago', { days });
@@ -89,7 +102,6 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
         return 'text-slate-500';
     };
 
-    // Server Badges (Interactive)
     const getServerBadgeStyle = (server: string) => {
         const s = server.toLowerCase().substring(0, 3);
         const base = "cursor-pointer transition-all hover:scale-105 active:scale-95";
@@ -103,15 +115,22 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
         return server.substring(0, 3).toUpperCase();
     };
 
-    const handleExternalLink = (e: React.MouseEvent) => {
+    const handleExternalLink = (e: React.MouseEvent, url?: string) => {
         e.stopPropagation();
-        if (profile.externalLink) {
-            open(profile.externalLink);
-        }
+        const link = url || profile.externalLink;
+        if (link) open(link);
     };
 
     const hasMultipleServices = profile.services.length > 1;
     const avatarColor = useMemo(() => getAvatarColor(profile.nick), [profile.nick]);
+
+    // Message Handling
+    const fullMessage = primaryService.lastEvidence || "";
+    // Truncate logic: if > 120 chars or contains newline, and not expanded
+    const shouldTruncate = fullMessage.length > 120;
+    const displayMessage = (shouldTruncate && !isMessageExpanded) 
+        ? fullMessage.substring(0, 120) + "..." 
+        : fullMessage;
 
     return (
         <div className="group" style={style}>
@@ -120,12 +139,11 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                            border-b border-indigo-500/8
                            hover:bg-indigo-500/5 hover:border-l-2 hover:border-l-indigo-500/50
                            transition-all cursor-pointer relative"
-                onClick={() => hasMultipleServices && setIsExpanded(!isExpanded)}
+                onClick={() => hasMultipleServices && setIsServicesExpanded(!isServicesExpanded)}
             >
                 {/* Top Row: Avatar | Name | Badges | Primary Service | Stats */}
                 <div className="flex items-center gap-3">
-
-                    {/* Avatar - Deterministic Color */}
+                    {/* Avatar */}
                     <div
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm transition-shadow"
                         style={{ backgroundColor: avatarColor }}
@@ -141,10 +159,10 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                             {profile.nick}
                         </span>
 
-                        {/* Verified Link Badge (Now Functional!) */}
+                        {/* Verified Link Badge */}
                         {profile.externalLink && (
                             <button
-                                onClick={handleExternalLink}
+                                onClick={(e) => handleExternalLink(e)}
                                 className="bg-indigo-500/20 text-indigo-300 hover:text-white hover:bg-indigo-500/40 
                                          p-0.5 rounded-sm transition-colors cursor-pointer"
                                 title={t('service_directory.open_link_tooltip')}
@@ -158,7 +176,7 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                             </div>
                         )}
 
-                        {/* Server badge (Interactive) */}
+                        {/* Server badge */}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -169,7 +187,6 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                         >
                             {getServerChip(profile.server)}
                         </button>
-
                     </div>
 
                     {/* Primary Service Icon + Name */}
@@ -190,7 +207,6 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                                 style={{ width: `${primaryService.score * 100}%` }}
                             />
                         </div>
-                        {/* Status Dot */}
                         <div className={`absolute -right-3 top-0 w-1.5 h-1.5 rounded-full ${getStatusDotColor(profile.lastSeenAny)}`} />
                     </div>
 
@@ -199,25 +215,39 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({ profile, style, onServer
                         {getTimeAgo(profile.lastSeenAny)}
                     </div>
 
-                    {/* Expand Icon */}
+                    {/* Expand Icon - Categories */}
                     {hasMultipleServices && (
                         <div className="text-slate-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                            {isServicesExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </div>
                     )}
                 </div>
 
-                {/* Secondary Row: Primary Evidence (The "Why") */}
-                {primaryService.lastEvidence && (
-                    <div className="ml-11 text-[11px] text-slate-500 truncate max-w-[80%] italic opacity-80 group-hover:opacity-100 transition-opacity">
-                        "{primaryService.lastEvidence}"
+                {/* Secondary Row: Message Content (Toggleable) */}
+                {fullMessage && (
+                    <div 
+                        className="ml-11 mt-1 text-[11px] text-slate-400 font-mono leading-relaxed group-hover:text-slate-300 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setIsMessageExpanded(!isMessageExpanded); }}
+                    >
+                        <div className="flex items-start gap-2">
+                            <MessageSquare size={10} className="mt-0.5 text-slate-600 flex-shrink-0" />
+                            <div className={`whitespace-pre-wrap break-words ${!isMessageExpanded ? '' : ''}`}>
+                                {isMessageExpanded ? renderMessageWithLinks(fullMessage, handleExternalLink) : renderMessageWithLinks(displayMessage, handleExternalLink)}
+                                
+                                {shouldTruncate && (
+                                    <span className="text-indigo-400 hover:text-indigo-300 ml-2 cursor-pointer text-[10px] font-bold">
+                                        {isMessageExpanded ? t('service_directory.show_less') : t('service_directory.show_more')}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
 
-            {/* Expanded View */}
-            {isExpanded && hasMultipleServices && (
-                <div className="bg-slate-900/20 px-3 py-2.5 border-b border-indigo-500/8 pl-14">
+            {/* Expanded Services View */}
+            {isServicesExpanded && hasMultipleServices && (
+                <div className="bg-slate-900/20 px-3 py-2.5 border-b border-indigo-500/8 pl-14 animate-in slide-in-from-top-1 duration-200">
                     <div className="flex flex-wrap gap-2">
                         {profile.services
                             .filter(s => s.category !== primaryService.category)
