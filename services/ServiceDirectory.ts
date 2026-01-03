@@ -77,7 +77,8 @@ export class ServiceDirectory {
         const weakRegex = /\b(smith|smithing|blacksmith|bs|tailor|tailoring|leatherworking|leatherwork|masonry|shaping|enchant|enchanting)\b/;
         
         // C. Context/Proof Keywords (Combine with Weak)
-        const contextRegex = /\b(up to\s*\d+|ql|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b/;
+        // Fixed: Allow "99ql" (digits followed immediately by ql) by separating it from the \b guarded block
+        const contextRegex = /(\b(up to|available|capacity|spots|custom|order|pm me|message me|mail me|discord|forum)\b)|(\d+\s*ql)/;
 
         const hasStrong = strongRegex.test(contentForScanning);
         const hasWeak = weakRegex.test(contentForScanning);
