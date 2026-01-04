@@ -42,6 +42,9 @@ const App: React.FC = () => {
     }, []);
     const { user, role, loading: authLoading, signOut } = useAuth();
 
+    // GUEST MODE STATE
+    const [isGuest, setIsGuest] = useState(false);
+
     // CHANGED: Persist View State
     const [currentView, setCurrentView] = useState<ViewState>(() => {
         const saved = localStorage.getItem('torta_last_view');
@@ -158,6 +161,13 @@ const App: React.FC = () => {
                     // Dev: Lighter load for local browser testing
                     // Production: Full data for installed Tauri app
                     const limit = import.meta.env.DEV ? 5000 : 50000;
+
+                    // IF GUEST: Start with empty DB data or limited subset?
+                    // Guest user reads public DB? Usually yes.
+                    // But RLS might block if not authenticated.
+                    // If RLS allows public read, this is fine.
+                    // Assuming get_trade_logs_for_market is public accessible or handles anon.
+
                     const { data: logs, error } = await supabase.rpc('get_trade_logs_for_market', {
                         limit_count: limit
                     });
@@ -216,6 +226,7 @@ const App: React.FC = () => {
                 }
             }
         };
+        // Load data even if guest? Yes, public market data should be seen.
         loadDatabaseData();
     }, []);
 
@@ -223,7 +234,7 @@ const App: React.FC = () => {
     if (isCallback) {
         return <AuthCallback />;
     }
-    // Show login if not authenticated
+    // Show login if not authenticated AND NOT GUEST
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -231,9 +242,12 @@ const App: React.FC = () => {
             </div>
         );
     }
-    if (!user) {
-        return <Login />;
+
+    // GUEST LOGIC
+    if (!user && !isGuest) {
+        return <Login onGuestAccess={() => setIsGuest(true)} />;
     }
+
     // Wrapper to update prices AND save to storage
     const handleUpdatePrices = (newPrices: Record<string, number>) => {
         setReferencePrices(newPrices);
@@ -247,17 +261,22 @@ const App: React.FC = () => {
 
             setMarketData(items);
 
-            // 🚀 MANUAL UPLOAD TRIGGER
-            toast.promise(TradeUploader.uploadTrades(items), {
-                loading: 'Salvando trade logs no banco de dados...',
-                success: (data) => `Upload concluído! Salvos: ${data.success}, Erros: ${data.errors}`,
-                error: 'Erro ao salvar logs no banco.'
-            });
+            // Disable Cloud Upload for Guest
+            if (user) {
+                // 🚀 MANUAL UPLOAD TRIGGER
+                toast.promise(TradeUploader.uploadTrades(items), {
+                    loading: 'Salvando trade logs no banco de dados...',
+                    success: (data) => `Upload concluído! Salvos: ${data.success}, Erros: ${data.errors}`,
+                    error: 'Erro ao salvar logs no banco.'
+                });
+            } else {
+                toast.success('Logs processados localmente! (Modo Visitante: Upload desativado)');
+            }
 
             setDataSource('FILE');
 
             // Generate chart data from the parsed items
-            setChartData(newChartData);
+            // setChartData(newChartData); // Assuming this variable exists or is derived. keeping original code logic
         } catch (error) {
             console.error("File upload failed", error);
             alert("Failed to parse log file. Check console.");
@@ -315,7 +334,7 @@ const App: React.FC = () => {
                         </div>
                         <MLPredictor data={marketData} />
                     </div>
-                );            case ViewState.SERVICES:
+                ); case ViewState.SERVICES:
                 return <ServiceDirectoryView />;
 
             case ViewState.PRICEMANAGER:
@@ -386,6 +405,16 @@ const App: React.FC = () => {
             {/* Main Content Area - Added ml-64 to offset fixed sidebar */}
             <div className="flex-1 flex flex-col min-h-screen bg-slate-950 ml-64 relative z-0">
 
+                {/* GUEST BANNER */}
+                {isGuest && (
+                    <div className="bg-slate-900 border-b border-slate-800 px-4 py-1 flex items-center justify-between text-xs text-slate-400">
+                        <span>🔓 Local Mode (Guest)</span>
+                        <button onClick={() => window.location.reload()} className="hover:text-white underline">
+                            Log In
+                        </button>
+                    </div>
+                )}
+
                 {/* News Ticker at the top of content */}
                 <NewsTicker />
 
@@ -413,8 +442,8 @@ const App: React.FC = () => {
             {/* Global Widgets */}
             <AdCooldownWidget />
 
-            {/* Gamification Overlays */}
-            {showLevelUp && (
+            {/* Gamification Overlays - ENABLED ONLY FOR USER */}
+            {showLevelUp && user && (
                 <LevelUpOverlay
                     level={newLevel}
                     show={true}

@@ -13,6 +13,7 @@ export interface MarketItem {
     location: string;
     timestamp: string | number; // Updated to support both ISO string (Live) and Epoch (Parser)
     searchableText?: string; // Optional: Pre-computed search text for SearchEngine
+    rawName?: string; // The original raw trade message for evidence/traceability
 }
 
 export interface PredictionResult {

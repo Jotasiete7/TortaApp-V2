@@ -5,7 +5,7 @@ import { supabase } from '../../services/supabase';
 import { LogIn, Mail, Lock, AlertCircle, Info, KeyRound, Globe } from 'lucide-react';
 import { translations, Language } from '../../services/i18n';
 
-export const Login: React.FC = () => {
+export const Login: React.FC<{ onGuestAccess?: () => void }> = (props) => {
     const { signIn, signInWithGoogle, signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -220,6 +220,19 @@ export const Login: React.FC = () => {
                     </svg>
                     {t.googleSignIn}
                 </button>
+
+                {/* GUEST MODE BUTTON */}
+                <div className="mt-4">
+                    <button
+                        onClick={props.onGuestAccess}
+                        className="w-full py-3 bg-slate-700/50 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition-all border border-slate-600 hover:border-slate-500 hover:text-white"
+                    >
+                        {lang === 'pt' ? 'Usar Modo Local (Sem Login)' : 'Local Mode (No Login)'}
+                    </button>
+                    <p className="text-center text-[10px] text-slate-500 mt-2">
+                        {lang === 'pt' ? '*Funcionalidades de nuvem desativadas' : '*Cloud features disabled in local mode'}
+                    </p>
+                </div>
 
                 {/* Footer */}
                 <div className="mt-6 text-center text-xs text-slate-500">

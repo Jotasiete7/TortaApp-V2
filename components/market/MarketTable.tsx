@@ -1,6 +1,6 @@
-﻿
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, Zap, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Coins, ShoppingBag, Tag, ThumbsUp, ThumbsDown, BookOpen, Layers } from 'lucide-react';
+import { Search, Zap, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Coins, ShoppingBag, Tag, ThumbsUp, ThumbsDown, BookOpen, Layers, Copy } from 'lucide-react';
 import { MarketItem } from '../../types';
 import { evaluateTrade, formatWurmPrice, findClosestReference } from '../../services/priceUtils';
 import { SearchEngine } from '../../services/searchEngine';
@@ -416,7 +416,7 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
                                     const totalPrice = item.price * item.quantity;
 
                                     return (
-                                        <tr key={item.id} className="hover:bg-slate-700/40 transition-colors group">
+                                        <tr key={item.id} className="hover:bg-slate-700/40 transition-colors group" title={item.rawName}>
                                             <td className="p-4 text-center">
                                                 {item.orderType === 'WTB' ? (
                                                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30" title="Buying">
@@ -442,13 +442,27 @@ export const MarketTable: React.FC<MarketTableProps> = ({ data, referencePrices 
                                                             const info = CasketService.analyzeCasket(item.quality);
                                                             return (
                                                                 <span className={`px-1.5 py-0.5 text-[10px] uppercase font-bold rounded border ${info.tier === 3 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                                                                        info.tier === 2 ? 'bg-slate-300/20 text-slate-200 border-slate-300/30' :
-                                                                            'bg-slate-600/20 text-slate-400 border-slate-600/30'
+                                                                    info.tier === 2 ? 'bg-slate-300/20 text-slate-200 border-slate-300/30' :
+                                                                        'bg-slate-600/20 text-slate-400 border-slate-600/30'
                                                                     }`}>
                                                                     Tier {info.tier}
                                                                 </span>
                                                             )
                                                         })()}
+
+                                                        {/* COPY RAW BUTTON */}
+                                                        {item.rawName && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    navigator.clipboard.writeText(item.rawName!);
+                                                                }}
+                                                                className="p-1 text-slate-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                                                title="Copy raw message"
+                                                            >
+                                                                <Copy className="w-3 h-3" />
+                                                            </button>
+                                                        )}
                                                     </span>
                                                     <span className="text-xs text-slate-500">{item.material !== 'Unknown' ? item.material : ''}</span>
                                                 </div>
