@@ -329,8 +329,8 @@ const App: React.FC = () => {
                 return (
                     <div className="p-8">
                         <div className="mb-8">
-                            <h1 className="text-3xl font-bold text-white mb-2">Machine Learning Predictor</h1>
-                            <p className="text-slate-400">AI-powered price estimation engine based on historical trade data.</p>
+                            <h1 className="text-3xl font-bold text-white mb-2">Market Trends & History</h1>
+                            <p className="text-slate-400">Historical trade data analysis and statistical price insights.</p>
                         </div>
                         <MLPredictor data={marketData} />
                     </div>

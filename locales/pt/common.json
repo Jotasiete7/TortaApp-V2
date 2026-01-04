@@ -91,9 +91,9 @@
         }
     },
     "ml_predictor": {
-        "title": "Motor de Previsão de Preços",
-        "pro": "PRO",
-        "subtitle": "Inferência estatística avançada baseada em <1>{{count}}</1> registros.",
+        "title": "Tendências de Mercado",
+        "pro": "BETA",
+        "subtitle": "Análise histórica baseada em <1>{{count}}</1> registros de troca.",
         "context_title": "Contexto da Previsão",
         "context_tooltip": "Configure os filtros de itens para refinar o conjunto de dados para análise.",
         "item_label": "Nome do Item",

@@ -7,7 +7,7 @@ export const translations = {
         overview: 'Overview',
         tradeMaster: 'Trade Master',
         chartsEngine: 'Charts Engine',
-        mlPredictor: 'ML Predictor',
+        mlPredictor: 'Market Trends',
         priceManager: 'Price Manager',
         settings: 'Settings',
         analyticsModule: 'Analytics Module',
@@ -28,7 +28,7 @@ export const translations = {
         uploadHint: 'Import .txt / .csv',
         active: 'Active',
         idle: 'Idle',
-        mlReady: 'ML Ready',
+        mlReady: 'Trends Ready',
         noData: 'No Data',
 
         // Upload Section
@@ -73,7 +73,7 @@ export const translations = {
         overview: 'Visão Geral',
         tradeMaster: 'Mestre de Trocas',
         chartsEngine: 'Gráficos',
-        mlPredictor: 'Preditor IA',
+        mlPredictor: 'Tendências de Mercado',
         priceManager: 'Gerenciador de Preços',
         settings: 'Configurações',
         analyticsModule: 'Módulo de Análise',
@@ -94,7 +94,7 @@ export const translations = {
         uploadHint: 'Importar .txt / .csv',
         active: 'Ativo',
         idle: 'Ocioso',
-        mlReady: 'IA Pronta',
+        mlReady: 'Tendências Prontas',
         noData: 'Sem Dados',
 
         // Upload Section

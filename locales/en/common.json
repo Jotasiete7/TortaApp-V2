@@ -91,9 +91,9 @@
         }
     },
     "ml_predictor": {
-        "title": "Price Predictor Engine",
-        "pro": "PRO",
-        "subtitle": "Advanced statistical inference based on <1>{{count}}</1> records.",
+        "title": "Market Trends",
+        "pro": "BETA",
+        "subtitle": "Historical analytics based on <1>{{count}}</1> trade records.",
         "context_title": "Prediction Context",
         "context_tooltip": "Configure the item filters to narrow down the dataset for analysis.",
         "item_label": "Item Name",
