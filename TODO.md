@@ -40,6 +40,7 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 016 | 🟡 Média | [Feature] | **Controle de Volume** | Persistência de volume e mute para alertas e sons do app. | ✅ Concluído (12/12) |
 | 017 | 🔴 Alta | [Feature] | **Simplificação do Parser** | Remover modo legado e usar apenas AdvancedParser como modo único. | ✅ Concluído (14/12) |
 | 018 | 🔴 Alta | [DevOps] | **Auto-Update Signing (CI/CD)** | Corrigir automação de chaves/assinatura para updates funcionarem (Release v2.0.4). | ⬜ Pendente |
+| 019 | 🟡 Média | [Fix] | **Daily Badge Notification** | Corrigir notificação repetida ao reivindicar check-in diário. | ✅ Concluído (05/01/2026) |
 
 ---
 
@@ -55,11 +56,24 @@ Lista de tarefas que nunca "acabam" e exigem atenção constante.
 
 ## 📊 Resumo
 
-**Total de Tarefas:** 18
-**Concluídas:** 15 (83.3%)
-**Pendentes:** 3 (16.7%)
+**Total de Tarefas:** 19
+**Concluídas:** 16 (84.2%)
+**Pendentes:** 3 (15.8%)
 
-**Última Atualização:** 30/12/2024 - Versão 2.0.3 "Fat Rabbit" 🐇
+**Última Atualização:** 05/01/2026 - Correção de Bug (Notificação Diária)
+---
+
+## 📝 Notas da Sessão (05/01/2026) - Correção de Bug de Notificação
+
+### ✅ Realizado Hoje:
+1.  **Investigação e Correção de Bug**:
+    -   Identificado problema onde a notificação de badge era disparada repetidamente ao clicar em "Claim today".
+    -   Implementado método idempotente `processNewAchievements` no `GamificationService`.
+    -   Atualizado `GamificationRules` para usar este método, garantindo notificações únicas.
+
+### ⚠️ Próximos Passos:
+-   Continuar monitoramento de bugs do modo visitante e novas features.
+
 
 ---
 
