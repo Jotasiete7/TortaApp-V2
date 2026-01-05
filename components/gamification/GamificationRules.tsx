@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { BadgeService } from '../../services/badgeService';
+import { GamificationService } from '../../services/GamificationService';
 import { supabase } from '../../services/supabase';
 import { Badge } from '../../types';
 import { Shield, Award, Star, Heart, TrendingUp, Gift, Beaker, X, Scroll, Calculator, Clock, Check, Moon, Sunrise, Ghost, Sparkles } from 'lucide-react';
@@ -96,6 +97,19 @@ export const GamificationRules: React.FC<GamificationRulesProps> = ({ isOpen, on
                 setDailyClaimed(true);
                 toast.success(`Daily Bonus! +${data.xp_awarded} XP`);
                 toast.success(`Total XP: ${data.total_xp} | Level: ${data.level}`);
+
+                /* FIX: Check Badges idempotently */
+                const userId = (await supabase.auth.getUser()).data.user?.id;
+                if (userId) {
+                    GamificationService.processNewAchievements(userId).then(newBadges => {
+                        if (newBadges.length > 0) {
+                            newBadges.forEach(badge => {
+                                toast.success(`🏆 Badge Unlocked: ${badge.name}!`);
+                            });
+                            loadData();
+                        }
+                    });
+                }
             } else {
                 toast.error(data.error || 'Already claimed today');
             }

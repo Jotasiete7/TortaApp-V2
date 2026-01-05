@@ -123,5 +123,32 @@ export const GamificationService = {
             console.error('Error unlocking achievement:', error);
             return false;
         }
+    },
+
+    /**
+     * Checks for and returns only NEWLY unlocked achievements
+     */
+    async getNewAchievements(userId: string): Promise<Achievement[]> {
+        const potential = await this.checkAchievements(userId);
+        const existingIds = await this.getUserAchievements(userId);
+        
+        return potential.filter(a => !existingIds.includes(a.id));
+    },
+
+    /**
+     * Process new achievements: unlock in DB and return list of actually unlocked ones
+     */
+    async processNewAchievements(userId: string): Promise<Achievement[]> {
+        const newAchievements = await this.getNewAchievements(userId);
+        const unlocked: Achievement[] = [];
+
+        for (const achievement of newAchievements) {
+            const success = await this.unlockAchievement(userId, achievement.id);
+            if (success) {
+                unlocked.push(achievement);
+            }
+        }
+
+        return unlocked;
     }
 };
