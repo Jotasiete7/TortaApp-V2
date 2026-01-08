@@ -1,4 +1,4 @@
-﻿# 📊 TortaApp - Status do Projeto
+# 📊 TortaApp - Status do Projeto
 
 > **🎯 Fonte Única de Verdade** - Sempre consulte este arquivo primeiro!  
 > **📅 Última Atualização:** 08/01/2026 15:17 BRT
@@ -10,7 +10,7 @@
 | Item | Valor |
 |------|-------|
 | **Nome** | TortaApp - Wurm Trade Analytics |
-| **Versão Atual** | `2.1.4` |
+| **Versão Atual** | `2.1.5` |
 | **Status** | 🟡 Beta Testing / Produção Ativa |
 | **Plataforma** | Desktop (Tauri v2) - Windows |
 | **Repositório** | [Jotasiete7/TortaApp-V2](https://github.com/Jotasiete7/TortaApp-V2) |
@@ -159,3 +159,4 @@ TortaApp-V2/
 ---
 
 **🎯 Lembre-se:** Este arquivo é a **fonte única de verdade**. Sempre consulte aqui primeiro!
+

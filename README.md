@@ -80,7 +80,7 @@ App will be available at `http://localhost:5173`
 
 ## ðŸ§ª Beta Testing
 
-### Current Version: 2.1.4
+### Current Version: 2.1.5
 
 > ðŸ“Š **For detailed project status, see [PROJECT_STATUS.md](PROJECT_STATUS.md)** - Single source of truth for versions, features, and roadmap.
 
@@ -157,4 +157,4 @@ If you like TortaApp and want to support its development, consider becoming a pa
 
 **Status:** ðŸŸ¡ Beta Testing / Active Production  
 **Last Updated:** January 2026  
-**Version:** 2.1.4
+**Version:** 2.1.5
