@@ -1,9 +1,56 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.1.4] - 2026-01-08
+
+### Fixed
+- **Null Safety**: Fixed null safety issues in LiveTradeTicker component
+- **Build Stability**: Improved build stability and error handling
+
+### Changed
+- **Documentation**: Standardized project documentation with PROJECT_STATUS.md as single source of truth
+- **Version Sync**: Synchronized version numbers across all configuration files
+
+## [2.1.3] - 2026-01-07
+
+### Changed
+- **UI Cleanup**: Removed redundant links from homepage (Discord, Map, WurmNode) already present in Resources section
+
+### Fixed
+- **Bug Fixes**: Various stability improvements and bug fixes
+
+## [2.1.0] - 2026-01-08
+
+### Added
+- **Mobile Responsiveness**: Complete mobile-responsive design across all components
+  - Adaptive layouts for Hero, Mural, System Status, ServicesBoard, ResourcesBoard
+  - Bottom sheet modals for GuildMap on mobile
+  - Mobile-optimized Admin Area
+- **Guild Features**: Enhanced role-based access system
+  - GuildMap with pin management for Operator and Cartographer roles
+  - Improved Resources Board with operational focus
+
+### Changed
+- **Service Directory**: Refinements to detection accuracy and UI
+- **Guest Mode**: Enhanced guest mode experience with better feature availability
+
+### Fixed
+- **Daily Badge Notification**: Fixed bug causing repeated daily check-in badge notifications
+
+## [2.0.3] - 2025-12-31
+
+### Added
+- **Settings Redesign**: Complete overhaul of settings interface
+- **i18n Complete**: Full internationalization support for English and Portuguese
+- **Bilingual NewsTicker**: Dynamic news ticker with language switching
+
+### Changed
+- **UI/UX Refinements**: Multiple visual and interaction improvements across the application
+- **Performance**: Optimizations for better responsiveness
 
 ## [2.0.0-beta.1] - 2024-12-17
 
@@ -78,6 +125,10 @@ This project uses [Semantic Versioning](https://semver.org/):
 - **PATCH**: Bug fixes (backward compatible)
 - **PRERELEASE**: alpha, beta, rc versions
 
+[2.1.4]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v2.1.4
+[2.1.3]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v2.1.3
+[2.1.0]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v2.1.0
+[2.0.3]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v2.0.3
 [2.0.0-beta.1]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v2.0.0-beta.1
 [2.0.0-alpha.1]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v2.0.0-alpha.1
 [1.0.0]: https://github.com/Jotasiete7/TortaApp-V2/releases/tag/v1.0.0
