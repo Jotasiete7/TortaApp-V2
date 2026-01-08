@@ -36,10 +36,10 @@ Este arquivo rastreia recursos planejados, melhorias e tarefas contínuas para o
 | 012 | 🔴 Alta | [Fix] | **Google OAuth (Tauri)** | Implementar Deep Linking para login Google funcionar no .exe. | ✅ Concluído (12/12) |
 | 013 | 🟡 Média | [Feature] | **Live Trade Alerts** | Notificações do Windows para palavras-chave (ex: "casket"). | ✅ Concluído (12/12) |
 | 014 | 🟡 Média | [Feature] | **WTS Timer & Widget** | Widget flutuante de cooldown (30min) e gerenciador de anúncios. | ✅ Concluído (12/12) |
-| 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas (docs, secrets, resources) e limpeza da raiz. | ✅ Concluído (12/12) |
+| 015 | 🟢 Baixa | [DevOps] | **Organização do Projeto** | Estruturação de pastas e limpeza da raiz (_archive). | ✅ Concluído (08/01) |
 | 016 | 🟡 Média | [Feature] | **Controle de Volume** | Persistência de volume e mute para alertas e sons do app. | ✅ Concluído (12/12) |
 | 017 | 🔴 Alta | [Feature] | **Simplificação do Parser** | Remover modo legado e usar apenas AdvancedParser como modo único. | ✅ Concluído (14/12) |
-| 018 | 🔴 Alta | [DevOps] | **Auto-Update Signing (CI/CD)** | Corrigir automação de chaves/assinatura para updates funcionarem (Release v2.0.4). | ⬜ Pendente |
+| 018 | 🔴 Alta | [DevOps] | **Auto-Update Signing (CI/CD)** | Corrigir automação de chaves/assinatura. (Adiado v2.1.5) | ⬜ Pendente |
 | 019 | 🟡 Média | [Fix] | **Daily Badge Notification** | Corrigir notificação repetida ao reivindicar check-in diário. | ✅ Concluído (05/01/2026) |
 
 ---

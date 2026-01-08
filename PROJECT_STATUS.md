@@ -1,7 +1,7 @@
 # 📊 TortaApp - Status do Projeto
 
 > **🎯 Fonte Única de Verdade** - Sempre consulte este arquivo primeiro!  
-> **📅 Última Atualização:** 08/01/2026 15:17 BRT
+> **📅 Última Atualização:** 08/01/2026 16:53 BRT
 
 ---
 
@@ -11,7 +11,7 @@
 |------|-------|
 | **Nome** | TortaApp - Wurm Trade Analytics |
 | **Versão Atual** | `2.1.5` |
-| **Status** | 🟡 Beta Testing / Produção Ativa |
+| **Status** | 🟢 Produção Ativa (v2.1.5) |
 | **Plataforma** | Desktop (Tauri v2) - Windows |
 | **Repositório** | [Jotasiete7/TortaApp-V2](https://github.com/Jotasiete7/TortaApp-V2) |
 | **Tech Stack** | React 18 + TypeScript + Vite + Supabase + Tauri v2 |
@@ -68,7 +68,10 @@
 
 ## 📝 Últimas Implementações (Cronológico)
 
+
 ### Janeiro 2026
+- **08/01** - Release v2.1.5 "Clean Slate" 🧹 (Cleanup & Mobile Ready)
+- **08/01** - Project Documentation Standardization
 - **08/01** - Documentation Standardization (v2.1.4)
 - **08/01** - Mobile Responsiveness Implementation
 - **05/01** - Fix Daily Badge Notification
